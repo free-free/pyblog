@@ -1,0 +1,26 @@
+此项目是用python写的一个blog系统,使用python3.5,模板使用jinja2,数据库驱动使用aiomyql,http框架使用aiohttp
+安装项目所需包:
+	1.jinja2
+		pip3 install jinja2
+	2.aiohttp
+		pip3 install aiohttp
+	3.aiomysql
+		pip3 install aiomysql
+项目目录结构:根目录为/srv/pyblog/
+	+ backup/    --->备份目录
+	|
+	+ conf/      --->配置文件目录
+	|
+	+ dist/	     --->打包目录
+	|
+	+ www/       --->web目录,存放.py文件
+	|	|
+	|	+ static/       --->存放静态文件
+	|	|
+	|	+ templates/	--->存放模板文件
+	|
+	+ ios/	     --->存放ios APP工程
+	|
+	+ LICENSE    --->代码LICENSE
+
+
