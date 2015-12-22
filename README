@@ -19,8 +19,6 @@
 	|	|
 	|	+ templates/	--->存放模板文件
 	|
-	+ ios/	     --->存放ios APP工程
-	|
 	+ LICENSE    --->代码LICENSE
 
 
