@@ -4,19 +4,19 @@
 
 from field import *
 class Column(object):
-	__constraints=set([
-	'unique_key',
-	'primary_key',
-	'null',
-	'default',
-	])
+	constraints=dict({
+	'unique_key':False,
+	'primary_key':False,
+	'null':True,
+	'default':'',
+	})
 	def __init__(self,c_type,**kw):
 		self.constraints=dict()
 		self.columnType=''
 		if isinstance(c_type,Field):
 			self.columnType=c_type.column_type
 			for k,v in kw.items():
-				if k in self.__constraints:
+				if k in self.constraints:
 					self.constraints[k]=v
 		else:
 			raise TypeError
