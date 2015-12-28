@@ -1,0 +1,40 @@
+ [2015-12-28 17:24:21.139788] level:ERROR ==> SELECT * FROM USER 
+ [2015-12-28 17:24:21.140368] level:WARNING ==> SELECT * FROM USER 
+ [2015-12-28 17:24:21.140775] level:INFO ==> SELECT * FROM USER 
+ [2015-12-28 17:26:58.608889] level:INFO ==> select `name`,`age`  from U  `name` > huangbiao  
+ [2015-12-28 17:32:31.465712] level:INFO ==> select * from User  `age` > 21  and  `name` = huangbiao  
+ [2015-12-28 17:34:26.712199]  level:INFO == select * from User  `age` > 21  and  `name` = huangbiao  
+ [2015-12-28 18:09:37.282257]  level:INFO ==> selct * from user 
+ [2015-12-28 18:11:08.597627]  level:INFO ==> selct * from user 
+ [2015-12-28 18:13:23.788067]  level:INFO ==> selct * from user 
+ [2015-12-28 18:15:05.420803]  level:INFO ==> selct * from user 
+ [2015-12-28 18:18:19.439867]  level:INFO ==> selct * from user 
+ [2015-12-28 18:18:32.491056]  level:INFO ==> selct * from user 
+ [2015-12-28 18:23:42.093239]  level:INFO ==> selct * from user 
+ [2015-12-28 18:27:46.301429]  level:INFO ==> selct * from user 
+ [2015-12-28 18:28:03.657318]  level:INFO ==> selct * from user 
+ [2015-12-28 18:30:39.753339]  level:INFO ==> select * from user 
+ [2015-12-28 18:31:46.145988]  level:INFO ==> select * from user 
+ [2015-12-28 18:32:14.918442]  level:INFO ==> select * from user 
+ [2015-12-28 18:33:08.779108]  level:INFO ==> select * from user 
+ [2015-12-28 19:02:54.581965]  level:INFO ==> select * from user 
+ [2015-12-28 19:03:11.672408]  level:INFO ==> select * from user 
+ [2015-12-28 19:03:44.947412]  level:INFO ==> select * from user 
+ [2015-12-28 19:06:32.861569]  level:INFO ==> select * from user 
+ [2015-12-28 19:08:41.264792]  level:INFO ==> select * from user 
+ [2015-12-28 19:09:46.355459]  level:INFO ==> select * from user 
+ [2015-12-28 19:10:05.202273]  level:INFO ==> select * from user 
+ [2015-12-28 19:10:31.061363]  level:INFO ==> select * from user 
+ [2015-12-28 19:11:53.451665]  level:INFO ==> select * from user 
+ [2015-12-28 19:12:24.871378]  level:INFO ==> select * from user 
+ [2015-12-28 19:14:17.870260]  level:INFO ==> select * from user 
+ [2015-12-28 19:15:47.990768]  level:INFO ==> select * from user 
+ [2015-12-28 19:16:02.244333]  level:INFO ==> select * from user 
+ [2015-12-28 19:16:38.072362]  level:INFO ==> select * from user 
+ [2015-12-28 19:17:45.870655]  level:INFO ==> select * from user 
+ [2015-12-28 19:18:24.139555]  level:INFO ==> select * from user 
+ [2015-12-28 19:19:38.796016]  level:INFO ==> select * from user 
+ [2015-12-28 19:22:30.231155]  level:INFO ==> select * from user 
+ [2015-12-28 19:30:34.782321]  level:INFO ==> select * from user 
+ [2015-12-28 19:32:35.644318]  level:INFO ==> select * from user 
+ [2015-12-28 19:32:57.575290]  level:INFO ==> select * from user 

@@ -13,7 +13,7 @@ class String(Field):
 		elif 65535>=int(type_length)>=255:
 			super().__init__(' varchar(%s) '%type_length)
 		else:
-			super().__init__('text') 
+			pass		
 		
 
 class Int(Field):
@@ -27,6 +27,16 @@ class Int(Field):
 				super().__init__('int')
 			else:
 				super().__init__('bigint')
+
+class Boolean(Field):
+	def __init__(self):
+		super().__init__('boolean')
+class Float(Field):
+	def __init__(self):
+		super().__init__('float')
+class Text(Field):
+	def __init__(self):
+		super().__init__('text')
 
 
 if __name__=='__main__':
