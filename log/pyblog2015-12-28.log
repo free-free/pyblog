@@ -38,3 +38,7 @@
  [2015-12-28 19:30:34.782321]  level:INFO ==> select * from user 
  [2015-12-28 19:32:35.644318]  level:INFO ==> select * from user 
  [2015-12-28 19:32:57.575290]  level:INFO ==> select * from user 
+ [2015-12-28 20:45:13.303490]  level:ERROR ==> 'User' has not attribute '__fields__'  
+ [2015-12-28 20:47:12.244952]  level:ERROR ==> 'User' has not attribute '__fields__'  
+ [2015-12-28 21:22:22.362810]  level:ERROR ==> 'User' has not attribute '__fields__'  
+ [2015-12-28 21:27:41.264123]  level:ERROR ==> 'User' has not attribute '__fields__'  
