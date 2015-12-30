@@ -15,18 +15,19 @@ class String(Field):
 		else:
 			pass		
 		
-
 class Int(Field):
-
-	def __init__(self,type_length):
+	def __init__(self,type_length,*,unsigned=False):
+			un=''
+			if unsigned==True:
+				un=' unsigned '	
 			if type_length<=1:
-				super().__init__('tinyint')
+				super().__init__('tinyint%s'%un)
 			elif type_length<=2:
-				super().__init__('smallint')
+				super().__init__('smallint%s'%un)
 			elif type_length<=4:
-				super().__init__('int')
+				super().__init__('int%s'%un)
 			else:
-				super().__init__('bigint')
+				super().__init__('bigint%s'%un)
 
 class Boolean(Field):
 	def __init__(self):
@@ -41,6 +42,7 @@ class Text(Field):
 
 if __name__=='__main__':
 	s=String(25)
+	s=Int(4,unsigned=True)
 	i=Int(2)
 	print(i)
 	print(s)

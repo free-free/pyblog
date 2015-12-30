@@ -118,6 +118,7 @@ class Model(dict,metaclass=ModelMetaclass):
 			sql=sql+self.__query__['where']
 			self.__query__['where']=''
 		return (yield from execute(sql))
+	@asyncio.coroutine
 	def save(self):
 		for cname in self.__columns__.keys():
 			if cname in self.__not_null__ and cname in self and self[cname]=='':
@@ -149,7 +150,7 @@ class Model(dict,metaclass=ModelMetaclass):
 		for k in ['where','order','limit','group','having']:
 			sql=sql+self.__query__[k]
 			self.__query__[k]=''
-		return sql
+		return (yield from execute(sql))
 	@asyncio.coroutine
 	def delete(self,n=None):
 		sql='delete from `%s`'%self.__table__
