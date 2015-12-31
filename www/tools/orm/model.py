@@ -8,6 +8,7 @@ from tools.orm.field import *
 from tools.orm.column import *
 from tools.database import *
 from collections import OrderedDict
+import hashlib
 try:
 	import aiomysql
 except ImportError:
@@ -25,7 +26,7 @@ class ModelMetaclass(type):
 		uniqueKey=[]
 		default=dict()
 		tableColumns=dict()
-		
+		autoIncrement=[]
 		for c_name,c_type in attrs.items():
 			if isinstance(c_type,Column):
 				tableColumns[c_name]=dict({
@@ -42,6 +43,8 @@ class ModelMetaclass(type):
 					uniqueKey.append(c_name)
 				if c_type.constraints['null']==False:
 					notNull.append(c_name)
+				if c_type.constraints['auto_increment']==True:
+					autoIncrement.append(c_name)
 				if not c_type.constraints['default']=='':
 					default[c_name]=c_type.constraints['default']	
 		for column in tableColumns.keys():
@@ -53,6 +56,7 @@ class ModelMetaclass(type):
 		attrs['__unique_key__']=uniqueKey
 		attrs['__not_null__']=notNull
 		attrs['__default__']=default
+		attrs['__auto_increment__']=autoIncrement
 		attrs['__query__']=OrderedDict(dict({'where':'','order':'','limit':'','group':'','having':''}))
 		attrs['__fields__']=dict({'fields':' * ','values':''})
 		return type.__new__(cls,name,bases,attrs)
@@ -72,7 +76,6 @@ class Model(dict,metaclass=ModelMetaclass):
 			else:
 				columns[name]=value
 		super(Model,self).__init__(self,**columns)
-
 	def __setattr__(self,key,value):
 		if key in self.__columns__.keys():
 			self[key]=value
@@ -118,10 +121,10 @@ class Model(dict,metaclass=ModelMetaclass):
 			sql=sql+self.__query__['where']
 			self.__query__['where']=''
 		return (yield from execute(sql))
-	@asyncio.coroutine
+#	@asyncio.coroutine
 	def save(self):
 		for cname in self.__columns__.keys():
-			if cname in self.__not_null__ and cname in self and self[cname]=='':
+			if cname in self.__not_null__ and cname in self and self[cname]=='' and cname not in self.__auto_increment__:
 				info="'%s' column can't be null "%cname
 				Log.error(info)
 				raise ValueError(info)
@@ -136,6 +139,8 @@ class Model(dict,metaclass=ModelMetaclass):
 			insertcolumns=[]
 			insertvalues=[]
 			for cname in self.__columns__.keys():
+				if cname  in self.__auto_increment__ and  self[cname]=='':
+					continue
 				insertcolumns.append('`'+cname+'`')
 				if isinstance(self[cname],str):
 					insertvalues.append('"'+self[cname]+'"')
@@ -150,7 +155,8 @@ class Model(dict,metaclass=ModelMetaclass):
 		for k in ['where','order','limit','group','having']:
 			sql=sql+self.__query__[k]
 			self.__query__[k]=''
-		return (yield from execute(sql))
+		return sql
+#		return (yield from execute(sql))
 	@asyncio.coroutine
 	def delete(self,n=None):
 		sql='delete from `%s`'%self.__table__

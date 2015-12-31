@@ -3,13 +3,12 @@ import os
 os.sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 import asyncio
 import logging;logging.basicConfig(level=logging.ERROR)
-from tools.log import *
+from   tools.log import *
 try:
 	import aiomysql
 except Exception:
 	logging.error('aiomysql module not Found')
 	exit()
-
 @asyncio.coroutine
 def create_pool(loop,**kw):
 	global __pool
@@ -23,9 +22,9 @@ def create_pool(loop,**kw):
 	)
 
 @asyncio.coroutine
-def select(sql,loop,size=None):
+def select(sql,size=None):
 	Log.info(sql)
-
+	global __pool
 	with (yield from __pool) as conn:
 		cursor=yield from conn.cursor(aiomysql.DictCursor)
 		yield from cursor.execute(sql)
@@ -53,12 +52,9 @@ def execute(sql,autocommit=True):
 			if not autocommit:
 				conn.rollback()
 			raise e
-		__pool.close()
 		return affectedrow			
-
-
 if __name__=='__main__':
 	loop = asyncio.get_event_loop()
-	tasks=[create_pool(loop,db='pyblog',password='526114'),execute('select * from user')]
-	loop.run_until_complete(asyncio.wait(tasks))
+	create_pool(loop,db='pyblog',password='526114')
+	#loop.run_until_complete(asyncio.wait(tasks))
 	

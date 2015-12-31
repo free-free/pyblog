@@ -7,7 +7,7 @@ from tools.orm.field import *
 class Column(object):
 	def __init__(self,c_type,**kw):
 		self.columnType=""
-		self.constraints={'unique_key':False,'primary_key':False,'null':True,'default':''}
+		self.constraints={'unique_key':False,'primary_key':False,'null':True,'default':'','auto_increment':False}
 		if isinstance(c_type,Field):
 			self.columnType=c_type.column_type
 			for k,v in kw.items():
