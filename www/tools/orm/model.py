@@ -80,7 +80,7 @@ class Model(dict,metaclass=ModelMetaclass):
 		if key in self.__columns__.keys():
 			self[key]=value
 		else:
-			info=r"'%s' has not column '%s' "%(self.__class__.__name__,key)
+			info=r"'%s' has no column '%s' "%(self.__class__.__name__,key)
 			Log.warning(info)
 
 	def __getattr__(self,key):
@@ -107,7 +107,6 @@ class Model(dict,metaclass=ModelMetaclass):
 			for k in ['where','order','limit','group','having']:
 				sql=sql+self.__query__[k]
 				self.__query__[k]=''
-		return sql
 		record=yield from select(sql)
 		return self(**record)
 	@asyncio.coroutine
@@ -121,7 +120,7 @@ class Model(dict,metaclass=ModelMetaclass):
 			sql=sql+self.__query__['where']
 			self.__query__['where']=''
 		return (yield from execute(sql))
-#	@asyncio.coroutine
+	@asyncio.coroutine
 	def save(self):
 		for cname in self.__columns__.keys():
 			if cname in self.__not_null__ and cname in self and self[cname]=='' and cname not in self.__auto_increment__:
@@ -155,8 +154,7 @@ class Model(dict,metaclass=ModelMetaclass):
 		for k in ['where','order','limit','group','having']:
 			sql=sql+self.__query__[k]
 			self.__query__[k]=''
-		return sql
-#		return (yield from execute(sql))
+		result=yield from execute(sql)
 	@asyncio.coroutine
 	def delete(self,n=None):
 		sql='delete from `%s`'%self.__table__

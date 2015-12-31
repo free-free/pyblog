@@ -21,11 +21,17 @@ class Log(object):
 		with open(os.path.join(cls._logPath,cls._logName),'a+') as f:
 			f.write(cls._logFormat%(datetime.now(),'ERROR',info))
 	@classmethod
-	def getLogPath(cls):
+	def get_logpath(cls):
 		return os.path.join(cls._logPath,cls._logName)
 	@classmethod
-	def setLogPath(cls,path):
+	def set_logPath(cls,path):
 		cls._logPath=path
+	@classmethod
+	def set_logformat(cls,logformat):
+		cls._logFormat=logformat
+	@classmethod
+	def get_logformat(cls):
+		return cks._logFormat
 	
 if __name__=='__main__':
 	sql='select * from user'.upper()

@@ -20,8 +20,8 @@ class Need(Model):
 	user_id=Column(Int(4,unsigned=True),null=False)
 	content=Column(Text(),null=False)
 	create_at=Column(Float(),default=time.time())
-	is_sovled=Column(Boolean(),default=False)
-	sovled_user_id=Column(Int(4,unsigned=True),null=False)
+	is_solved=Column(Boolean(),default=False)
+	solved_user_id=Column(Int(4,unsigned=True),default=0)
 
 if __name__=='__main__':
 	print(Need().__table__)	

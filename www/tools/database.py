@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 os.sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 import asyncio
 import logging;logging.basicConfig(level=logging.ERROR)
@@ -11,8 +12,8 @@ except Exception:
 	exit()
 @asyncio.coroutine
 def create_pool(loop,**kw):
-	global __pool
-	__pool=yield from aiomysql.create_pool(
+	global pool
+	pool=yield from aiomysql.create_pool(
 				host=kw.get('host','localhost'),
 				port=kw.get('port',3306),
 				user=kw.get('user','root'),
@@ -24,8 +25,8 @@ def create_pool(loop,**kw):
 @asyncio.coroutine
 def select(sql,size=None):
 	Log.info(sql)
-	global __pool
-	with (yield from __pool) as conn:
+	global pool
+	with (yield from pool) as conn:
 		cursor=yield from conn.cursor(aiomysql.DictCursor)
 		yield from cursor.execute(sql)
 		if size:
@@ -38,7 +39,7 @@ def select(sql,size=None):
 @asyncio.coroutine
 def execute(sql,autocommit=True):
 	Log.info(sql)
-	with (yield from __pool) as conn:
+	with (yield from pool) as conn:
 		if not autocommit:
 			conn.begin()
 		try:
@@ -53,8 +54,14 @@ def execute(sql,autocommit=True):
 				conn.rollback()
 			raise e
 		return affectedrow			
+
 if __name__=='__main__':
-	loop = asyncio.get_event_loop()
-	create_pool(loop,db='pyblog',password='526114')
-	#loop.run_until_complete(asyncio.wait(tasks))
+	async def test(loop):
+		await create_pool(loop,db='pyblog',password='526114')
+		re=await select('desc users')
+		print(re)
+	loop=asyncio.get_event_loop()
+	loop.run_until_complete(asyncio.wait([test(loop)]))
+	loop.close()
+	sys.exit(0)
 	
