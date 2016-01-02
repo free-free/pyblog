@@ -5,6 +5,7 @@ os.sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 import asyncio
 import logging;logging.basicConfig(level=logging.ERROR)
 from   tools.log import *
+import re
 try:
 	import aiomysql
 except Exception:
@@ -56,7 +57,7 @@ def execute(sql,autocommit=True):
 		return affectedrow			
 
 class DB(dict):
-	__connectionPool
+	__connectionPool=""
 	def __init__(self,**kw):
 		super().__init__(**kw)
 	@classmethod
@@ -68,7 +69,29 @@ class DB(dict):
 				password=kw.get('password'),
 				db=kw.get('db','test'),
 				loop=loop
-		)
+		)	
+	def __fillparam(self,sql,args):
+		if not args==None:
+			if isinstance(args,list):
+				args.reverse()
+				def rep(obj):
+					val=args.pop()
+					if isinstance(val,str):
+						return ' "'+val.strip()+'" '
+					else:
+						return ' '+str(val)+' '
+				fullsql=re.sub('\?',rep,sql)
+				return fullsql
+			if isinstance(args,dict):
+				def rep(obj):
+					if isinstance(args[obj.group()[1:].strip()],str):
+						return ' "'+args[obj.group()[1:].strip()]+'" '
+					else:
+						return ' '+str(args[obj.group()[1:].strip()])+' '
+				fullsql=re.sub(':\w+\s?',rep,sql)
+				return fullsql
+		else:
+			return sql
 	def table(self,tablename):
 		"""
 		@param  str tablebane
@@ -80,10 +103,17 @@ class DB(dict):
 		pass
 	def select(self,sql,**kw):
 		pass
-	def update(self,sql,**kw):
-		pass
-	def insert(self,sql,**kw):
-		pass
+	def update(self,sql=None,args=None):
+		if not sql==None:
+			return self.__fillparam(sql,args)
+		else:
+			pass
+	def insert(self,sql=None,args=None):
+		if not sql==None:
+			return self.__fillparam(sql,args)
+		else:
+			pass
+		
 	def delete(self,sql,**kw):
 		pass
 	def where(self,column,operator,value):
@@ -100,7 +130,7 @@ class DB(dict):
 		pass
 	def join(self,tableName,column1,operator,column2):
 		pass
-	def leftjoin(self,tableName,column2,operator,column2):
+	def leftjoin(self,tableName,column1,operator,column2):
 		pass
 	def union(self):
 		pass
@@ -125,6 +155,7 @@ class DB(dict):
 
 				
 if __name__=='__main__':
+	"""
 	async def test(loop):
 		await create_pool(loop,db='pyblog',password='526114')
 		re=await select('desc users')
@@ -133,4 +164,7 @@ if __name__=='__main__':
 	loop.run_until_complete(asyncio.wait([test(loop)]))
 	loop.close()
 	sys.exit(0)
-	
+	"""
+	db=DB()
+	#print(db.insert('insert into user(name,age,email) values(:name,:age,:email)',{'email':'2121','age':21,'name':'dsada'}))
+	print(db.update('update tb set name=:name where id=:id',{'id':1,'name':'xiaoming'}))
