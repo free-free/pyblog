@@ -110,12 +110,18 @@ class Model(dict,metaclass=ModelMetaclass):
 		record=yield from select(sql)
 		return self(**record)
 	@asyncio.coroutine
-	def update(self,k,v):
-		if k not in self.__columns__.keys():
-			info="'%s' has no column '%s'"%(self.__class__.__name__,k)
-			Log.error(info)
-			raise AttributeError(info)
-		sql='update `%s` '%self.__table__+' set `%s` =%s '%(k,v)
+	def update(self,args):
+		if not isinstance(args,dict):
+			raise ValueError
+		for k in args.keys():
+			if k not in self.__columns__.keys():
+				info="'%s' has no column '%s'"%(self.__class__.__name__,k)
+				Log.error(info)
+				raise AttributeError(info)
+		setitems=[]
+		for k,v in args.items():
+			setitems.append('`%s`=%s'%(k,v))	
+		sql='update `%s` '%self.__table__+' set %s '%(','.join(setitems))
 		if self.__query__['where']:
 			sql=sql+self.__query__['where']
 			self.__query__['where']=''
