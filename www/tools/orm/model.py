@@ -179,7 +179,7 @@ class Model(dict,metaclass=ModelMetaclass):
 			l=map(lambda x:'`%s` = %s'%(self.__primary_key__,x),l)
 			sql=sql+' or '.join(l)
 		return (yield from execute(sql))
-	def field(self,field):
+	def fields(self,field):
 		if isinstance(field,list):
 			for cname in field:
 				if  cname not  in self.__columns__.keys():
@@ -213,7 +213,7 @@ class Model(dict,metaclass=ModelMetaclass):
 		self.__query__['limit']='limit %s '%num
 		return self
 
-	def orderBy(self,od):
+	def orderby(self,od):
 		if od not in self.__columns__.keys():
 			raise AttributeError("'%s' has no column '%s'"%(self.__class__.__name__,od))
 		if isinstance(od,str):
@@ -222,7 +222,7 @@ class Model(dict,metaclass=ModelMetaclass):
 			self.__qeury__['order']=''
 		return self
 
-	def groupBy(self,gb):
+	def groupby(self,gb):
 		if gb not in self.__columns__.keys():
 			raise AttributeError("'%s' has no column '%s'"%(self.__class__.__name__,gb))
 		if isinstance(gb,str):

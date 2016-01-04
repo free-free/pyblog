@@ -101,23 +101,55 @@ class DB(dict):
 			return False
 		self['table']=tablename.strip()
 		return self
+	def getsql(self):	
+		if 'fields' not in self or not self['fields']:
+			self['fields']=' * '
+		if 'table' not in self or not self['table']:
+			Log.error('table name can\'t be empty')
+			return False
+		fullsql=' select %s from `%s` %s'%(self['fields'],self['table'],self['join'] if 'join' in self else '')
+		self['join']=''
+		self['fields']=''
+		self['table']=''
+		for item in ['where','order','limit','group','having']:
+			if item in self:
+				fullsql=fullsql+self[item]
+				self[item]=''
+		if 'union' in self:
+			fullsql=fullsql+self['union']
+			self['union']=''
+		return fullsql
 	def get(self):
 		if 'fields' not in self or not self['fields']:
 			self['fields']=' * '
 		if 'table' not in self or not self['table']:
 			Log.error('table name can\'t be empty')
 			return False
-		fullsql=' select %s from `%s` '%(self['fields'],self['table'])
+		fullsql=' select %s from `%s` %s'%(self['fields'],self['table'],self['join'] if 'join' in self else '')
+		self['join']=''
 		self['fields']=''
 		self['table']=''
 		for item in ['where','order','limit','group','having']:
-			fullsql=fullsql+self[item]
-			self[item]=''
+			if item in self:
+				fullsql=fullsql+self[item]
+				self[item]=''
+		if 'union' in self:
+			fullsql=fullsql+self['union']
+			self['union']=''
 		return fullsql
 	def fields(self,args):
 		fullsql=''
 		if isinstance(args,list):
-			fullsql=','.join(map(lambda x:'`'+x+'`',args))
+			def se(item):
+				item=re.split('\.',item)
+				if len(item)==2:
+					if item[1].strip()=='*':
+						return '%s.%s'%(item[0],item[1])
+					else:
+						return '%s.`%s`'%(item[0],item[1])
+				else:
+					return '`%s`'%item[0]
+			fullsql=','.join(map(se,args))
 		if isinstance(args,str):
 			fullsql=args
 		self['fields']=fullsql
@@ -142,11 +174,20 @@ class DB(dict):
 					Log.error('table name must be set')
 					self={}
 					return False
-				fullsql='update `%s` set '%self['table']
+				fullsql='update `%s` %s set '%(self['table'],self['join'])
 				self['table']=''
+				self['join']=''
 				setitems=[]
+				def se(item):
+					item=re.split('\.',item)
+					if len(item)==2:
+						return '%s.`%s`'%(item[0],item[1])
+					elif len(item)==1:
+						return '`%s`'%item[0]
+					else:
+						raise KeyError()
 				for k,v in sql.items():
-					setitems.append(' `%s`=%s'%(k,'"'+v+'"' if isinstance(v,str) else str(v)))
+					setitems.append(' %s=%s'%(se(k),'"'+v+'"' if isinstance(v,str) else str(v)))
 				fullsql=fullsql+','.join(setitems)
 				if 'where' in self:
 					fullsql=fullsql+self['where']
@@ -197,24 +238,88 @@ class DB(dict):
 		if str(operator).strip() not  in standard_operator:
 			Log.error('operator is not correct in %s'%__file__)
 			return False
-		self['where']=' where `%s`%s%s '%(str(column).strip(),str(operator).strip(),'"'+value.strip()+'"' if isinstance(value,str) else str(value))
+		if 'where' in self and not self['where']=='':
+			self['where']=self['where']+' and `%s`%s%s'%(column.strip(),str(operator).strip(),'"'+value+'"' if isinstance(value,str) else str(value))	
+		else:
+			self['where']=' where `%s`%s%s '%(str(column).strip(),str(operator).strip(),'"'+value.strip()+'"' if isinstance(value,str) else str(value))
 		return self
 	def orwhere(self,column,operator,value):
-		pass
-	def wherein(self,column,vallist):
-		pass
-	def wherenotin(self,column,vallist):
-		pass
+		standard_operator=set(['>','>=','<','<=','='])
+		if 'where' in self and not self['where']=='':
+			if str(operator).strip() not in standard_operator:
+				Log.error('operator is not correct in %s'%__file__)
+				return False
+			self['where']=self['where']+' or `%s`%s%s'%(column.strip(),str(operator).strip(),'"'+value+'"' if isinstance(value,str) else str(value))
+			return self
+		return self
+	def wherein(self,column,valtuple):
+		if not isinstance(valtuple,tuple):
+			Log.error('valtuple must be a tuple in %s'%__file__)
+			raise ValueError('valtuple must be a tuple in %s'%__file__)
+			return False
+		if 'where' in self and not self['where']=='':
+			self['where']=self['where']+' and `%s` in %s'%(column.strip(),valtuple)
+		else:
+			self['where']=' `%s` in %s'%(column.strip(),valtuple)
+		return self
+	def wherenotin(self,column,valtuple):
+		if not isinstance(valtuple,tuple):
+			Log.error("valtupe must be a tuple in %s"%__file__)
+			raise ValueError('valtuple must be a tuple in %s'%__file__)
+			return False
+		if 'where' in self and not self['where']=='':
+			self['where']=self['where']+' and `%s` not in %s'%(column.strip(),valtuple)
+		else:
+			self['where']=' where `%s` not in %s'%(column.strip(),valtuple)
+		return self
 	def wherebetween(self,column,valrange):
-		pass
+		if not isinstance(valrange,tuple):
+			Log.error('valrange must be a tuple in %s'%__file__)
+			raise ValueError('valrange must be a tuple in %s'%__file__)
+			return False
+		if 'where' in self and not self['where']=='':
+			self['where']=self['where']+' and `%s`>=%s and `%s`<%s'%(column.strip(),valrange[0],column.strip(),valrange[-1])
+		else:
+			self['where']=' where `%s`>=%s and `%s`<%s'%(column.strip(),valrange[0],column.strip(),valrange[-1])
+		return self
 	def wherenotbetween(self,column,valrange):
-		pass
-	def join(self,tableName,column1,operator,column2):
-		pass
-	def leftjoin(self,tableName,column1,operator,column2):
-		pass
-	def union(self):
-		pass
+		if not isinstance(valrange,tuple):
+			Log.error("valrange must be a tuple in %s"%__file__)
+			raise ValueError('valragne must be a tuple in %s'%__file__)
+			return False
+		if 'where' in self and not self['where'] =='':
+			self['where']=self['where']+' and `%s`>%s or `%s`<%s'%(column.strip(),valrange[-1],column.strip(),valrange[0])
+		else:
+			self['where']='where `%s`>%s or `%s`<%s'%(column.strip(),valrange[-1],column.strip(),valrange[0])
+		return self
+	def join(self,innertable,column1,operator,column2):
+		column1=re.split('\.',column1)
+		column2=re.split('\.',column2)
+		if len(column1)==2 and len(column1)==2:
+			self['join']=' inner join `%s` on  %s.`%s` = %s.`%s` '%(innertable,column1[0],column1[1],column2[0],column2[1])
+		elif len(column1)==1 and len(column2)==2:
+			self['join']=' inner join `%s` on  `%s`=`%s` '%(innertable,column1[0],column2[0])
+		else:
+			return False
+		return self
+	def leftjoin(self,innertable,column1,operator,column2):
+		column1=re.split('\.',column1)
+		column2=re.split('\.',column2)
+		if len(column1)==2 and len(column1)==2:
+			self['join']=' left  join `%s` on %s.`%s` =%s.`%s` '%(innertable,column1[0],column1[1],column2[0],column2[1])
+		elif len(column2)==1 and len(column2)==1:
+			self['join']=' left join `%s` on `%s` = `%s` '%(innertable,column1[0],column2[0])
+		else:
+			return False
+		return self
+	def union(self,unionclosure):
+		if isinstance(unionclosure,self.__class__):
+			self['union']=' union %s '%unionclosure.getsql()
+		return self
+	def unionall(self,unionclosure):
+		if isinstance(unionclosure,self.__class__):
+			self['union']=' union all %s'%unionclosure.getsql()
+		return self
 	def count(self,column=''):
 		if 'table' not in self or not self['table']:
 			Log.error("table name can't be empty")
@@ -307,6 +412,7 @@ if __name__=='__main__':
 	sys.exit(0)
 	"""
 	db=DB()
+	db2=DB()
 	#print(db.insert('insert into user(name,age,email) values(:name,:age,:email)',{'email':'2121','age':21,'name':'dsada'}))
 	#print(db.update('update tb set name=:name where id=:id',{'id':1,'name':'xiaoming'}))
 	#print(db.select('select * from user where id=:id',{'id':3}))
@@ -323,4 +429,15 @@ if __name__=='__main__':
 	#print(db.table('user').max('name'))
 	#print(db.table('user').min('age'))
 	#print(db.table('user').avg('id'))
-	print(db.table("user").sum('id'))
+	#print(db.table("user").sum('id'))
+	#print(db.table('user').where('id','=',1).orwhere('name','=','huangiao').get())
+	#print(db.table('need').fields('`name`,`age`,`id`').where('id','>',2).where('name','=','dede').get())
+	#print(db.table("need").where('id','=',1).wherein('name',('de','D','f','f')).get())
+	#print(db.table("user").wherenotin('id',('12','32','32','32')).where('name','=','huan').get())
+	#print(db.table('user').wherebetween('id',(1,100)).fields(['name','age','email']).get())
+	#print(db.table("user").wherenotbetween('id',(20,40)).fields(['name','age']).get())
+	#print(db.table("users").fields(['users.id','needs.*']).join('needs','users.id','=','needs.solved_user_id').get())
+	#print(db.table('users').join('needs','users.id','=','needs.solved_user_id').update({'is_solved':True}))
+	#print(db.table('users').leftjoin('needs','users.id','=','needs.solved_user_id').get())
+	print(db.table('users').fields(['id','user_name']).union(db2.table('users').fields(['id','user_name']).where("id",'>',1)).get())
+

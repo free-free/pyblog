@@ -12,13 +12,15 @@ def test_users_table(loop):
 def test_needs_table(loop):
 	yield from create_pool(loop,db='pyblog',password='526114')
 	n=Need()
-	n.user_id=9
-	n.content="I need someone take a mathemathic class for me "
-	yield from n.save()
+	#n.user_id=9
+	#n.content="I need someone take a mathemathic class for me "
+	
+	yield from n.where('user_id','=',9).update({'is_solved':True,'solved_user_id':1})
 	
 if __name__=='__main__':
 	loop=asyncio.get_event_loop()
-	loop.run_until_complete(asyncio.wait([test_needs_table(loop),test_users_table(loop)]))
+	#loop.run_until_complete(asyncio.wait([test_needs_table(loop),test_users_table(loop)]))
+	loop.run_until_complete(test_needs_table(loop))
 	loop.close()
 	sys.exit(0)
 
