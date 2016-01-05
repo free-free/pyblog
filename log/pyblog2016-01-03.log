@@ -1,0 +1,12 @@
+ [2016-01-03 00:58:30.348406]  level:ERROR ==> table name must be set 
+ [2016-01-03 01:07:01.797698]  level:ERROR ==> operator is not correct operator in ./database.py 
+ [2016-01-03 01:10:20.913672]  level:ERROR ==> table name must be set 
+ [2016-01-03 01:11:18.082716]  level:ERROR ==> table name must be set 
+ [2016-01-03 14:49:24.284205]  level:ERROR ==> 'Need' has no column 'sovled_user_id' 
+ [2016-01-03 14:51:50.322263]  level:INFO ==> update `needs`  set `is_solved`=True,`solved_user_id`=1 where `user_id` = 9  
+ [2016-01-03 14:58:12.897263]  level:ERROR ==> table name can't be empty 
+ [2016-01-03 15:04:18.411021]  level:ERROR ==>  column name can't empty 
+ [2016-01-03 15:08:03.286760]  level:ERROR ==> table name can't be empty 
+ [2016-01-03 15:12:36.182105]  level:ERROR ==> column name can't be empty 
+ [2016-01-03 19:22:58.985316]  level:ERROR ==> table name can't be empty 
+ [2016-01-03 22:56:17.838380]  level:ERROR ==> table name can't be empty 

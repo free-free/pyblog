@@ -1,0 +1,36 @@
+ [2015-12-31 17:06:53.930393]  level:INFO ==> show tables 
+ [2015-12-31 17:07:49.980509]  level:INFO ==> desc users 
+ [2015-12-31 17:08:36.070633]  level:INFO ==> desc users 
+ [2015-12-31 17:10:12.318634]  level:INFO ==> desc users 
+ [2015-12-31 17:10:58.302982]  level:INFO ==> desc users 
+ [2015-12-31 17:12:08.192966]  level:INFO ==> desc users 
+ [2015-12-31 17:12:29.457172]  level:INFO ==> desc users 
+ [2015-12-31 17:13:15.515723]  level:INFO ==> desc users 
+ [2015-12-31 17:13:27.500430]  level:INFO ==> desc users 
+ [2015-12-31 17:14:02.796683]  level:INFO ==> desc users 
+ [2015-12-31 17:14:31.535435]  level:INFO ==> desc users 
+ [2015-12-31 17:16:18.677606]  level:INFO ==> desc users 
+ [2015-12-31 17:17:02.632520]  level:INFO ==> desc users 
+ [2015-12-31 17:19:06.747279]  level:INFO ==> desc users 
+ [2015-12-31 17:22:01.726996]  level:INFO ==> insert into `users`(`image`,`user_name`,`email`,`password`,`create_at`) values("","koude","18281573692@163.com","526114",1451553721.6940618) 
+ [2015-12-31 17:22:11.611308]  level:INFO ==> insert into `users`(`create_at`,`user_name`,`email`,`password`,`image`) values(1451553731.5808945,"koude","18281573692@163.com","526114","") 
+ [2015-12-31 17:23:34.400188]  level:INFO ==> insert into `users`(`user_name`,`password`,`create_at`,`image`,`email`) values("huandefe","526114",1451553814.3708742,"","19941222hb@gmail.com") 
+ [2015-12-31 17:23:56.013817]  level:INFO ==> insert into `users`(`create_at`,`password`,`email`,`image`,`user_name`) values(1451553835.9766414,"526114","19941222hb@gmail.com","","huandefe") 
+ [2015-12-31 17:33:09.445629]  level:INFO ==> insert into `users`(`image`,`user_name`,`create_at`,`email`,`password`) values("","xiaoming",1451554389.3905332,"19941222hb@qq.com","526114") 
+ [2015-12-31 17:34:26.715291]  level:INFO ==> insert into `needs`(`create_at`,`sovled_user_id`,`user_id`,`is_sovled`,`content`) values(1451554466.6608531,"",10,False,"I need someone buy us a chip") 
+ [2015-12-31 17:34:26.720265]  level:INFO ==> insert into `users`(`image`,`user_name`,`create_at`,`email`,`password`) values("","abi",1451554466.6607423,"9999999@qq.com","526114") 
+ [2015-12-31 17:35:12.084404]  level:INFO ==> insert into `needs`(`content`,`is_sovled`,`user_id`,`sovled_user_id`,`create_at`) values("I need someone buy us a chip",False,10,"",1451554512.0533934) 
+ [2015-12-31 17:37:27.196411]  level:INFO ==> insert into `needs`(`user_id`,`content`,`sovled_user_id`,`create_at`,`is_sovled`) values(10,"I need someone buy us a chip","",1451554647.1642566,False) 
+ [2015-12-31 17:38:17.117292]  level:INFO ==> insert into `needs`(`create_at`,`user_id`,`is_sovled`,`sovled_user_id`,`content`) values(1451554697.0893228,10,False,"","I need someone buy us a chip") 
+ [2015-12-31 17:38:20.922389]  level:INFO ==> insert into `needs`(`create_at`,`content`,`is_sovled`,`sovled_user_id`,`user_id`) values(1451554700.892172,"I need someone buy us a chip",False,"",10) 
+ [2015-12-31 17:38:22.880216]  level:INFO ==> insert into `needs`(`user_id`,`sovled_user_id`,`is_sovled`,`create_at`,`content`) values(10,"",False,1451554702.8424962,"I need someone buy us a chip") 
+ [2015-12-31 17:39:48.854699]  level:WARNING ==> 'Need' has not column 'is_solved'  
+ [2015-12-31 17:39:48.854883]  level:WARNING ==> 'Need' has not column 'solved_user_id'  
+ [2015-12-31 17:39:48.855107]  level:INFO ==> insert into `needs`(`sovled_user_id`,`content`,`is_sovled`,`create_at`,`user_id`) values("","I need someone buy us a chip",False,1451554788.8265257,10) 
+ [2015-12-31 17:40:32.491346]  level:WARNING ==> 'Need' has not column 'is_solved'  
+ [2015-12-31 17:40:32.491529]  level:WARNING ==> 'Need' has not column 'solved_user_id'  
+ [2015-12-31 17:40:32.491698]  level:INFO ==> insert into `needs`(`is_sovled`,`create_at`,`user_id`,`sovled_user_id`,`content`) values(False,1451554832.457496,10,0,"I need someone buy us a chip") 
+ [2015-12-31 17:53:38.014124]  level:INFO ==> insert into `needs`(`content`,`user_id`,`create_at`,`is_sovled`,`sovled_user_id`) values("I need someone buy us a chip",10,1451555617.9857464,False,0) 
+ [2015-12-31 17:55:09.918044]  level:INFO ==> insert into `needs`(`solved_user_id`,`create_at`,`is_solved`,`content`,`user_id`) values(0,1451555709.8855572,False,"I need someone buy us a chip",10) 
+ [2015-12-31 17:57:47.083125]  level:INFO ==> insert into `users`(`email`,`user_name`,`password`,`image`,`create_at`) values("hudehuide@qq.com","ab9999999","526114","",1451555867.0310273) 
+ [2015-12-31 17:57:47.086644]  level:INFO ==> insert into `needs`(`user_id`,`solved_user_id`,`create_at`,`content`,`is_solved`) values(9,0,1451555867.0311513,"I need someone take a mathemathic class for me ",False) 
