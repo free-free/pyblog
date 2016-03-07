@@ -4,17 +4,20 @@ from   datetime import datetime
 from   aiohttp import web
 import logging;logging.basicConfig(level=logging.INFO)
 from   tools.log import Log
+from   tools.httptools import Middleware,Route 
 
-def index(request):
-	return web.Response(body=b'<h1>God</h1>')
-
-
+@Route.get('/{user}')
+def index(user):
+	return '<h1>Hello %s</h1>'%user
 @asyncio.coroutine
 def init(loop):
-	app=web.Application(loop=loop)
-	app.router.add_route('GET','/',index)
+	print(Middleware.allmiddlewares())
+	app=web.Application(loop=loop,middlewares=Middleware.allmiddlewares())
+
+	Route.register_route(app)
+	print(Route._routes)
 	srv=yield from  loop.create_server(app.make_handler(),'127.0.0.1',8000)
-	logging.info('server started at http://121.42.169.254:80')
+	logging.info('server started at http://127.0.0.1:8000')
 	Log.info("server startd at http://127.0.0.1:8000")
 	return srv
 
@@ -22,4 +25,5 @@ if __name__=="__main__":
 	loop=asyncio.get_event_loop()
 	loop.run_until_complete(init(loop))
 	loop.run_forever()
+
 
