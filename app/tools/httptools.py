@@ -5,7 +5,7 @@ import functools
 import inspect
 import logging
 logging.basicConfig(level=logging.INFO)
-from log import Log
+from   .log import Log
 try:
 	import asyncio
 except ImportError:

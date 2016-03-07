@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-from tools.orm.column   import Column
-from tools.orm.field   import String,Int,Float,Text,Boolean
-from tools.orm.model   import Model
-from tools.database import *
-from tools.log     import *
+
+
+from   tools.orm.column  import Column
+from   tools.orm.field   import String,Int,Float,Text,Boolean
+from   tools.orm.model   import Model
+from   tools.database    import *
+from   tools.log         import *
 import time
 class User(Model):
 	__table__='users'

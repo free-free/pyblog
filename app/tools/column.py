@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-os.sys.path.append(os.path.join(os.path.dirname(__file__),'../..'))
 
-from tools.orm.field import *
+from tools.field import *
 class Column(object):
 	def __init__(self,c_type,**kw):
 		self.columnType=""

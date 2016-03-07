@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 import os
-os.sys.path.append(os.path.join(os.path.dirname(__file__),'../..'))
 
 from tools.log import *
-from tools.orm.field import *
-from tools.orm.column import *
+from tools.field import *
+from tools.column import *
 from tools.database import *
 from collections import OrderedDict
 import hashlib

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+
 import os
 import sys
-os.sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
 import asyncio
 import logging;logging.basicConfig(level=logging.ERROR)
 from   tools.log import *
