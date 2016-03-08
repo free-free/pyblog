@@ -7,18 +7,13 @@
 	3.aiomysql
 		pip3 install aiomysql
 项目目录结构:根目录为/srv/pyblog/
-	+ backup/    --->备份目录
-	|
-	+ conf/      --->配置文件目录
-	|
-	+ dist/	     --->打包目录
-	|
-	+ www/       --->web目录,存放.py文件
+	+ app/       --->web目录,存放.py文件
 	|	|
-	|	+ static/       --->存放静态文件
+	|	+ conf/       
 	|	|
 	|	+ templates/	--->存放模板文件
-	|
+	|	|
+	|	+ toosl/
 	+ LICENSE    --->代码LICENSE
 
 

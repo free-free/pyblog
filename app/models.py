@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 
-from   tools.orm.column  import Column
-from   tools.orm.field   import String,Int,Float,Text,Boolean
-from   tools.orm.model   import Model
+from   tools.column  import Column
+from   tools.field   import String,Int,Float,Text,Boolean
+from   tools.model   import Model
 from   tools.database    import *
 from   tools.log         import *
 import time

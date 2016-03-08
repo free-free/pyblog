@@ -6,9 +6,13 @@ import logging;logging.basicConfig(level=logging.INFO)
 from   tools.log import Log
 from   tools.httptools import Middleware,Route 
 
-@Route.get('/{user}')
-def index(user):
-	return '<h1>Hello %s</h1>'%user
+@Route.get('/')
+def index():
+	return '<h1>Hello</h1>'
+@Route.get('/user/{id}/{comment}')
+def user(id,comment):
+	return '<h1>%s,%s</h1>'%(id,comment)
+
 @asyncio.coroutine
 def init(loop):
 	print(Middleware.allmiddlewares())

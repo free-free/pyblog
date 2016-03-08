@@ -25,12 +25,28 @@ class BaseHandler(object):
 	'''
 	def __init__(self,handlerfn):
 		self._handler=handlerfn
+	def _param_generator(self,l):
+		def _generator():
+			for k in l:
+				yield k
+		return _generator
 	@asyncio.coroutine
 	def __call__(self,request):
+		print(request)
 		params={}
 		for k,v in request.match_info.items():
 			params[k]=v
-		response=yield from self._handler(params['user'])
+		args=self._handler.__args__
+		if len(args)==0:
+			response=yield from self._handler()
+		else:
+			param={}
+			print(request)
+			for k in args:
+				if k not in params:
+					raise NameError("Can't Found '%s'"%k)
+				param[k]=params[k]
+			response=yield from self._handler(**param)
 		return response
 
 class Middleware(object):
@@ -86,6 +102,7 @@ class Route(object):
 				return func(*args,**kw)
 			wrapper.__method__='GET'
 			wrapper.__url__=url
+			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper
 		return decorator
@@ -97,6 +114,7 @@ class Route(object):
 				return func(*args,**kw)
 			wrapper.__method__='POST'
 			wrapper.__url__=url
+			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper
 		return decorator
@@ -108,6 +126,7 @@ class Route(object):
 				return func(*args,**kw)
 			wrapper.__method__='PUT'
 			wrapper.__url__=url
+			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper
 		return decorator
@@ -119,6 +138,7 @@ class Route(object):
 				return func(*args,**kw)
 			wrapper.__method__='DELETE'
 			wrapper.__url__=url
+			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper
 		return decorator

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.5
 
 import os
 import sys
@@ -10,7 +10,7 @@ import traceback
 import sys
 try:
 	import aiomysql
-except Exception:
+except ImportError:
 	logging.error('aiomysql module not Found')
 	exit()
 @asyncio.coroutine
