@@ -12,7 +12,7 @@ from   tools.config import Config
 def index():
 	user=yield from  User.findall()
 	print(user)
-	return Template.render('index.html')
+	return Template('index.html').render()
 @Route.get('/user/{id}/comment/{comment}')
 def user(id,comment):
 	return '<h1>%s,%s</h1>'%(id,comment)
@@ -21,7 +21,7 @@ def user(id,comment):
 def init(loop):
 	print(Middleware.allmiddlewares())
 	app=web.Application(loop=loop,middlewares=Middleware.allmiddlewares())
-	Template(app)
+	Template.init(app)
 	Route.register_route(app)
 	pool=yield from create_pool(loop)
 	srv=yield from  loop.create_server(app.make_handler(),'127.0.0.1',8000)
