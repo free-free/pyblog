@@ -8,10 +8,9 @@ except ImportError:
 
 class Template(object):
 	def __init__(self,template):
-		pass	
-	@classmethod
-	def render(cls,template,**kw):
-		res={'__template__':template}
+		self._template=template
+	def render(cls,**kw):
+		res={'__template__':self._template}
 		for k,v in kw.items():
 			res[k]=v
 		return res
