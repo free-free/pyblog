@@ -106,7 +106,7 @@ class Model(dict,metaclass=ModelMetaclass):
 				sql=sql+self.__query__[k]
 				self.__query__[k]=''
 		record=yield from select(sql)
-		return self(**record)
+		return type(self)(**record[0])
 	@asyncio.coroutine
 	def update(self,args):
 		if not isinstance(args,dict):
