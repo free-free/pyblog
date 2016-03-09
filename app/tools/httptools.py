@@ -65,9 +65,15 @@ class Middleware(object):
 				res.content_type='text/html;charset=utf-8'
 				return res
 			elif isinstance(res,dict):
-				res=web.Response(boby=json.dumps(res))
-				res.content_type='application/json'
-				return res
+				template=res.get('__template__')
+				if template is None:
+					res=web.Response(body=json.dumps(res,ensure_ascii=False,default=lambda x:x.__dict__).encode("utf-8"))
+					res.content_type='application/json;charset=utf-8'
+					return res
+				else:
+					res=web.Response(body=app['__templating__'].get_template(template).render(**res).encode("utf-8"))
+					res.content_type='text/html;charset=utf-8'
+					return res
 			else:
 				return res
 		return _response

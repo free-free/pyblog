@@ -85,7 +85,7 @@ class Model(dict,metaclass=ModelMetaclass):
 	def __getattr__(self,key):
 		if key in self:
 			return self[key]
-
+	@classmethod
 	@asyncio.coroutine
 	def findall(self):		
 		sql='select %s from `%s`'%(self.__fields__['fields'],self.__table__)
@@ -94,7 +94,8 @@ class Model(dict,metaclass=ModelMetaclass):
 			sql=sql+' %s '%self.__query__[k]
 			self.__query__[k]=''
 		records=yield from select(sql)
-		return [self(**k) for k in records]
+		return [Model(**k) for k in records]
+	@classmethod
 	@asyncio.coroutine
 	def findone(self,n=None):
 		sql='select %s from `%s` '%(self.__fields__['fields'],self.__table__)
@@ -107,7 +108,7 @@ class Model(dict,metaclass=ModelMetaclass):
 				sql=sql+self.__query__[k]
 				self.__query__[k]=''
 		record=yield from select(sql)
-		return self(**record)
+		return Model(**record)
 	@asyncio.coroutine
 	def update(self,args):
 		if not isinstance(args,dict):
@@ -241,10 +242,4 @@ class User(Model):
 	age=Column(Int(1),default=12)
 	email=Column(String(20),unique_key=True)
 if __name__=='__main__':
-	s=User()
-	s.name='hudeaio'
-	s.age=12
-	s.email='13131'
-	s.id=12
-	print(s.save())
-
+	pass

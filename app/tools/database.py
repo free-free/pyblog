@@ -5,6 +5,7 @@ import sys
 import asyncio
 import logging;logging.basicConfig(level=logging.ERROR)
 from   tools.log import *
+from   tools.config import Config
 import re
 import traceback
 import sys
@@ -17,11 +18,11 @@ except ImportError:
 def create_pool(loop,**kw):
 	global pool
 	pool=yield from aiomysql.create_pool(
-				host=kw.get('host','localhost'),
-				port=kw.get('port',3306),
-				user=kw.get('user','root'),
-				password=kw['password'],
-				db=kw['db'],
+				host=kw.get('host',Config.database.host),
+				port=kw.get('port',Config.database.port),
+				user=kw.get('user',Config.database.user),
+				password=kw.get('password',Config.database.password),
+				db=kw.get('database',Config.database.database),
 				loop=loop
 	)
 
@@ -401,7 +402,6 @@ class DB(dict):
 			return self[key]
 		return None
 if __name__=='__main__':
-	"""
 	async def test(loop):
 		await create_pool(loop,db='pyblog',password='526114')
 		re=await select('desc users')
@@ -410,7 +410,7 @@ if __name__=='__main__':
 	loop.run_until_complete(asyncio.wait([test(loop)]))
 	loop.close()
 	sys.exit(0)
-	"""
+	r'''
 	db=DB()
 	db2=DB()
 	#print(db.insert('insert into user(name,age,email) values(:name,:age,:email)',{'email':'2121','age':21,'name':'dsada'}))
@@ -440,4 +440,5 @@ if __name__=='__main__':
 	#print(db.table('users').join('needs','users.id','=','needs.solved_user_id').update({'is_solved':True}))
 	#print(db.table('users').leftjoin('needs','users.id','=','needs.solved_user_id').get())
 	print(db.table('users').fields(['id','user_name']).union(db2.table('users').fields(['id','user_name']).where("id",'>',1)).get())
-
+	'''
+	
