@@ -9,13 +9,13 @@ except ImportError:
 class Template(object):
 	def __init__(self,template):
 		self._template=template
-	def render(cls,**kw):
+	def render(self,**kw):
 		res={'__template__':self._template}
 		for k,v in kw.items():
 			res[k]=v
 		return res
 	@classmethod
-	def init(self,app,**kw):
+	def init(cls,app,**kw):
 		options=dict(
 			autoescape=kw.get("autoescape",True),
 			block_start_string=kw.get("block_start_string",'{%'),
