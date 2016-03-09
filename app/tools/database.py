@@ -76,6 +76,35 @@ class DB(dict):
 				db=kw.get('db',Config.database.database),
 				loop=cls.__loop
 		)
+	@asyncio.coroutine
+	def _select(self,sql,size=None):
+		Log.info(sql)
+		with (yield from type(self).__pool) as conn:
+			cursor=yield from conn.cursor(aiomysql.DictCursor)
+			yield from cursor.execute(sql)
+			if size:
+				records=yield from cursor.fetchmany(int(None))
+			else:
+				records=yield from cursor.fetchall()
+			yield from cursor.close()
+		return records
+	@asyncio.coroutine
+	def _execute(self,sql,autocommit=True):
+		Log.info(sql)
+		with (yield from type(self).__pool) as conn:
+			if not autocommit:
+				conn.begin()
+			try:	
+				cursor=yield from conn.cursor()
+				yield from cursor.execute(sql)
+				affectedrow=cursor.close()
+				if not autocommit:
+					conn.commit()
+			except BaseException as e:
+				if not autocommit:
+					conn.rollback()
+				raise e
+		return affectedrow
 	@asyncio.coroutine	
 	def connection(self,conn):
 		type(self).__loop=yield from aiomysql.create_pool(
