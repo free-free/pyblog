@@ -85,7 +85,6 @@ class Model(dict,metaclass=ModelMetaclass):
 	def __getattr__(self,key):
 		if key in self:
 			return self[key]
-	@classmethod
 	@asyncio.coroutine
 	def findall(self):		
 		sql='select %s from `%s`'%(self.__fields__['fields'],self.__table__)
@@ -94,8 +93,7 @@ class Model(dict,metaclass=ModelMetaclass):
 			sql=sql+' %s '%self.__query__[k]
 			self.__query__[k]=''
 		records=yield from select(sql)
-		return [Model(**k) for k in records]
-	@classmethod
+		return [type(self)(**k) for k in records]
 	@asyncio.coroutine
 	def findone(self,n=None):
 		sql='select %s from `%s` '%(self.__fields__['fields'],self.__table__)
@@ -108,7 +106,7 @@ class Model(dict,metaclass=ModelMetaclass):
 				sql=sql+self.__query__[k]
 				self.__query__[k]=''
 		record=yield from select(sql)
-		return Model(**record)
+		return self(**record)
 	@asyncio.coroutine
 	def update(self,args):
 		if not isinstance(args,dict):
