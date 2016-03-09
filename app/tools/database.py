@@ -60,19 +60,33 @@ def execute(sql,autocommit=True):
 		return affectedrow			
 
 class DB(dict):
-	__connectionPool=""
+	__pool=""
+	__loop=""
 	def __init__(self,**kw):
 		super().__init__(**kw)
 	@classmethod
+	@asyncio.coroutine
 	def createpool(cls,loop,**kw):
-		cls.__connectionPool=yield from aiomysql.create_pool(
-				host=kw.get('host','localhost'),
-				port=kw.get('port',3306),
-				user=kw.get('user','root'),
-				password=kw.get('password'),
-				db=kw.get('db','test'),
-				loop=loop
-		)	
+		cls.__loop=loop
+		cls.__pool=yield from aiomysql.create_pool(
+				host=kw.get('host',Config.database.host),
+				port=kw.get('port',Config.database.port),
+				user=kw.get('user',Config.database.user),
+				password=kw.get('password',Config.database.password),
+				db=kw.get('db',Config.database.database),
+				loop=cls.__loop
+		)
+	@asyncio.coroutine	
+	def connection(self,conn):
+		type(self).__loop=yield from aiomysql.create_pool(
+				host=Config.database.connection(conn).host,	
+				port=Config.database.connection(conn).port,
+				user=Config.database.connection(conn).user,
+				password=Config.database.connection(conn).password,
+				db=Config.database.connection(conn).database,	
+				loop=cls.__loop
+				)
+		return self
 	def __fillparam(self,sql,args):
 		if not args==None:
 			if isinstance(args,list):
