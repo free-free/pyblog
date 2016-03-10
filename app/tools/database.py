@@ -63,18 +63,18 @@ class DB(dict):
 	__pool=""
 	__loop=""
 	def __init__(self,**kw):
-		super().__init__(**kw)
+		super(DB,self).__init__(**kw)
 	@classmethod
 	@asyncio.coroutine
 	def createpool(cls,loop,**kw):
-		cls.__loop=loop
-		cls.__pool=yield from aiomysql.create_pool(
+		DB.__loop=loop
+		DB.__pool=yield from aiomysql.create_pool(
 				host=kw.get('host',Config.database.host),
 				port=kw.get('port',Config.database.port),
 				user=kw.get('user',Config.database.user),
 				password=kw.get('password',Config.database.password),
 				db=kw.get('db',Config.database.database),
-				loop=cls.__loop
+				loop=DB.__loop
 		)
 	@asyncio.coroutine
 	def _select(self,sql,size=None):
@@ -83,7 +83,7 @@ class DB(dict):
 			cursor=yield from conn.cursor(aiomysql.DictCursor)
 			yield from cursor.execute(sql)
 			if size:
-				records=yield from cursor.fetchmany(int(None))
+				records=yield from cursor.fetchmany(int(size))
 			else:
 				records=yield from cursor.fetchall()
 			yield from cursor.close()
@@ -446,8 +446,9 @@ class DB(dict):
 		return None
 if __name__=='__main__':
 	async def test(loop):
-		await create_pool(loop,db='pyblog',password='526114')
-		re=await select('desc users')
+		#await create_pool(loop,db='pyblog',password='526114')
+		await DB.createpool(loop)
+		re=await DB()._select('desc users')
 		print(re)
 	loop=asyncio.get_event_loop()
 	loop.run_until_complete(asyncio.wait([test(loop)]))
