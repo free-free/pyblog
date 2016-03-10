@@ -65,6 +65,7 @@ class ModelMetaclass(type):
 class Model(dict,metaclass=ModelMetaclass):
 	def __init__(self,**kw):
 		columns=dict()
+		type(self).db=DB()
 		for column_name in self.__columns__:
 			columns[column_name]=self.__columns__[column_name]['constraints']['default']
 		for  name,value in kw.items():
@@ -92,7 +93,8 @@ class Model(dict,metaclass=ModelMetaclass):
 		for k in ['where','order','limit','group','having']:
 			sql=sql+' %s '%self.__query__[k]
 			self.__query__[k]=''
-		records=yield from select(sql)
+		#records=yield from select(sql)
+		records=yield from self.db._select(sql)
 		return [type(self)(**k) for k in records]
 	@asyncio.coroutine
 	def findone(self,n=None):
@@ -105,7 +107,8 @@ class Model(dict,metaclass=ModelMetaclass):
 			for k in ['where','order','limit','group','having']:
 				sql=sql+self.__query__[k]
 				self.__query__[k]=''
-		record=yield from select(sql)
+		#record=yield from select(sql)
+		record=yield from self.db._select(sql)
 		return type(self)(**record[0])
 	@asyncio.coroutine
 	def update(self,args):
@@ -123,7 +126,8 @@ class Model(dict,metaclass=ModelMetaclass):
 		if self.__query__['where']:
 			sql=sql+self.__query__['where']
 			self.__query__['where']=''
-		return (yield from execute(sql))
+		#return (yield from execute(sql))	
+		return (yield from self.db._execute(sql))
 	@asyncio.coroutine
 	def save(self):
 		for cname in self.__columns__.keys():
@@ -158,7 +162,9 @@ class Model(dict,metaclass=ModelMetaclass):
 		for k in ['where','order','limit','group','having']:
 			sql=sql+self.__query__[k]
 			self.__query__[k]=''
-		result=yield from execute(sql)
+		#result=yield from execute(sql)
+		result=yield from self.db._execute(sql)
+		return result
 	@asyncio.coroutine
 	def delete(self,n=None):
 		sql='delete from `%s`'%self.__table__
@@ -168,7 +174,8 @@ class Model(dict,metaclass=ModelMetaclass):
 			if self.__query__['where']:
 				sql=sql+self.__query__['where']
 				self.__query__['where']=''
-		return (yield from execute(sql))
+		#return (yield from execute(sql))
+		return (yield from self.db._execute(sql))
 	@asyncio.coroutine
 	def destroy(self,l):
 		sql=''
@@ -176,7 +183,8 @@ class Model(dict,metaclass=ModelMetaclass):
 			sql='delet from `%s` where '%self.__table__
 			l=map(lambda x:'`%s` = %s'%(self.__primary_key__,x),l)
 			sql=sql+' or '.join(l)
-		return (yield from execute(sql))
+		#return (yield from execute(sql))
+		return (yield from self.db._execute(sql))
 	def fields(self,field):
 		if isinstance(field,list):
 			for cname in field:
