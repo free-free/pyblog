@@ -10,7 +10,7 @@ from tools.log import Log
 from tools.httptools import Middleware,Route
 from tools.template  import Template
 from tools.config import Config
-from tools.database import create_pool
+from tools.database import create_pool,DB
 logging.basicConfig(level=logging.INFO)
 class Application(web.Application):
 	def __init__(self):
@@ -23,7 +23,8 @@ class Application(web.Application):
 	def get_server(self,addr,port):	
 		Template.init(self)
 		Route.register_route(self)
-		pool=yield from create_pool(self._loop)
+		yield from DB.createpool(self._loop)
+		#pool=yield from create_pool(self._loop)
 		srv=yield from self._loop.create_server(self.make_handler(),addr,port)
 		logging.info("server start at http://%s:%s"%(addr,port))
 		Log.info("server start at http://%s:%s"%(addr,port))
