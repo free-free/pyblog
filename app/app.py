@@ -13,8 +13,6 @@ def user(id,comment):
 	return '<h1>%s,%s</h1>'%(id,comment)
 
 if __name__=="__main__":
-	loop=asyncio.get_event_loop()
-	app=Application(loop)
-	loop.run_until_complete(app.run())
-	loop.run_forever()
+	app=Application()
+	app.run()
 
