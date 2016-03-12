@@ -34,6 +34,7 @@ class BaseHandler(object):
 	def __call__(self,request):
 		print(request)
 		params={}
+		print(request.match_info)
 		for k,v in request.match_info.items():
 			params[k]=v
 		args=self._handler.__args__
