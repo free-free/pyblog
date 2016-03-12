@@ -8,6 +8,7 @@ from tools.column import *
 from tools.database import *
 from collections import OrderedDict
 import hashlib
+import re
 try:
 	import aiomysql
 except ImportError:
@@ -121,7 +122,11 @@ class Model(dict,metaclass=ModelMetaclass):
 				raise AttributeError(info)
 		setitems=[]
 		for k,v in args.items():
-			setitems.append('`%s`=%s'%(k,v))	
+			m=re.match(r'^[a-zA-Z\w\s]*(char|test)[\(\)0-9a-zA-Z\w\s]*$',self.__columns__[k]['type'])
+			if m:
+				setitems.append('`%s`="%s"'%(k,v))
+			else:
+				setitems.append('`%s`=%s'%(k,v))	
 		sql='update `%s` '%self.__table__+' set %s '%(','.join(setitems))
 		if self.__query__['where']:
 			sql=sql+self.__query__['where']
