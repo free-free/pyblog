@@ -14,6 +14,7 @@ try:
 except ImportError:
 	logging.error('aiomysql module not Found')
 	exit()
+r'''
 @asyncio.coroutine
 def create_pool(loop,**kw):
 	global pool
@@ -45,41 +46,41 @@ def execute(sql,autocommit=True):
 	Log.info(sql)
 	with (yield from pool) as conn:
 		if not autocommit:
-			conn.begin()
+			yield from conn.begin()
 		try:
 			cursor=yield from conn.cursor()
 			yield from cursor.execute(sql)
 			affectedrow=cursor.rowcount
 			yield from cursor.close()
 			if not autocommit:
-				conn.commit()
+				yield from conn.commit()
 		except BaseException as e:
 			if not autocommit:
-				conn.rollback()
+				yield from conn.rollback()
 			raise e
 		return affectedrow			
-
+'''
 class DB(dict):
-	__pool=""
-	__loop=""
+	_pool=""
+	_loop=""
 	def __init__(self,**kw):
 		super(DB,self).__init__(**kw)
 	@classmethod
 	@asyncio.coroutine
 	def createpool(cls,loop,**kw):
-		DB.__loop=loop
-		DB.__pool=yield from aiomysql.create_pool(
+		cls._loop=loop
+		cls._pool=yield from aiomysql.create_pool(
 				host=kw.get('host',Config.database.host),
 				port=kw.get('port',Config.database.port),
 				user=kw.get('user',Config.database.user),
 				password=kw.get('password',Config.database.password),
 				db=kw.get('db',Config.database.database),
-				loop=DB.__loop
+				loop=cls._loop
 		)
 	@asyncio.coroutine
 	def _select(self,sql,size=None):
 		Log.info(sql)
-		with (yield from type(self).__pool) as conn:
+		with (yield from type(self)._pool) as conn:
 			cursor=yield from conn.cursor(aiomysql.DictCursor)
 			yield from cursor.execute(sql)
 			if size:
@@ -89,31 +90,34 @@ class DB(dict):
 			yield from cursor.close()
 		return records
 	@asyncio.coroutine
-	def _execute(self,sql,autocommit=True):
+	def _execute(self,sql,autocommit=False):
 		Log.info(sql)
-		with (yield from type(self).__pool) as conn:
+		with (yield from type(self)._pool) as conn:
 			if not autocommit:
-				conn.begin()
+				yield from conn.begin()
+			else:
+				yield from conn.autocommit(True)
 			try:	
 				cursor=yield from conn.cursor()
 				yield from cursor.execute(sql)
-				affectedrow=cursor.close()
+				affectedrow=cursor.rowcount
+				yield from cursor.close()
 				if not autocommit:
-					conn.commit()
+					yield from conn.commit()
 			except BaseException as e:
 				if not autocommit:
-					conn.rollback()
+					yield from conn.rollback()
 				raise e
 		return affectedrow
 	@asyncio.coroutine	
 	def connection(self,conn):
-		type(self).__loop=yield from aiomysql.create_pool(
+		type(self)._pool=yield from aiomysql.create_pool(
 				host=Config.database.connection(conn).host,	
 				port=Config.database.connection(conn).port,
 				user=Config.database.connection(conn).user,
 				password=Config.database.connection(conn).password,
 				db=Config.database.connection(conn).database,	
-				loop=cls.__loop
+				loop=type(self)._loop
 				)
 		return self
 	def __fillparam(self,sql,args):
@@ -448,15 +452,15 @@ if __name__=='__main__':
 	async def test(loop):
 		#await create_pool(loop,db='pyblog',password='526114')
 		await DB.createpool(loop)
-		re=await DB()._select('desc users')
-		print(re)
+		back=await DB()._execute('insert into `users`(`password`,`create_at`,`user_name`,`email`,`image`) values("950a97e2bed4fc741df8ee71d0d20ff5",1457709044.22579,"coderjell","18281573692@163.com","")')
+		print(back)
 	loop=asyncio.get_event_loop()
 	loop.run_until_complete(asyncio.wait([test(loop)]))
-	loop.close()
+	loop.run_forever()
 	sys.exit(0)
-	r'''
-	db=DB()
-	db2=DB()
+
+	#db=DB()
+	#db2=DB()
 	#print(db.insert('insert into user(name,age,email) values(:name,:age,:email)',{'email':'2121','age':21,'name':'dsada'}))
 	#print(db.update('update tb set name=:name where id=:id',{'id':1,'name':'xiaoming'}))
 	#print(db.select('select * from user where id=:id',{'id':3}))
@@ -483,6 +487,5 @@ if __name__=='__main__':
 	#print(db.table("users").fields(['users.id','needs.*']).join('needs','users.id','=','needs.solved_user_id').get())
 	#print(db.table('users').join('needs','users.id','=','needs.solved_user_id').update({'is_solved':True}))
 	#print(db.table('users').leftjoin('needs','users.id','=','needs.solved_user_id').get())
-	print(db.table('users').fields(['id','user_name']).union(db2.table('users').fields(['id','user_name']).where("id",'>',1)).get())
-	'''
+	#print(db.table('users').fields(['id','user_name']).union(db2.table('users').fields(['id','user_name']).where("id",'>',1)).get())
 	
