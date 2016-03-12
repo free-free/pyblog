@@ -6,4 +6,4 @@ __pycache__/
 /app/tools/__pycache__/
 /app/conf/__pycache__/
 /log/
-
+/app/templates/
