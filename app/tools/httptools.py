@@ -23,7 +23,8 @@ class BaseHandler(object):
 			basic handler process url paramter
 	
 	'''
-	def __init__(self,handlerfn):
+	def __init__(self,app,handlerfn):
+		self._app=app
 		self._handler=handlerfn
 	def _param_generator(self,l):
 		def _generator():
@@ -32,21 +33,22 @@ class BaseHandler(object):
 		return _generator
 	@asyncio.coroutine
 	def __call__(self,request):
-		print(request)
 		params={}
-		print(request.match_info)
-		for k,v in request.match_info.items():
-			params[k]=v
+		post=yield from request.post()
 		args=self._handler.__args__
 		if len(args)==0:
 			response=yield from self._handler()
 		else:
 			param={}
-			print(request)
 			for k in args:
-				if k not in params:
+				if k not in request.match_info and k not in post and k not in request.GET:
 					raise NameError("Can't Found '%s'"%k)
-				param[k]=params[k]
+				if k in request.match_info:
+					param[k]=request.match_info[k]
+				if k in post:
+					param[k]=post[k]
+				if k in request.GET:
+					param[k]=request.GET[k]
 			response=yield from self._handler(**param)
 		return response
 
@@ -158,7 +160,7 @@ class Route(object):
 				raise ValueError('_path or _method not defined in %s.'%str(handler))
 			if not asyncio.iscoroutinefunction(handler) and not inspect.isgeneratorfunction(handler):
 				handler=asyncio.coroutine(handler)
-			app.router.add_route(_method,_path,BaseHandler(handler))
+			app.router.add_route(_method,_path,BaseHandler(app,handler))
 			#handler('Jell')
 			#print(handler.__method__)
 			#print(handler.__url__)
