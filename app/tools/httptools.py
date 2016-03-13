@@ -16,8 +16,6 @@ try:
    from aiohttp import web
 except ImportError:
 	logging.error("Can't Found Module aiohttp")
-
-
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -51,7 +49,6 @@ class BaseHandler(object):
 					param[k]=request.GET[k]
 			response=yield from self._handler(**param)
 		return response
-
 class Middleware(object):
 	def response(app,handler):
 		@asyncio.coroutine
