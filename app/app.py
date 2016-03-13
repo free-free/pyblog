@@ -12,17 +12,8 @@ def index():
 @Route.get('/user/{id}/comment/{comment}')
 def user(id,comment):
 	u=User()
-	r'''
-	u.user_name="coder"
-	u.email='18281573692@163.com'
-	md5=hashlib.md5()
-	md5.update(b'huamgbiao526114')
-	u.password=md5.hexdigest()
-	yield from u.save()
-	'''
-	yield from u.where('id','=',1).update({'user_name':'hello'})
-	return '<h1>%s,%s</h1>'%(id,comment)
-
+	user=yield from u.findone()
+	return Template('index.html').render(user=user)
 @Route.get('/user/register')
 def get_register():
 	return Template("register.html").render()
@@ -30,10 +21,11 @@ def get_register():
 def register(username,email,password):
 	u=User()
 	u.user_name=username
-	
-	u.password=hashlib.md4().update(password).hexdigest()
+	md5=hashlib.md5()
+	md5.update(password.encode('utf-8'))
+	u.password=md5.hexdigest()
 	u.email=email
-	u.save()
+	yield from u.save()
 	return '<h1>OK</h1>'
 if __name__=="__main__":
 	app=Application()
