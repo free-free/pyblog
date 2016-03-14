@@ -142,10 +142,10 @@ class RedisSession(Session):
 		else:
 			self._session_id=session_id
 		self._redis=redis.Redis(connection_pool=type(self)._pool)
-		self[self._session_id]=self._reids.hgetall(self._session_id)
+		self[self._session_id]=self._redis.hgetall(self._session_id)
 		if not self[self._session_id]:
 			self[self._session_id]={}
-		super(RedisSession,self).__init__(self._sessoin_id)
+		super(RedisSession,self).__init__(self._session_id)
 	def get(self,sname):
 		return self[self._session_id].get(sname)
 	def set(self,sname,svalue):
@@ -177,7 +177,7 @@ class SessionManager(object):
 	def get_mongosession_driver(self,config=None):
 		type(self)._drivers['mongo']=MongoSession(self._session_id,config)
 		return type(self)._drivers['mongo']
-	def get_redissesssoin_driver(self,config=None):
+	def get_redissession_driver(self,config=None):
 		type(self)._drivers['redis']=RedisSession(self._session_id,config)
 		return type(self)._drivers['redis']
 	def get_filesession_driver(self,config=None):
@@ -187,7 +187,7 @@ class SessionManager(object):
 		if driver_name in self._drivers:		
 			self._specific_driver=self._drivers[driver_name]
 		else:
-			self._drivers[driver_name]= eval('self.get_%ssession_driver(%s'%(driver_name,config))
+			self._drivers[driver_name]= eval('self.get_%ssession_driver(%s)'%(driver_name,config))
 			self._specific_driver=self._drivers[driver_name]
 		return self
 	def get(self,sname):
@@ -218,4 +218,8 @@ if __name__=='__main__':
 	filesession.set('name','huangbiao')
 	filesession.set('email','19941222hb@gmail.com')
 	filesession.save()
+	redissession=filesession.driver('redis')
+	redissession.set('name','huangbiao')
+	redissession.set('email','18281573692@163.com')
+	redissession.save()
 
