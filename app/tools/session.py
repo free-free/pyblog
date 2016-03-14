@@ -51,14 +51,17 @@ class FileSession(Session):
 		if not os.path.exists(self._session_dir):
 			os.mkdir(self._session_dir)
 		if session_id==None:
-			self._session_id=str(uuid.uuid1().hex)
-			self._session_file=os.path.join(self._session_dir,self._session_id)
+			self._session_id=self._generate_session_id()
 		else:
 			self._session_id=session_id
-			self._session_file=os.path.join(self._session_dir,session_id)
+		self._session_file=os.path.join(self._session_dir,self._session_id)
 		if os.path.exists(self._session_file):	
 			with open(self._session_file,'r',errors='ignore',encoding='utf-8') as f:
 				self[self._session_id]=json.load(f)
+			expire=self[self._session_id].get('expire',None)
+			if expire<int(time.time()):
+				os.remove(self._session_file)
+				self[self._session_id]={}
 		else:
 			self[self._session_id]={}
 		super(FileSession,self).__init__(self._session_id)
@@ -67,6 +70,8 @@ class FileSession(Session):
 	def get(self,sname):
 		return self[self._session_id].get(sname,None)
 	def save(self,expire=None):
+		if expire:
+			self[self._session_id]['expire']=int(time.time())+int(expire)
 		with open(self._session_file,'w',errors='ignore',encoding='utf-8') as f:
 			json.dump(self[self._session_id],f)
 	def renew(self,session_id=None):
@@ -78,6 +83,10 @@ class FileSession(Session):
 		if os.path.exists(self._session_file):
 			with open(self._session_file,'r',errors='ignore',encoding='utf-8') as f:
 				self[self._session_id]=json.load(f)
+			expire=self[self._session_id].get('expire',None)
+			if expire<int(time.time()):
+				os.remove(self._session_file)
+				self[self._session_id]={}
 		else:
 			self[self._session_id]={}
 		return self
