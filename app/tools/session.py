@@ -59,7 +59,7 @@ class FileSession(Session):
 			with open(self._session_file,'r',errors='ignore',encoding='utf-8') as f:
 				self[self._session_id]=json.load(f)
 			expire=self[self._session_id].get('expire',None)
-			if expire<int(time.time()):
+			if int(expire)<int(time.time()):
 				os.remove(self._session_file)
 				self[self._session_id]={}
 		else:
@@ -93,7 +93,7 @@ class FileSession(Session):
 
 class MongoSession(Session):
 	r'''
-		session driver for mongodb
+		mongodb driver for session
 	'''
 	def __init__(self,session_id=None,config=None):
 		if not config:
@@ -109,8 +109,13 @@ class MongoSession(Session):
 		else:
 			self._session_id=session_id
 		self[self._session_id]=self._mongo.find_one({'session_id':self._session_id})
+		expire=self[self._session_id].get('expire',None)
 		if not self[self._session_id]:
 			self[self._session_id]={}
+		else:
+			if expire:
+				if int(expire)<int(time.time()):
+					self[self._session_id]={}
 		super(MongoSession,self).__init__(session_id)
 	def get(self,sname):
 		return self[self._session_id].get(sname)
@@ -122,19 +127,23 @@ class MongoSession(Session):
 		else:
 			self._session_id=session_id
 		self[self._session_id]=self._mongo.find_one({'session_id':self._session_id})
+		expire=self[self._session_id].get('expire',None)
 		if not self[self._session_id]:
 			self[self._session_id]={}
+		else:
+			if expire:
+				if int(expire)<int(time.time()):
+					self[self._session_id]={}
 		return self
 	def save(self,expire=None):
-		if not expire:
-			pass
-		else:
-			self._mongo.update_one({'session_id':self._session_id},{"$set":self[self._session_id]})
+		if  expire:
+			self[self._session_id]['expire']=int(expire)+int(time.time())
+		self._mongo.update_one({'session_id':self._session_id},{"$set":self[self._session_id]},upsert=True)
 
 
 class RedisSession(Session):
 	r'''
-		session driver for redis
+		redis driver for session
 	'''
 	_pool=None
 	def __init__(self,session_id=None,config=None):
@@ -156,7 +165,7 @@ class RedisSession(Session):
 			self[self._session_id]={}
 		super(RedisSession,self).__init__(self._session_id)
 	def get(self,sname):
-		return self[self._session_id].get(sname)
+		return self[self._session_id].get(sname.encode('utf-8'))
 	def set(self,sname,svalue):
 		self[self._session_id][sname]=svalue
 	def renew(self,session_id=None):
@@ -180,9 +189,12 @@ class SessionManager(object):
 	_drivers={}
 	_default_driver=None
 	_specific_driver=None
-	def __init__(self,session_id=None,config=None):
+	def __init__(self,session_id=None,config=None,driver=None):
 		self._session_id=session_id
-		self._default_driver=FileSession(self._session_id)
+		if not driver:
+			self._default_driver=self.get_filesession_driver(config)
+		else:
+			self._default_driver=eval('self.get_%ssession_driver(%s)'%(driver,config))
 	def get_mongosession_driver(self,config=None):
 		type(self)._drivers['mongo']=MongoSession(self._session_id,config)
 		return type(self)._drivers['mongo']
@@ -216,13 +228,19 @@ class SessionManager(object):
 		else:
 			self._specific_driver.save(expire)
 			self._specific_driver=None
+	def renew(self,session_id=None):
+		if not self._specific_driver:
+			self._default_driver.renew(session_id)
+		else:
+			self._specific_driver.renew(session_id)
 	@property
 	def session_id(self):
 		if not self._specific_driver:
 			return self._default_driver.session_id
 		else:
-			return self._specifci_driver.session_id
+			return self._specific_driver.session_id
 if __name__=='__main__':
+	r'''
 	filesession=SessionManager()
 	filesession.set('name','huangbiao')
 	filesession.set('email','19941222hb@gmail.com')
@@ -230,5 +248,18 @@ if __name__=='__main__':
 	redissession=filesession.driver('redis')
 	redissession.set('name','huangbiao')
 	redissession.set('email','18281573692@163.com')
+	print(redissession.session_id)
 	redissession.save()
-
+	'''
+	r'''
+	redis=SessionManager(driver='redis')
+	redis.set('name','jell')
+	redis.set('email','1462086237@qq.com')
+	redis.save(30)
+	'''
+	'''
+	redis=SessionManager('55e5bf8ce9fc11e5b902080027116c59',driver='redis')
+	print(redis.get('name'))
+	print(redis.get('email'))
+	'''
+	
