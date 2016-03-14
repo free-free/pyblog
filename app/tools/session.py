@@ -5,7 +5,9 @@ import time
 import os
 import json
 import logging
+
 logging.basicConfig(level=logging.ERROR)
+
 try:
 	import redis
 except ImportError:
@@ -24,12 +26,10 @@ class Session(dict):
 		super(Session,self).__init__()
 	def _generate_session_id(self):
 		return str(uuid.uuid1().hex)	
-	def __getattr__(self,k):
-		if k in self[self._session_id]:
-			return self[self._session_id].get(k)
-		return None
-	def __setattr__(self,k,v):
-		self[self._session_id][k]=v
+	#def __getattr__(self,k):
+	#	return self[self._session_id].get(k)
+	#def __setattr__(self,k,v):
+	#	self[self._session_id][k]=v
 	@property
 	def session_id(self):
 		return self._session_id
@@ -68,7 +68,7 @@ class FileSession(Session):
 		return self[self._session_id].get(sname,None)
 	def save(self,expire=None):
 		with open(self._session_file,'w',errors='ignore',encoding='utf-8') as f:
-			json.dump(self[self._session_if],f)
+			json.dump(self[self._session_id],f)
 	def renew(self,session_id=None):
 		if session_id==None:
 			self._session_id=self._generate_session_id()
@@ -105,8 +105,8 @@ class MongoSession(Session):
 		super(MongoSession,self).__init__(session_id)
 	def get(self,sname):
 		return self[self._session_id].get(sname)
-	def set(self.sname,svalue):
-		return self[self._session_id][sname]=svalue
+	def set(self,sname,svalue):
+		self[self._session_id][sname]=svalue
 	def renew(self,session_id):
 		if not session_id:
 			self._session_id=self._generate_session_id()
@@ -136,7 +136,7 @@ class RedisSession(Session):
 			if not isinstance(config,dict):
 				raise TypeError("redis config must be a dict type")
 			if not type(self)._pool:
-				type(self)._pool=redis.ConnectionPool(host=config['host'],port=config['port'],db=config['db']
+				type(self)._pool=redis.ConnectionPool(host=config['host'],port=config['port'],db=config['db'])
 		if session_id==None:
 			self._session_id=self._generate_session_id()
 		else:
@@ -173,6 +173,7 @@ class SessionManager(object):
 	_specific_driver=None
 	def __init__(self,session_id=None,config=None):
 		self._session_id=session_id
+		self._default_driver=FileSession(self._session_id)
 	def get_mongosession_driver(self,config=None):
 		type(self)._drivers['mongo']=MongoSession(self._session_id,config)
 		return type(self)._drivers['mongo']
@@ -206,10 +207,15 @@ class SessionManager(object):
 		else:
 			self._specific_driver.save(expire)
 			self._specific_driver=None
-	@propery
+	@property
 	def session_id(self):
 		if not self._specific_driver:
 			return self._default_driver.session_id
 		else:
 			return self._specifci_driver.session_id
-	
+if __name__=='__main__':
+	filesession=SessionManager()
+	filesession.set('name','huangbiao')
+	filesession.set('email','19941222hb@gmail.com')
+	filesession.save()
+
