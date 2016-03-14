@@ -10,7 +10,11 @@ try:
 	import redis
 except ImportError:
 	logging.error("Can't import 'redis' module")
-
+try:
+	import pymongo
+except ImportError:
+	logging.error("Can't import 'pymongo' module")
+from pymongo import MongoClient
 class Session(dict):
 	def __init__(self,session_id=None):
 		if session_id==None:
@@ -79,8 +83,44 @@ class FileSession(Session):
 		return self
 
 class MongoSession(Session):
+	r'''
+		session driver for mongodb
+	'''
 	def __init__(self,session_id=None,config=None):
+		if not config:
+			client=MongoClient('localhost',27017)
+			self._mongo=client['session_database']['session']
+		else:
+			if not isinstance(config,dict):
+				raise TypeError("mongo session config must be dict type")
+			client=MongoClient(config['host'],config['port'])
+			self._mongo=client[config['db']][config['collection']]
+		if session_id==None:
+			self._session_id=self._generate_session_id()
+		else:
+			self._session_id=session_id
+		self[self._session_id]=self._mongo.find_one({'session_id':self._session_id})
+		if not self[self._session_id]:
+			self[self._session_id]={}
 		super(MongoSession,self).__init__(session_id)
+	def get(self,sname):
+		return self[self._session_id].get(sname)
+	def set(self.sname,svalue):
+		return self[self._session_id][sname]=svalue
+	def renew(self,session_id):
+		if not session_id:
+			self._session_id=self._generate_session_id()
+		else:
+			self._session_id=session_id
+		self[self._session_id]=self._mongo.find_one({'session_id':self._session_id})
+		if not self[self._session_id]:
+			self[self._session_id]={}
+		return self
+	def save(self,expire=None):
+		if not expire:
+			pass
+		else:
+			self._mongo.update_one({'session_id':self._session_id},{"$set":self[self._session_id]})
 class RedisSession(Session):
 	r'''
 		session driver for redis
@@ -99,8 +139,8 @@ class RedisSession(Session):
 			self._session_id=self._generate_session_id()
 		else:
 			self._session_id=session_id
-		redis=redis.Redis(connection_pool=type(self)._pool)
-		self[self._session_id]=reids.hgetall(self._session_id)
+		self._redis=redis.Redis(connection_pool=type(self)._pool)
+		self[self._session_id]=self._reids.hgetall(self._session_id)
 		if not self[self._session_id]:
 			self[self._session_id]={}
 		super(RedisSession,self).__init__(self._sessoin_id)
@@ -113,18 +153,16 @@ class RedisSession(Session):
 			self._session_id=self._generate_session_id()
 		else:
 			self._session_id=session_id
-		redis=redis.Redis(connection_pool=type(self)._pool)
-		self[self._session_id]=redis.hgetall(self._session_id)
+		self[self._session_id]=self._redis.hgetall(self._session_id)
 		if not self[self._session_id]:
 			self[self._session_id]={}
 		return self
 	def  save(self,expire=None):
-		redis=redis.Redis(connection_pool=type(self)._pool)
 		if expire==None:
-			redis.hmset(self._session_id,self[self._session_id])
+			self._redis.hmset(self._session_id,self[self._session_id])
 		else:
-			redis.hmset(self._session_id,self[self._session_id])
-			redis.expire(self._session_id,expire)
+			self._redis.hmset(self._session_id,self[self._session_id])
+			self._redis.expire(self._session_id,expire)
 		
 class SessionManager(object):
 	_drivers={}
