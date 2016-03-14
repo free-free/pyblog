@@ -121,6 +121,8 @@ class MongoSession(Session):
 			pass
 		else:
 			self._mongo.update_one({'session_id':self._session_id},{"$set":self[self._session_id]})
+
+
 class RedisSession(Session):
 	r'''
 		session driver for redis
@@ -163,6 +165,7 @@ class RedisSession(Session):
 		else:
 			self._redis.hmset(self._session_id,self[self._session_id])
 			self._redis.expire(self._session_id,expire)
+
 		
 class SessionManager(object):
 	_drivers={}
@@ -171,18 +174,42 @@ class SessionManager(object):
 	def __init__(self,session_id=None,config=None):
 		self._session_id=session_id
 	def get_mongosession_driver(self,config=None):
-		type(self)._drivers['mongo']=MongoSession(self._session_id,expire,config)
+		type(self)._drivers['mongo']=MongoSession(self._session_id,config)
 		return type(self)._drivers['mongo']
 	def get_redissesssoin_driver(self,config=None):
-		type(self)._drivers['redis']=RedisSession(self._session_id,expire,config)
+		type(self)._drivers['redis']=RedisSession(self._session_id,config)
 		return type(self)._drivers['redis']
 	def get_filesession_driver(self,config=None):
-		type(self)._drivers['file']=FileSession(self._session_id,expire,config)
+		type(self)._drivers['file']=FileSession(self._session_id,config)
 		return type(self)._drivers['file']
 	def driver(self,driver_name,config=None):
 		if driver_name in self._drivers:		
 			self._specific_driver=self._drivers[driver_name]
 		else:
-			self._specific_driver= eval('self.get_%ssession_driver(%s'%(driver_name,config))
+			self._drivers[driver_name]= eval('self.get_%ssession_driver(%s'%(driver_name,config))
+			self._specific_driver=self._drivers[driver_name]
 		return self
-
+	def get(self,sname):
+		if not self._specific_driver:
+			return self._default_driver.get(sname)
+		else:
+			return self._specific_driver.get(sname)
+	def set(self,sname,value):
+		if not self._specific_driver:
+			self._default_driver.set(sname,value)
+		else:
+			self._specific_driver.set(sname,value)
+		return self
+	def save(self,expire=None):
+		if not self._specific_driver:
+			self._default_driver.save(expire)
+		else:
+			self._specific_driver.save(expire)
+			self._specific_driver=None
+	@propery
+	def session_id(self):
+		if not self._specific_driver:
+			return self._default_driver.session_id
+		else:
+			return self._specifci_driver.session_id
+	
