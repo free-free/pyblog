@@ -41,10 +41,10 @@ class BaseHandler(object):
 		return _generator
 	@asyncio.coroutine
 	def __call__(self,request):
-		params={}
 		post=yield from request.post()
 		get=request.GET
-		args=self._handler.__args__
+		container=AppContainer(post,get)
+		args=self._handler.__args__[1:-1]
 		if len(args)==0:
 			response=yield from self._handler()
 		else:
@@ -53,7 +53,7 @@ class BaseHandler(object):
 				if k not in request.match_info :
 					raise NameError("Can't Found '%s'"%k)
 				param[k]=request.match_info[k]
-			response=yield from self._handler(**param)
+			response=yield from self._handler(container,**param)
 		return response
 class Middleware(object):
 	def response(app,handler):
