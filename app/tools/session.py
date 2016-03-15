@@ -45,8 +45,15 @@ class FileSession(Session):
 	r'''	
 		session store in file
 		file session driver
+
+		session expire file is place  to store session expire time,the file's content  is actually
+		a json array,array's formation is following:
+			[{'session_info':['7437843aefb48938943394',12232831]},{'session_info':['4387812787abcdf43e32d',12323233232]}]
+		first item is session id and second  is expire timestamp in each  dict
 	'''
 	_session_dir='/tmp/session'
+	_session_expire_file='/tmp/session/session_expire'
+	_session_expire_key='session_expire'
 	def __init__(self,session_id=None,config=None):
 		if not os.path.exists(self._session_dir):
 			os.mkdir(self._session_dir)
@@ -54,24 +61,33 @@ class FileSession(Session):
 			self._session_id=self._generate_session_id()
 		else:
 			self._session_id=session_id
+		if os.path.exists(self._session_expire_file):
+			with open(self._session_expire_file,'r',errors='ignore',encoding='utf-8') as f:
+				self[self._session_expire_key]=json.load(f)
+			expire_session=self[self._session_expire_key]
+			for expire_item in expire_session:
+				if int(expire_item['session_info'][1])<int(time.time()):
+					os.remove(os.path.join(self._session_dir,expire_item['session_info'][0]))
+					self[self._session_expire_key].remove(expire_item)
+		else:
+			self[self._session_expire_key]=[]
 		self._session_file=os.path.join(self._session_dir,self._session_id)
 		if os.path.exists(self._session_file):	
 			with open(self._session_file,'r',errors='ignore',encoding='utf-8') as f:
 				self[self._session_id]=json.load(f)
-			expire=self[self._session_id].get('expire',None)
-			if int(expire)<int(time.time()):
-				os.remove(self._session_file)
-				self[self._session_id]={}
 		else:
 			self[self._session_id]={}
 		super(FileSession,self).__init__(self._session_id)
 	def set(self,sname,svalue):
 		self[self._session_id][sname]=svalue
+		return self
 	def get(self,sname):
 		return self[self._session_id].get(sname,None)
 	def save(self,expire=None):
 		if expire:
-			self[self._session_id]['expire']=int(time.time())+int(expire)
+			self[self._session_expire_key].append({'session_info':[self._session_id,int(time.time())+int(expire)]})
+		with open(self._session_expire_file,'w',errors='ignore',encoding='utf-8') as f:
+			json.dump(self[self._session_expire_key],f) 
 		with open(self._session_file,'w',errors='ignore',encoding='utf-8') as f:
 			json.dump(self[self._session_id],f)
 	def renew(self,session_id=None):
@@ -121,6 +137,7 @@ class MongoSession(Session):
 		return self[self._session_id].get(sname)
 	def set(self,sname,svalue):
 		self[self._session_id][sname]=svalue
+		return self
 	def renew(self,session_id):
 		if not session_id:
 			self._session_id=self._generate_session_id()
@@ -168,6 +185,7 @@ class RedisSession(Session):
 		return self[self._session_id].get(sname.encode('utf-8'))
 	def set(self,sname,svalue):
 		self[self._session_id][sname]=svalue
+		return self
 	def renew(self,session_id=None):
 		if session_id==None:
 			self._session_id=self._generate_session_id()
@@ -233,6 +251,7 @@ class SessionManager(object):
 			self._default_driver.renew(session_id)
 		else:
 			self._specific_driver.renew(session_id)
+		return self
 	@property
 	def session_id(self):
 		if not self._specific_driver:
@@ -262,4 +281,8 @@ if __name__=='__main__':
 	print(redis.get('name'))
 	print(redis.get('email'))
 	'''
-	
+	file=SessionManager()
+	file.set('name','aaaa')
+	file.set('age',33)
+	file.save()
+	#file.renew().set('name','xiaoming').set('age',48).save()
