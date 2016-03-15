@@ -18,13 +18,19 @@ except ImportError:
 	logging.error("Can't Found Module aiohttp")
 
 class AppContainer(dict):
-	def __init__(self,*args,**kw):
-		super(AppContainer,self).__init__(*args,**kw)
+	def __init__(self,get=None,post=None,app=None,**kw):
+		self._post=post if post else {}
+		self._get=get if get else {}
+		self._app=app if app else {}
+		super(AppContainer,self).__init__(**kw)
 	def get_argument(self,name,default=None):
-		if name in self:
-			return self[name]
-		else:
-			return default
+		if name not  in self._post and name not in self._get:
+			raise AttributeError("Can't found '%s' attribute"%name)
+		if name in self._post:
+			return self._post[name]
+		if name in self._get:
+			return self._get[name]
+		return default
 	
 class BaseHandler(object):
 	r'''
@@ -43,17 +49,20 @@ class BaseHandler(object):
 	def __call__(self,request):
 		post=yield from request.post()
 		get=request.GET
-		container=AppContainer(post,get)
-		args=self._handler.__args__[1:-1]
-		if len(args)==0:
-			response=yield from self._handler()
-		else:
+		container=AppContainer(post=post,get=get)
+		args=self._handler.__args__
+		if len(args)==1:
+			response=yield from self._handler(container)
+		elif len(args)>1:
 			param={}
-			for k in args:
+			for k in args[1:]:
 				if k not in request.match_info :
 					raise NameError("Can't Found '%s'"%k)
 				param[k]=request.match_info[k]
-			response=yield from self._handler(container,**param)
+			param[self._handler.__args__[0]]=container
+			response=yield from self._handler(**param)
+		else:
+			response=None
 		return response
 class Middleware(object):
 	def response(app,handler):
