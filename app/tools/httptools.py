@@ -16,6 +16,16 @@ try:
    from aiohttp import web
 except ImportError:
 	logging.error("Can't Found Module aiohttp")
+
+class AppContainer(dict):
+	def __init__(self,*args,**kw):
+		super(AppContainer,self).__init__(*args,**kw)
+	def get_argument(self,name,default=None):
+		if name in self:
+			return self[name]
+		else:
+			return default
+	
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -33,20 +43,16 @@ class BaseHandler(object):
 	def __call__(self,request):
 		params={}
 		post=yield from request.post()
+		get=request.GET
 		args=self._handler.__args__
 		if len(args)==0:
 			response=yield from self._handler()
 		else:
 			param={}
 			for k in args:
-				if k not in request.match_info and k not in post and k not in request.GET:
+				if k not in request.match_info :
 					raise NameError("Can't Found '%s'"%k)
-				if k in request.match_info:
-					param[k]=request.match_info[k]
-				if k in post:
-					param[k]=post[k]
-				if k in request.GET:
-					param[k]=request.GET[k]
+				param[k]=request.match_info[k]
 			response=yield from self._handler(**param)
 		return response
 class Middleware(object):
