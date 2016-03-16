@@ -18,10 +18,11 @@ except ImportError:
 	logging.error("Can't Found Module aiohttp")
 
 class AppContainer(dict):
-	def __init__(self,get=None,post=None,app=None,**kw):
+	def __init__(self,get=None,post=None,app=None,cookie=None,**kw):
 		self._post=post if post else {}
 		self._get=get if get else {}
 		self._app=app if app else {}
+		self._cookie=cookie if app else{}
 		super(AppContainer,self).__init__(**kw)
 	def get_argument(self,name,default=None):
 		if name not  in self._post and name not in self._get:
@@ -31,7 +32,10 @@ class AppContainer(dict):
 		if name in self._get:
 			return self._get[name]
 		return default
-	
+	def get_cookie(self,cookie_name,default=None):
+		if cookie_name in self._cookie:
+			return self._cookie[cookie_name]
+		return default
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -49,7 +53,8 @@ class BaseHandler(object):
 	def __call__(self,request):
 		post=yield from request.post()
 		get=request.GET
-		container=AppContainer(post=post,get=get)
+		cookie=request.cookie
+		container=AppContainer(post=post,get=get,cookie=cookie)
 		args=self._handler.__args__
 		if len(args)==1:
 			response=yield from self._handler(container)
