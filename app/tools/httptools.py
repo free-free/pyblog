@@ -34,6 +34,8 @@ class AppContainer(dict):
 		if name in self._get:
 			return self._get[name]
 		return default
+	def get_all_cookies(self):
+		return self._cookie
 	def get_cookie(self,cookie_name,default=None):
 		if cookie_name in self._cookie:
 			return self._cookie[cookie_name]
@@ -44,7 +46,7 @@ class AppContainer(dict):
 	def clear_cookie(self,name,*,path='/',domain=None):
 		self._app['del_cookie'].append({'cookie_name':name,'path':path,'domain':domain})
 
-	def clear_all_cookies(self)L
+	def clear_all_cookies(self):
 		if self._cookie:
 			for ck in self._cookie:
 				self.clear_cookie(ck)
