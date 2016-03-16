@@ -39,10 +39,10 @@ class AppContainer(dict):
 			return self._cookie[cookie_name]
 		return default
 	def set_cookie(self,cookie_name,cookie_value,expire=None,*,domain=None,max_age=None,httponly=False,path='/'):
-		self._app['set_cookie'].append({'cookie_name':cookie_name,'value':cookie_value,
+		self._app['set_cookie'].append({'cookie_name':cookie_name,'cookie_value':cookie_value,
 'expire':expire,'domain':domain,'path':path,'max-age':max_age,'httponly':httponly})
 	def clear_cookie(self,name,*,path='/',domain=None):
-		self_app['del_cookie'].append({'cookie_name':name,'path':path,'domain':domain})
+		self._app['del_cookie'].append({'cookie_name':name,'path':path,'domain':domain})
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -60,7 +60,7 @@ class BaseHandler(object):
 	def __call__(self,request):
 		post=yield from request.post()
 		get=request.GET
-		cookie=request.cookie
+		cookie=request.cookies
 		container=AppContainer(post=post,get=get,cookie=cookie,app=self._app)
 		args=self._handler.__args__
 		
