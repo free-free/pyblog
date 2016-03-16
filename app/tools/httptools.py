@@ -23,6 +23,8 @@ class AppContainer(dict):
 		self._get=get if get else {}
 		self._app=app if app else {}
 		self._cookie=cookie if app else{}
+		self._app['set_cookie']=[]
+		self._app['del_cookie']=[]
 		super(AppContainer,self).__init__(**kw)
 	def get_argument(self,name,default=None):
 		if name not  in self._post and name not in self._get:
@@ -36,9 +38,11 @@ class AppContainer(dict):
 		if cookie_name in self._cookie:
 			return self._cookie[cookie_name]
 		return default
-	def set_cookie(self,cookie_name,cookie_value,expire=None,domain=None,max_age=None,httponly=False,path=None):
-		self._app['cookie'].append({'cookie_name':cookie_name,'value':cookie_value,
+	def set_cookie(self,cookie_name,cookie_value,expire=None,*,domain=None,max_age=None,httponly=False,path='/'):
+		self._app['set_cookie'].append({'cookie_name':cookie_name,'value':cookie_value,
 'expire':expire,'domain':domain,'path':path,'max-age':max_age,'httponly':httponly})
+	def clear_cookie(self,name,*,path='/',domain=None):
+		self_app['del_cookie'].append({'cookie_name':name,'path':path,'domain':domain})
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
