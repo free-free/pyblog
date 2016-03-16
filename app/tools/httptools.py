@@ -36,6 +36,8 @@ class AppContainer(dict):
 		if cookie_name in self._cookie:
 			return self._cookie[cookie_name]
 		return default
+	def set_cookie(self,cookie_name,cookie_value,expire=None):
+		self._app['cookie'][cookie_name]=[cookie_value,expire]
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -54,8 +56,9 @@ class BaseHandler(object):
 		post=yield from request.post()
 		get=request.GET
 		cookie=request.cookie
-		container=AppContainer(post=post,get=get,cookie=cookie)
+		container=AppContainer(post=post,get=get,cookie=cookie,app=self._app)
 		args=self._handler.__args__
+		
 		if len(args)==1:
 			response=yield from self._handler(container)
 		elif len(args)>1:
