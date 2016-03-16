@@ -43,6 +43,11 @@ class AppContainer(dict):
 'expire':expire,'domain':domain,'path':path,'max-age':max_age,'httponly':httponly})
 	def clear_cookie(self,name,*,path='/',domain=None):
 		self._app['del_cookie'].append({'cookie_name':name,'path':path,'domain':domain})
+
+	def clear_all_cookies(self)L
+		if self._cookie:
+			for ck in self._cookie:
+				self.clear_cookie(ck)
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -77,6 +82,11 @@ class BaseHandler(object):
 		else:
 			response=None
 		return response
+
+
+
+
+
 class Middleware(object):
 	def response(app,handler):
 		def check_set_cookie(res):
@@ -142,6 +152,8 @@ class Middleware(object):
 				v=asyncio.coroutine(v)
 			middlewares.append(v)
 		return middlewares
+
+
 class Route(object):
 	r'''
 		Route class is responsible for routes adding and routes registering to  aiohttp
