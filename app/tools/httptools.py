@@ -5,7 +5,7 @@ import functools
 import inspect
 import logging
 logging.basicConfig(level=logging.INFO)
-from   .log import Log
+from   tools.log import Log
 try:
 	import asyncio
 except ImportError:
@@ -79,30 +79,51 @@ class BaseHandler(object):
 		return response
 class Middleware(object):
 	def response(app,handler):
+		def check_set_cookie(res):
+			if len(app['set_cookie'])>0:
+				for k in app['set_cookie']:
+					res.set_cookie(k['cookie_name'],k['cookie_value'],path=k['path'],expires=k['expire'],domain=k['domain'],httponly=k['httponly'])
+			return res
+		def check_del_cookie(res):
+			if len(app['del_cookie'])>0:
+				for k in app['del_cookie']:
+					res.del_cookie(k['cookie_name'],path=k['path'],domain=k['domain'])
+			return res
 		@asyncio.coroutine
 		def _response(request):
 			res=yield from handler(request)
 			if isinstance(res,web.StreamResponse):
+				res=check_set_cookie(res)
+				res=check_del_cookie(res)
 				return res
 			elif isinstance(res,bytes):
 				res=web.Response(body=res)
+				res=check_del_cookie(res)	
+				res=check_set_cookie(res)
 				res.content_type='application/octet-stream'
 				return res
 			elif isinstance(res,str):
 				res=web.Response(body=res.encode("utf-8"))
+				res=check_set_cookie(res)
+				res=check_del_cookie(res)
 				res.content_type='text/html;charset=utf-8'
 				return res
 			elif isinstance(res,dict):
 				template=res.get('__template__')
 				if template is None:
 					res=web.Response(body=json.dumps(res,ensure_ascii=False,default=lambda x:x.__dict__).encode("utf-8"))
+					res=check_set_cookie(res)
+					res=check_del_cookie(res)
 					res.content_type='application/json;charset=utf-8'
-					return res
 				else:
 					res=web.Response(body=app['__templating__'].get_template(template).render(**res).encode("utf-8"))
+					res=check_set_cookie(res)
+					res=check_del_cookie(res)
 					res.content_type='text/html;charset=utf-8'
 					return res
 			else:
+				res=check_set_cookie(res)
+				res=check_del_cookie(res)
 				return res
 		return _response
 	def log(app,handler):
@@ -196,5 +217,5 @@ if __name__=='__main__':
 	@Route.post('/usr/gallery')
 	def user_gallery(name):
 		print(name)
-	Route.register_route()
-	Route.register_route()
+	#Route.register_route()
+	#Route.register_route()
