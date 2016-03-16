@@ -36,8 +36,9 @@ class AppContainer(dict):
 		if cookie_name in self._cookie:
 			return self._cookie[cookie_name]
 		return default
-	def set_cookie(self,cookie_name,cookie_value,expire=None):
-		self._app['cookie'][cookie_name]=[cookie_value,expire]
+	def set_cookie(self,cookie_name,cookie_value,expire=None,domain=None,max_age=None,httponly=False,path=None):
+		self._app['cookie'].append({'cookie_name':cookie_name,'value':cookie_value,
+'expire':expire,'domain':domain,'path':path,'max-age':max_age,'httponly':httponly})
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
