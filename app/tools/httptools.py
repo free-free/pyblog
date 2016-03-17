@@ -3,7 +3,9 @@
 
 import functools
 import inspect
+import re
 import logging
+import json
 logging.basicConfig(level=logging.INFO)
 from   tools.log import Log
 try:
@@ -25,6 +27,7 @@ class AppContainer(dict):
 		self._cookie=app['cookie']
 		self._app['set_cookie']=[]
 		self._app['del_cookie']=[]
+		self._app['response']=''
 		super(AppContainer,self).__init__(**kw)
 	def get_argument(self,name,default=None):
 		if name not  in self._post and name not in self._get:
@@ -50,6 +53,11 @@ class AppContainer(dict):
 		if self._cookie:
 			for ck in self._cookie:
 				self.clear_cookie(ck)
+	def render(self,content,**kw):
+		if re.match('^[\w]+.html$',content):
+			self._app['response']={'__template__':content,'parameter':kw if kw else {}}
+		else:
+			self._app['response']=content	
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -107,39 +115,28 @@ class Middleware(object):
 		@asyncio.coroutine
 		def _response(request):
 			res=yield from handler(request)
+			res=res if res else app.get('response')
 			if isinstance(res,web.StreamResponse):
-				res=check_set_cookie(res)
-				res=check_del_cookie(res)
-				return res
+				res=res
 			elif isinstance(res,bytes):
 				res=web.Response(body=res)
-				res=check_del_cookie(res)	
-				res=check_set_cookie(res)
 				res.content_type='application/octet-stream'
-				return res
 			elif isinstance(res,str):
 				res=web.Response(body=res.encode("utf-8"))
-				res=check_set_cookie(res)
-				res=check_del_cookie(res)
 				res.content_type='text/html;charset=utf-8'
-				return res
 			elif isinstance(res,dict):
 				template=res.get('__template__')
 				if template is None:
 					res=web.Response(body=json.dumps(res,ensure_ascii=False,default=lambda x:x.__dict__).encode("utf-8"))
-					res=check_set_cookie(res)
-					res=check_del_cookie(res)
 					res.content_type='application/json;charset=utf-8'
 				else:
-					res=web.Response(body=app['__templating__'].get_template(template).render(**res).encode("utf-8"))
-					res=check_set_cookie(res)
-					res=check_del_cookie(res)
+					res=web.Response(body=app['__templating__'].get_template(template).render(**res['parameter']).encode("utf-8"))
 					res.content_type='text/html;charset=utf-8'
-					return res
 			else:
-				res=check_set_cookie(res)
-				res=check_del_cookie(res)
-				return res
+				res=res
+			res=check_set_cookie(res)
+			res=check_del_cookie(res)
+			return res
 		return _response
 	def log(app,handler):
 		@asyncio.coroutine
