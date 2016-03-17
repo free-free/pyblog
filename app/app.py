@@ -12,22 +12,25 @@ def index(app):
 	app.set_cookie('sl',uuid.uuid1())
 	app.set_cookie('date',uuid.uuid4())
 	#app.clear_cookie('sl')
-	return Template('index.html').render(user=user)
+	#return Template('index.html').render(user=user)
+	app.render('hello')
+	
 @Route.get('/clc_cookie')
 def clc_cookie(app):
 	app.clear_all_cookies()
-	return 'ok'
+	return 'clc_cookie'
 @Route.get('/get_cookie')
 def get_cookie(app):
 	sl=app.get_cookie('sl')
 	date=app.get_cookie('date')
 	print(app.get_all_cookies())
-	return '%s\r\n%s'%(sl,date)
+	app.render( '%s\r\n%s'%(sl,date))
 @Route.get('/user/{id}/comment/{comment}')
 def user(app,id,comment):
 	u=User()
 	user=yield from u.findone()
-	return Template('index.html').render(user=user)
+	#return Template('index.html').render(user=user)
+	app.render('index.html',user=user)
 @Route.get('/user/register')
 def get_register(app):
 	return Template("register.html").render()
@@ -41,7 +44,7 @@ def register(app):
 	u.password=md5.hexdigest()
 	u.email=app.get_argument('email')
 	yield from u.save()
-	return '<h1>OK</h1>'
+	app.render('<h1>OK</h1>')
 if __name__=="__main__":
 	app=Application()
 	app.run()
