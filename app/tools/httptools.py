@@ -18,11 +18,11 @@ except ImportError:
 	logging.error("Can't Found Module aiohttp")
 
 class AppContainer(dict):
-	def __init__(self,get=None,post=None,app=None,cookie=None,**kw):
-		self._post=post if post else {}
-		self._get=get if get else {}
-		self._app=app if app else {}
-		self._cookie=cookie if app else{}
+	def __init__(self,app,**kw):
+		self._post=app['post']
+		self._get=app['get']
+		self._app=app
+		self._cookie=app['cookie']
 		self._app['set_cookie']=[]
 		self._app['del_cookie']=[]
 		super(AppContainer,self).__init__(**kw)
@@ -68,7 +68,10 @@ class BaseHandler(object):
 		post=yield from request.post()
 		get=request.GET
 		cookie=request.cookies
-		container=AppContainer(post=post,get=get,cookie=cookie,app=self._app)
+		self._app['cookie']=request.cookies if request.cookies else {}
+		self._app['get']=request.GET if request.GET else {}
+		self._app['post']=post if post else {}
+		container=AppContainer(app=self._app)
 		args=self._handler.__args__
 		
 		if len(args)==1:
