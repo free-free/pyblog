@@ -18,18 +18,11 @@ except ImportError:
 	logging.error("Can't import 'pymongo' module")
 from pymongo import MongoClient
 class Session(object):
-	def __init__(self,session_id=None):
-		if session_id==None:
-			self._session_id=self._generate_session_id()
-		else:
-			self._session_id=session_id
+	def __init__(self,session_id):
+		self._session_id=session_id
 		super(Session,self).__init__()
 	def _generate_session_id(self):
 		return str(uuid.uuid1().hex)	
-	def __getattr__(self,k):
-		pass
-	def __setattr__(self,k,v):
-		pass
 	@property
 	def session_id(self):
 		return self._session_id
@@ -64,9 +57,9 @@ class FileSession(Session):
 			os.mkdir(self._session_dir)
 		if session_id==None:
 			self._session_id=self._generate_session_id()
+			print("exec generate session id")
 		else:
 			self._session_id=session_id
-		
 		#if os.path.exists(self._session_expire_file):
 		#	with open(self._session_expire_file,'r',errors='ignore',encoding='utf-8') as f:
 		#		self[self._session_expire_key]=json.load(f)
@@ -77,7 +70,7 @@ class FileSession(Session):
 		#			self[self._session_expire_key].remove(expire_item)
 		#else:
 		#	self[self._session_expire_key]=[]
-		
+		print(self._session_id)	
 		self._session_file=os.path.join(self._session_dir,self._session_id)
 		if os.path.exists(self._session_file):	
 			with open(self._session_file,'r',errors='ignore',encoding='utf-8') as f:
@@ -97,7 +90,7 @@ class FileSession(Session):
 		return self._data[self._session_id].get(sname,None)
 	def save(self,expire=None):
 		if expire:
-			self.data[self._session_id]['expire']=int(time.time())+int(expire)
+			self._data[self._session_id]['expire']=int(time.time())+int(expire)
 			with open(self._session_expire_file,'a+',errors='ignore',encoding='utf-8') as f:
 				f.write("%s:%s\r\n"%(self._session_id,int(time.time())+int(expire)))
 		with open(self._session_file,'w',errors='ignore',encoding='utf-8') as f:
@@ -120,7 +113,7 @@ class FileSession(Session):
 			self._data[self._session_id]={}
 		return self
 	def __getitem__(self,key):
-		return self.data[self._session_id].get(key)
+		return self._data[self._session_id].get(key)
 	def __setitem__(self,key,value):
 		self._data[self._session_id][key]=value
 class MongoSession(Session):
@@ -149,7 +142,7 @@ class MongoSession(Session):
 			if expire:
 				if int(expire)<int(time.time()):
 					self._data[self._session_id]={}
-		super(MongoSession,self).__init__(session_id)
+		super(MongoSession,self).__init__(self._session_id)
 	def get(self,sname):
 		return self._data[self._session_id].get(sname)
 	def set(self,sname,svalue):
@@ -269,7 +262,6 @@ class SessionManager(object):
 			self._default_driver.save(expire)
 		else:
 			self._specific_driver.save(expire)
-			self._specific_driver=None
 	def renew(self,session_id=None):
 		if not self._specific_driver:
 			self._default_driver.renew(session_id)
@@ -316,9 +308,11 @@ if __name__=='__main__':
 	print(redis.get('email'))
 	'''
 	redis=SessionManager(driver='redis')
-	#file.set('name','dede')
-	#file.set('age',32)
 	redis['name']='jell'
 	redis['age']=21
-	redis.save()
+	redis.save(30)
+	#file=SessionManager()
+	#file['hello']='world'	
+	#file['shabi']='yes'
+	#file.save()
 	#file.renew().set('name','xiaoming').set('age',48).save()
