@@ -51,26 +51,13 @@ class FileSession(Session):
 	_session_dir='/tmp/session'
 	_session_expire_file='/tmp/session/session_expire'
 	_data={}
-	#_session_expire_key='session_expire'
 	def __init__(self,session_id=None,config=None):
 		if not os.path.exists(self._session_dir):
 			os.mkdir(self._session_dir)
 		if session_id==None:
 			self._session_id=self._generate_session_id()
-			print("exec generate session id")
 		else:
 			self._session_id=session_id
-		#if os.path.exists(self._session_expire_file):
-		#	with open(self._session_expire_file,'r',errors='ignore',encoding='utf-8') as f:
-		#		self[self._session_expire_key]=json.load(f)
-		#	expire_session=self[self._session_expire_key]
-		#	for expire_item in expire_session:
-		#		if int(expire_item['session_info'][1])<int(time.time()):
-		#			os.remove(os.path.join(self._session_dir,expire_item['session_info'][0]))
-		#			self[self._session_expire_key].remove(expire_item)
-		#else:
-		#	self[self._session_expire_key]=[]
-		print(self._session_id)	
 		self._session_file=os.path.join(self._session_dir,self._session_id)
 		if os.path.exists(self._session_file):	
 			with open(self._session_file,'r',errors='ignore',encoding='utf-8') as f:
