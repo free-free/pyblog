@@ -9,12 +9,21 @@ import uuid
 def index(app):
 	user=yield from  User().findone()
 	print(user.email)
-	app.set_cookie('sl',uuid.uuid1())
-	app.set_cookie('date',uuid.uuid4())
+	app.session['dog']='Tom'
+	app.session['age']=2
+	app.session_end()
+	#app.set_cookie('sl',uuid.uuid1())
+	#app.set_cookie('date',uuid.uuid4())
 	#app.clear_cookie('sl')
 	#return Template('index.html').render(user=user)
 	app.render('hello')
-	
+@Route.get('/session_get')
+def session_get(app):
+	print("dog",app.session['dog'])
+	print("dog",app.session['age'])	
+@Route.get('/session_destroy')
+def session_destroy(app):
+	app.session_destroy()
 @Route.get('/clc_cookie')
 def clc_cookie(app):
 	app.clear_all_cookies()
