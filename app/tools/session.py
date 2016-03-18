@@ -17,7 +17,7 @@ try:
 except ImportError:
 	logging.error("Can't import 'pymongo' module")
 from pymongo import MongoClient
-class Session(dict):
+class Session(object):
 	def __init__(self,session_id=None):
 		if session_id==None:
 			self._session_id=self._generate_session_id()
@@ -26,10 +26,10 @@ class Session(dict):
 		super(Session,self).__init__()
 	def _generate_session_id(self):
 		return str(uuid.uuid1().hex)	
-	#def __getattr__(self,k):
-	#	return self[self._session_id].get(k)
-	#def __setattr__(self,k,v):
-	#	self[self._session_id][k]=v
+	def __getattr__(self,k):
+		pass
+	def __setattr__(self,k,v):
+		pass
 	@property
 	def session_id(self):
 		return self._session_id
@@ -40,6 +40,10 @@ class Session(dict):
 	def save(self,expire=None):
 		pass
 	def renew(self,session_id):
+		pass
+	def __getitem__(self,key):
+		pass
+	def __setitem__(self,key,value):
 		pass
 class FileSession(Session):
 	r'''	
@@ -53,6 +57,7 @@ class FileSession(Session):
 	'''
 	_session_dir='/tmp/session'
 	_session_expire_file='/tmp/session/session_expire'
+	_data={}
 	#_session_expire_key='session_expire'
 	def __init__(self,session_id=None,config=None):
 		if not os.path.exists(self._session_dir):
@@ -76,27 +81,27 @@ class FileSession(Session):
 		self._session_file=os.path.join(self._session_dir,self._session_id)
 		if os.path.exists(self._session_file):	
 			with open(self._session_file,'r',errors='ignore',encoding='utf-8') as f:
-				self[self._session_id]=json.load(f)
-			expire=self[self._session_id].get('expire',None)
+				self._data[self._session_id]=json.load(f)
+			expire=self._data[self._session_id].get('expire',None)
 			if expire:
 				if int(expire)<int(time.time()):
 					os.remove(self._session_file)
-					self[self._session_id]={}
+					self._data[self._session_id]={}
 		else:
-			self[self._session_id]={}
+			self._data[self._session_id]={}
 		super(FileSession,self).__init__(self._session_id)
 	def set(self,sname,svalue):
-		self[self._session_id][sname]=svalue
+		self._data[self._session_id][sname]=svalue
 		return self
 	def get(self,sname):
-		return self[self._session_id].get(sname,None)
+		return self._data[self._session_id].get(sname,None)
 	def save(self,expire=None):
 		if expire:
-			self[self._session_id]['expire']=int(time.time())+int(expire)
+			self.data[self._session_id]['expire']=int(time.time())+int(expire)
 			with open(self._session_expire_file,'a+',errors='ignore',encoding='utf-8') as f:
 				f.write("%s:%s\r\n"%(self._session_id,int(time.time())+int(expire)))
 		with open(self._session_file,'w',errors='ignore',encoding='utf-8') as f:
-			json.dump(self[self._session_id],f)
+			json.dump(self._data[self._session_id],f)
 	def renew(self,session_id=None):
 		if session_id==None:
 			self._session_id=self._generate_session_id()
@@ -105,20 +110,24 @@ class FileSession(Session):
 		self._session_file=os.path.join(self._session_dir,self._session_id)
 		if os.path.exists(self._session_file):
 			with open(self._session_file,'r',errors='ignore',encoding='utf-8') as f:
-				self[self._session_id]=json.load(f)
-			expire=self[self._session_id].get('expire',None)
+				self._data[self._session_id]=json.load(f)
+			expire=self._data[self._session_id].get('expire',None)
 			if expire:
 				if int(expire)<int(time.time()):
 					os.remove(self._session_file)
-					self[self._session_id]={}
+					self._data[self._session_id]={}
 		else:
-			self[self._session_id]={}
+			self._data[self._session_id]={}
 		return self
-
+	def __getitem__(self,key):
+		return self.data[self._session_id].get(key)
+	def __setitem__(self,key,value):
+		self._data[self._session_id][key]=value
 class MongoSession(Session):
 	r'''
 		mongodb driver for session
 	'''
+	_data={}
 	def __init__(self,session_id=None,config=None):
 		if not config:
 			client=MongoClient('localhost',27017)
@@ -132,45 +141,49 @@ class MongoSession(Session):
 			self._session_id=self._generate_session_id()
 		else:
 			self._session_id=session_id
-		self[self._session_id]=self._mongo.find_one({'session_id':self._session_id})
-		expire=self[self._session_id].get('expire',None)
-		if not self[self._session_id]:
-			self[self._session_id]={}
+		self._data[self._session_id]=self._mongo.find_one({'session_id':self._session_id})
+		expire=self._data[self._session_id].get('expire',None)
+		if not self._data.get(self._session_id):
+			self._data[self._session_id]={}
 		else:
 			if expire:
 				if int(expire)<int(time.time()):
-					self[self._session_id]={}
+					self._data[self._session_id]={}
 		super(MongoSession,self).__init__(session_id)
 	def get(self,sname):
-		return self[self._session_id].get(sname)
+		return self._data[self._session_id].get(sname)
 	def set(self,sname,svalue):
-		self[self._session_id][sname]=svalue
+		self._data[self._session_id][sname]=svalue
 		return self
 	def renew(self,session_id):
 		if not session_id:
 			self._session_id=self._generate_session_id()
 		else:
 			self._session_id=session_id
-		self[self._session_id]=self._mongo.find_one({'session_id':self._session_id})
-		expire=self[self._session_id].get('expire',None)
-		if not self[self._session_id]:
-			self[self._session_id]={}
+		self._data[self._session_id]=self._mongo.find_one({'session_id':self._session_id})
+		expire=self._data[self._session_id].get('expire',None)
+		if not self._data.get(self._session_id):
+			self._data[self._session_id]={}
 		else:
 			if expire:
 				if int(expire)<int(time.time()):
-					self[self._session_id]={}
+					self._data[self._session_id]={}
 		return self
 	def save(self,expire=None):
 		if  expire:
-			self[self._session_id]['expire']=int(expire)+int(time.time())
-		self._mongo.update_one({'session_id':self._session_id},{"$set":self[self._session_id]},upsert=True)
+			self._data[self._session_id]['expire']=int(expire)+int(time.time())
+		self._mongo.update_one({'session_id':self._session_id},{"$set":self._data[self._session_id]},upsert=True)
 
-
+	def __getitem__(self,key):
+		return self._data[self._session_id].get(key)
+	def __setitem__(self,key,value):
+		self._data[self._session_id][key]=value
 class RedisSession(Session):
 	r'''
 		redis driver for session
 	'''
 	_pool=None
+	_data={}
 	def __init__(self,session_id=None,config=None):
 		if config==None:
 			if not type(self)._pool:
@@ -185,32 +198,35 @@ class RedisSession(Session):
 		else:
 			self._session_id=session_id
 		self._redis=redis.Redis(connection_pool=type(self)._pool)
-		self[self._session_id]=self._redis.hgetall(self._session_id)
-		if not self[self._session_id]:
-			self[self._session_id]={}
+		self._data[self._session_id]=self._redis.hgetall(self._session_id)
+		if not self._data.get(self._session_id):
+			self._data[self._session_id]={}
 		super(RedisSession,self).__init__(self._session_id)
 	def get(self,sname):
-		return self[self._session_id].get(sname.encode('utf-8'))
+		return self._data[self._session_id].get(sname.encode('utf-8'))
 	def set(self,sname,svalue):
-		self[self._session_id][sname]=svalue
+		self._data[self._session_id][sname]=svalue
 		return self
 	def renew(self,session_id=None):
 		if session_id==None:
 			self._session_id=self._generate_session_id()
 		else:
 			self._session_id=session_id
-		self[self._session_id]=self._redis.hgetall(self._session_id)
-		if not self[self._session_id]:
-			self[self._session_id]={}
+		self._data[self._session_id]=self._redis.hgetall(self._session_id)
+		if not self._data.get(self._session_id):
+			self._data[self._session_id]={}
 		return self
 	def  save(self,expire=None):
 		if expire==None:
-			self._redis.hmset(self._session_id,self[self._session_id])
+			self._redis.hmset(self._session_id,self._data[self._session_id])
 		else:
-			self._redis.hmset(self._session_id,self[self._session_id])
+			self._redis.hmset(self._session_id,self._data[self._session_id])
 			self._redis.expire(self._session_id,expire)
 
-		
+	def __getitem__(self,key):
+		return self._data[self._session_id].get(key)
+	def __setitem__(self,key,value):
+		self._data[self._session_id][key]=value
 class SessionManager(object):
 	_drivers={}
 	_default_driver=None
@@ -273,9 +289,9 @@ class SessionManager(object):
 			self._specific_driver[key]=value
 	def __getitem__(self,key):
 		if not self._specific_driver:
-			return self._default_driver[key] if self._default_driver[key] else None
-		else
-			return self._specific_driver[key] if self._default_driver[key] else None
+			return self._default_driver[key] 
+		else:
+			return self._specific_driver[key] 
 if __name__=='__main__':
 	r'''
 	filesession=SessionManager()
@@ -299,8 +315,10 @@ if __name__=='__main__':
 	print(redis.get('name'))
 	print(redis.get('email'))
 	'''
-	file=SessionManager()
-	file.set('name','dede')
-	file.set('age',32)
-	file.save()
+	redis=SessionManager(driver='redis')
+	#file.set('name','dede')
+	#file.set('age',32)
+	redis['name']='jell'
+	redis['age']=21
+	redis.save()
 	#file.renew().set('name','xiaoming').set('age',48).save()
