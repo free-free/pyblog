@@ -266,6 +266,16 @@ class SessionManager(object):
 			return self._default_driver.session_id
 		else:
 			return self._specific_driver.session_id
+	def __setitem__(self,key,value):
+		if not self._specific_driver:
+			self._default_driver[key]=value
+		else:
+			self._specific_driver[key]=value
+	def __getitem__(self,key):
+		if not self._specific_driver:
+			return self._default_driver[key] if self._default_driver[key] else None
+		else
+			return self._specific_driver[key] if self._default_driver[key] else None
 if __name__=='__main__':
 	r'''
 	filesession=SessionManager()
