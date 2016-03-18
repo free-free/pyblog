@@ -8,6 +8,7 @@ import logging
 import json
 logging.basicConfig(level=logging.INFO)
 from   tools.log import Log
+from   tools.session import SessionManager
 try:
 	import asyncio
 except ImportError:
@@ -58,8 +59,24 @@ class AppContainer(dict):
 			self._app['response']={'__template__':content,'parameter':kw if kw else {}}
 		else:
 			self._app['response']=content
-	def session(self,session_id=None):
-		pass	
+	@property
+	def session(self):
+		if not hasattr(self,'_session_instance'):
+			session_id=self.get_cookie('ssnid')
+			if not session_id:
+				self._session_instance=SessionManager()
+			else:
+				self._session_instance=SessionManager(session_id)
+		return self._session_instance
+	def session_end(self,expire=None):
+		if hasattr(self,'_session_instance'):
+			self.set_cookie('ssnid',self._session_instance.session_id)
+			self._session_instance.save(expire)
+	def session_destroy(self):
+		session_id=self.get_cookie("ssnid")
+		if  session_id:
+			self.clear_cookie('ssnid')
+			
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
