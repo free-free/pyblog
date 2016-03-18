@@ -18,9 +18,9 @@ except ImportError:
 	logging.error("Can't import 'pymongo' module")
 from pymongo import MongoClient
 class Session(object):
-	def __init__(self,session_id):
+	def __init__(self,session_id,*args,**kw):
 		self._session_id=session_id
-		super(Session,self).__init__()
+		super(Session,self).__init__(*args,**kw)
 	def _generate_session_id(self):
 		return str(uuid.uuid1().hex)	
 	@property
@@ -51,6 +51,10 @@ class FileSession(Session):
 	_session_dir='/tmp/session'
 	_session_expire_file='/tmp/session/session_expire'
 	_data={}
+	def __new__(cls,*args,**kw):
+		if not hasattr(cls,'_instance'):
+			cls._instance=super(Session,cls).__new__(cls)
+		return cls._instance
 	def __init__(self,session_id=None,config=None):
 		if not os.path.exists(self._session_dir):
 			os.mkdir(self._session_dir)
@@ -294,12 +298,18 @@ if __name__=='__main__':
 	print(redis.get('name'))
 	print(redis.get('email'))
 	'''
-	redis=SessionManager(driver='redis')
-	redis['name']='jell'
-	redis['age']=21
-	redis.save(30)
-	#file=SessionManager()
-	#file['hello']='world'	
-	#file['shabi']='yes'
+	#redis=SessionManager(driver='redis')
+	#redis['name']='jell'
+	#redis['age']=21
+	#redis.save(30)
+	file=SessionManager("3aea7990ed2e11e58ae6080027116c59")
+	print(file['hello'])
+	print(file['shabi'])
+	print(file.get('hello'))
+	print(file.get('shabi'))
+	print(file.session_id)
+	#file['hello']='tom'	
+	#file['shabi']='tom'
 	#file.save()
+	
 	#file.renew().set('name','xiaoming').set('age',48).save()
