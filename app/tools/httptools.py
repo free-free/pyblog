@@ -57,7 +57,9 @@ class AppContainer(dict):
 		if re.match('^[\w]+.html$',content):
 			self._app['response']={'__template__':content,'parameter':kw if kw else {}}
 		else:
-			self._app['response']=content	
+			self._app['response']=content
+	def session(self,session_id=None):
+		pass	
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
