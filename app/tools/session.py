@@ -111,12 +111,15 @@ class FileSession(Session):
 				del self._data[session_id]
 			if session_id in os.listdir(self._session_dir):
 				os.remove(os.path.join(self._session_dir,session_id))	
+			return session_id
 		else:
+			ssid=self._session_id
 			del self._data[self._session_id]
 			if self._session_id in os.listdir(self._session_dir):
 				os.remove(os.path.join(self._session_dir,self._session_id))
-				self._session_id=self._generate_session_id()
+			self._session_id=self._generate_session_id()
 			self._data[self._session_id]={}
+			return ssid
 	def __getitem__(self,key):
 		return self._data[self._session_id].get(key)
 	def __setitem__(self,key,value):
@@ -171,7 +174,18 @@ class MongoSession(Session):
 		if  expire:
 			self._data[self._session_id]['expire']=int(expire)+int(time.time())
 		self._mongo.update_one({'session_id':self._session_id},{"$set":self._data[self._session_id]},upsert=True)
-
+	def delete(self,session_id=None):
+		if session_id:
+			if session_id in self._data:
+				del self._data[session_id]
+				session=self._mongo.find_one_and_delete({'session_id':session_id},projection={'session_id':True})
+				return session.get('session_id')
+		else:
+			del self._data[self._session_id]
+			session=self._mongo.find_one_and_delete({'session_id':self._session_id},projection={'session_id':True})
+			self._session_id=self._generate_session_id()
+			self._data[self._session_id]={}
+			return  session.get('session_id')
 	def __getitem__(self,key):
 		return self._data[self._session_id].get(key)
 	def __setitem__(self,key,value):
