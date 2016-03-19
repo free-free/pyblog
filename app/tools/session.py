@@ -58,6 +58,10 @@ class FileSession(Session):
 			cls._instance=super(Session,cls).__new__(cls)
 		return cls._instance
 	def __init__(self,session_id=None,config=None):
+		if config:
+			self._session_dir=config.get('session_dir','/tmp/session')
+			self._session_expire_file=os.path.join(self._session_dir,config.get('expire_file','session_expire'))
+			self._session_expire=config.get('expire',0)
 		if not os.path.exists(self._session_dir):
 			os.mkdir(self._session_dir)
 		if session_id==None:
@@ -83,11 +87,20 @@ class FileSession(Session):
 		return self._data[self._session_id].get(sname,None)
 	def save(self,expire=None):
 		if expire:
-			self._data[self._session_id]['expire']=int(time.time())+int(expire)
+			expire_timestamp=int(time.time())+int(expire)
+			self._data[self._session_id]['expire']expire_timestamp
 			with open(self._session_expire_file,'a+',errors='ignore',encoding='utf-8') as f:
-				f.write("%s:%s\r\n"%(self._session_id,int(time.time())+int(expire)))
+				f.write("%s:%s\r\n"%(self._session_id,expire_timestamp))
+		else:
+			if hasattr(self,'_session_expire'):
+				if int(self._session_expire)!=0:
+					expire_timestamp=int(time.time())+int(self._session_expire)
+					self._data[self._session]['expire']=expire_timestamp
+					with open(self._session_expire_file,'a+',errors='ignore',encoding='utf-8') as f:
+						f.write("%s:%s\r\n"%(self._session_id,expire_timestamp))
 		with open(self._session_file,'w',errors='ignore',encoding='utf-8') as f:
 			json.dump(self._data[self._session_id],f)
+		
 	def renew(self,session_id=None):
 		if session_id==None:
 			self._session_id=self._generate_session_id()
