@@ -234,7 +234,22 @@ class RedisSession(Session):
 		else:
 			self._redis.hmset(self._session_id,self._data[self._session_id])
 			self._redis.expire(self._session_id,expire)
-
+	def delete(self,session_id=None):
+		if session_id:
+			if session_id in self._data:
+				del self._data[session_id]
+				keys=self._redis.hkeys(session_id):
+				if keys:
+					self._redis.hdel(session_id,keys)
+			return session_id
+		else:
+			ssid=self._session_id
+			del self._data[self._session_id]
+			keys =self._redis.hkeys(self._session_id)
+			if keys:
+				self._redis.hdel(session_id,keys)
+			self._session_id=self._generate_session_id()
+			return ssid	
 	def __getitem__(self,key):
 		return self._data[self._session_id].get(key)
 	def __setitem__(self,key,value):
