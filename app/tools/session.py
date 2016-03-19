@@ -178,8 +178,8 @@ class MongoSession(Session):
 		if session_id:
 			if session_id in self._data:
 				del self._data[session_id]
-				session=self._mongo.find_one_and_delete({'session_id':session_id},projection={'session_id':True})
-				return session.get('session_id')
+			session=self._mongo.find_one_and_delete({'session_id':session_id},projection={'session_id':True})
+			return session.get('session_id')
 		else:
 			del self._data[self._session_id]
 			session=self._mongo.find_one_and_delete({'session_id':self._session_id},projection={'session_id':True})
@@ -238,16 +238,17 @@ class RedisSession(Session):
 		if session_id:
 			if session_id in self._data:
 				del self._data[session_id]
-				keys=self._redis.hkeys(session_id):
-				if keys:
-					self._redis.hdel(session_id,keys)
+			keys=self._redis.hkeys(session_id)
+			print(keys)
+			if keys:
+				self._redis.hdel(session_id,*keys)
 			return session_id
 		else:
 			ssid=self._session_id
 			del self._data[self._session_id]
 			keys =self._redis.hkeys(self._session_id)
 			if keys:
-				self._redis.hdel(session_id,keys)
+				self._redis.hdel(self._session_id,*keys)
 			self._session_id=self._generate_session_id()
 			return ssid	
 	def __getitem__(self,key):
@@ -258,7 +259,7 @@ class SessionManager(object):
 	_drivers={}
 	_default_driver=None
 	_specific_driver=None
-	def __init__(self,session_id=None,config=None,driver=None):
+	def __init__(self,session_id=None,*,config=None,driver=None):
 		self._session_id=session_id
 		if not driver:
 			self._default_driver=self.get_filesession_driver(config)
@@ -320,9 +321,9 @@ class SessionManager(object):
 			return self._specific_driver[key]
 	def delete(self,session_id=None):
 		if not self._specific_driver:
-			self._default_driver.delete(session_id)
+			return self._default_driver.delete(session_id)
 		else:
-			self._specific_driver.delete(sesion_id)
+			return self._specific_driver.delete(sesion_id)
 if __name__=='__main__':
 	r'''
 	filesession=SessionManager()
@@ -346,12 +347,14 @@ if __name__=='__main__':
 	print(redis.get('name'))
 	print(redis.get('email'))
 	'''
-	#redis=SessionManager(driver='redis')
-	#redis['name']='jell'
-	#redis['age']=21
-	#redis.save(30)
-	file=SessionManager("a9beba48ed9211e582f4080027116c59")
-	print(file.session_id)
-	file.delete()
+	redis=SessionManager(driver='redis')
+	redis['name']='xiaohong'
+	redis['age']=100
+	#redis.delete("be3f28feed9711e5a0a5080027116c59")
+	redis.save(10)
+	#print(redis.delete())
+	#file=SessionManager("a9beba48ed9211e582f4080027116c59")
+	#print(file.session_id)
+	#file.delete()
 	
 	#file.renew().set('name','xiaoming').set('age',48).save()
