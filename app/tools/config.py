@@ -32,16 +32,36 @@ class DBConfigLoader(object):
 				raise AttributeError("Can't Find config item '%s'"%key)
 		else:
 			if key in self._config['connections'][self._specific]:
-				res=self._get_specific_config_item(key,self._specific)
-				self._specific=None
-				return res
+				return self._get_specific_config_item(key,self._specific)
 			else:
-				raise AttributeError("Can't Find config item '%s'"%key)
+				raise AttributeError("Can't find config item '%s'"%key)
 class SessionConfigLoader(object):
+	_all_drivers=('redis','file','mongo')
 	def __new__(cls,*args,**kw):
-		pass
+		if not hasattr(cls,'_config_instance'):
+			cls._config_instance=object.__new__(cls,*args,**kw)
+		return cls._config_instance
 	def __init__(self):
-		pass
+		self._config=__import__("conf",'app.confg').session
+		self._default_driver=self._config.get('default')
+		self._specific_driver=None
+	def _get_specific_driver_config_item(self,item_name,driver_name):
+		if driver_name.lower() not in self._all_drivers:
+			raise AttributeError("session config has no driver '%s'"%(driver_name))
+		if item_name in self._config['drivers'][driver_name]:
+			return self._config['drivers'][driver_name].get(item_name)
+		else:
+			raise AttributeError("session driver %s has no such item '%s'"%(driver_name,item_name))
+	def _driver(self,driver_name):
+		self._specific_driver=driver_name.lower()
+		return self
+	def __getattr__(self,key):
+		if key.upper()=='DRIVER':
+			return self._driver
+		if  self._specific_driver==None:
+			return self._get_specific_driver_config_item(key,self._default_driver)
+		else:
+			return self._get_specific_driver_config_item(key,self._specific_driver)
 
 class classproperty(object):
 	def __init__(self,func):
@@ -50,7 +70,7 @@ class classproperty(object):
 		return self._func(owner_class)
 
 class Config(dict):
-	_config_loader={'database':DBConfigLoader()}
+	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader()}
 	def __init__(self):
 		print("__init__ start")
 	def __call__(self,*args,**kw):
@@ -58,10 +78,21 @@ class Config(dict):
 	@classproperty
 	def database(cls):
 		return cls._config_loader.get('database')
-	@classmethod
-	def session(cls,key):
-		if not instance(key,str):
-			pass
+	@classproperty
+	def session(cls):
+		return cls._config_loader.get('session')
 	def __getattr__(cls,key):
 		return 'not attribute found'
-
+if __name__=='__main__':
+	#print(Config.session.session_dir)
+	#print(Config.session.expire_file)
+	#print(Config.session.expire)
+	#print(Config.session.driver('redis').host)
+	#print(Config.session.driver('redis').port)	
+	#print(Config.session.driver('redis').db)
+	#print(Config.session.driver('redis').expire)
+	#print(Config.session.driver('mongo').host)
+	#print(Config.session.driver('mongo').port)
+	#print(Config.session.driver('mongo').db)
+	#print(Config.session.driver('mongo').expire)
+	print(Config.database.port)
