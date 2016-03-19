@@ -50,18 +50,23 @@ class FileSession(Session):
 			[{'session_info':['7437843aefb48938943394',12232831]},{'session_info':['4387812787abcdf43e32d',12323233232]}]
 		first item is session id and second  is expire timestamp in each  dict
 	'''
-	_session_dir='/tmp/session'
-	_session_expire_file='/tmp/session/session_expire'
 	_data={}
 	def __new__(cls,*args,**kw):
 		if not hasattr(cls,'_instance'):
 			cls._instance=super(Session,cls).__new__(cls)
 		return cls._instance
 	def __init__(self,session_id=None,config=None):
-		if config:
+		if not config:
+			self._session_dir='/tmp/session'
+			self._session_expire_file='/tmp/session/session_expire'
+			self._expire=0
+		else:
+			if not isinstance(config,dict):
+				raise TypeError("FileSession config must be dict type")
 			self._session_dir=config.get('session_dir','/tmp/session')
 			self._session_expire_file=os.path.join(self._session_dir,config.get('expire_file','session_expire'))
 			self._session_expire=config.get('expire',0)
+
 		if not os.path.exists(self._session_dir):
 			os.mkdir(self._session_dir)
 		if session_id==None:
@@ -88,16 +93,15 @@ class FileSession(Session):
 	def save(self,expire=None):
 		if expire:
 			expire_timestamp=int(time.time())+int(expire)
-			self._data[self._session_id]['expire']expire_timestamp
+			self._data[self._session_id]['expire']=expire_timestamp
 			with open(self._session_expire_file,'a+',errors='ignore',encoding='utf-8') as f:
 				f.write("%s:%s\r\n"%(self._session_id,expire_timestamp))
 		else:
-			if hasattr(self,'_session_expire'):
-				if int(self._session_expire)!=0:
-					expire_timestamp=int(time.time())+int(self._session_expire)
-					self._data[self._session]['expire']=expire_timestamp
-					with open(self._session_expire_file,'a+',errors='ignore',encoding='utf-8') as f:
-						f.write("%s:%s\r\n"%(self._session_id,expire_timestamp))
+			if int(self._session_expire)!=0:
+				expire_timestamp=int(time.time())+int(self._session_expire)
+				self._data[self._session]['expire']=expire_timestamp
+				with open(self._session_expire_file,'a+',errors='ignore',encoding='utf-8') as f:
+					f.write("%s:%s\r\n"%(self._session_id,expire_timestamp))
 		with open(self._session_file,'w',errors='ignore',encoding='utf-8') as f:
 			json.dump(self._data[self._session_id],f)
 		
@@ -144,13 +148,21 @@ class MongoSession(Session):
 	_data={}
 	def __init__(self,session_id=None,config=None):
 		if not config:
-			client=MongoClient('localhost',27017)
-			self._mongo=client['session_database']['session']
+			self._host='localhost'
+			self._port=27017
+			self._db='session_database'
+			self._collection='session'
+			self._expire=0
 		else:
 			if not isinstance(config,dict):
 				raise TypeError("mongo session config must be dict type")
-			client=MongoClient(config['host'],config['port'])
-			self._mongo=client[config['db']][config['collection']]
+			self._host=config.get('host','localhost')
+			self._port=config.get('port',27017)
+			self._db=config.get('db','session_database')
+			self._collection=config.get('collection','session')
+			self._expire=config.get('expire',0)
+		client=MongoClient(self._host,self._port)
+		self._mongo=client[self._db][self._collection]
 		if session_id==None:
 			self._session_id=self._generate_session_id()
 		else:
@@ -186,6 +198,9 @@ class MongoSession(Session):
 	def save(self,expire=None):
 		if  expire:
 			self._data[self._session_id]['expire']=int(expire)+int(time.time())
+		else:
+			if int(self._expire)!=0:
+				self._data[self._session_id]['expire']=int(time.time())+int(expire)
 		self._mongo.update_one({'session_id':self._session_id},{"$set":self._data[self._session_id]},upsert=True)
 	def delete(self,session_id=None):
 		if session_id:
@@ -211,13 +226,19 @@ class RedisSession(Session):
 	_data={}
 	def __init__(self,session_id=None,config=None):
 		if config==None:
-			if not type(self)._pool:
-				type(self)._pool=redis.ConnectionPool(host='localhost',port=6379,db=0)
+			self._host='localhost'
+			self._port=6379
+			self._db=0
+			self._expire=0
 		else:
 			if not isinstance(config,dict):
 				raise TypeError("redis config must be a dict type")
-			if not type(self)._pool:
-				type(self)._pool=redis.ConnectionPool(host=config['host'],port=config['port'],db=config['db'])
+			self._host=config.get('host','localhost')
+			self._port=config.get('port',6379)
+			self._db=config.get('db',0)
+			self._expire=config.get('expire',0)
+		if not type(self)._pool:
+			type(self)._pool=redis.ConnectionPool(host=self._host,port=self._port,db=self._db)
 		if session_id==None:
 			self._session_id=self._generate_session_id()
 		else:
@@ -242,17 +263,18 @@ class RedisSession(Session):
 			self._data[self._session_id]={}
 		return self
 	def  save(self,expire=None):
-		if expire==None:
-			self._redis.hmset(self._session_id,self._data[self._session_id])
-		else:
+		if expire:
 			self._redis.hmset(self._session_id,self._data[self._session_id])
 			self._redis.expire(self._session_id,expire)
+		else:	
+			self._redis.hmset(self._session_id,self._data[self._session_id])
+			if int(self._expire)!=0:
+				self._redis.expire(self._session_id,self._expire)
 	def delete(self,session_id=None):
 		if session_id:
 			if session_id in self._data:
 				del self._data[session_id]
 			keys=self._redis.hkeys(session_id)
-			print(keys)
 			if keys:
 				self._redis.hdel(session_id,*keys)
 			return session_id
@@ -263,6 +285,7 @@ class RedisSession(Session):
 			if keys:
 				self._redis.hdel(self._session_id,*keys)
 			self._session_id=self._generate_session_id()
+			self._data[self._session_id]={}
 			return ssid	
 	def __getitem__(self,key):
 		return self._data[self._session_id].get(key)
@@ -338,34 +361,34 @@ class SessionManager(object):
 		else:
 			return self._specific_driver.delete(sesion_id)
 if __name__=='__main__':
-	r'''
-	filesession=SessionManager()
-	filesession.set('name','huangbiao')
-	filesession.set('email','19941222hb@gmail.com')
-	filesession.save()
-	redissession=filesession.driver('redis')
-	redissession.set('name','huangbiao')
-	redissession.set('email','18281573692@163.com')
-	print(redissession.session_id)
-	redissession.save()
-	'''
-	r'''
-	redis=SessionManager(driver='redis')
-	redis.set('name','jell')
-	redis.set('email','1462086237@qq.com')
-	redis.save(30)
-	'''
-	'''
-	redis=SessionManager('55e5bf8ce9fc11e5b902080027116c59',driver='redis')
-	print(redis.get('name'))
-	print(redis.get('email'))
-	'''
-	redis=SessionManager(driver='redis')
-	redis['name']='xiaohong'
-	redis['age']=100
-	#redis.delete("be3f28feed9711e5a0a5080027116c59")
-	redis.save(10)
+	#file=SessionManager()
+	#file.set('name','Jell')
+	#file.set('email','dejiejfioe@gmail.com')
+	#file.save(20)
+		
+	#file=SessionManager("b974c98eedd111e5930f080027116c59")
+	#print(file['name'])
+	#print(file['email'])
+
+	#redis=SessionManager(driver='redis')
+	#redis.set('name','huangbiao')
+	#redis.set('email','18281573692@163.com')
+	#print(redis.session_id)
+	#redis.save()
+
+	#redis=SessionManager("84f4d9f0edd211e5b3bb080027116c59",driver='redis')
+	#print(redis['name'])
+	#print(redis['email'])
+	#print(redis.session_id)
 	#print(redis.delete())
+
+	#redis=SessionManager(driver='redis')
+	#redis['name']='xiaohong'
+	#redis['age']=100
+	#redis.delete("be3f28feed9711e5a0a5080027116c59")
+	#redis.save(10)
+	#print(redis.delete())
+
 	#file=SessionManager("a9beba48ed9211e582f4080027116c59")
 	#print(file.session_id)
 	#file.delete()
