@@ -72,11 +72,18 @@ class AppContainer(dict):
 		if hasattr(self,'_session_instance'):
 			self.set_cookie('ssnid',self._session_instance.session_id)
 			self._session_instance.save(expire)
-	def session_destroy(self):
-		session_id=self.get_cookie("ssnid")
-		if  session_id:
-			self.clear_cookie('ssnid')
-			
+	def session_destroy(self,session_id=None):
+		if session_id:
+			if not hasattr(self,'_session_instance'):
+				self._session_instance=SessionManager()
+			self._session_instance.delete(session_id)
+		else:
+			session_id=self.get_cookie("ssnid")
+			if  session_id:
+				self.clear_cookie('ssnid')
+				if not hasattr(self,'_session_instance'):
+					self._session_instance=SessionManager()
+				self._session_instance.delete(session_id)	
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
