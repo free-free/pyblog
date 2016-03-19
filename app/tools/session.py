@@ -38,6 +38,8 @@ class Session(object):
 		pass
 	def __setitem__(self,key,value):
 		pass
+	def __delitem__(self,key):
+		pass
 class FileSession(Session):
 	r'''	
 		session store in file
@@ -103,6 +105,18 @@ class FileSession(Session):
 		else:
 			self._data[self._session_id]={}
 		return self
+	def delete(self,session_id=None):
+		if session_id:
+			if session_id in self._data:
+				del self._data[session_id]
+			if session_id in os.listdir(self._session_dir):
+				os.remove(os.path.join(self._session_dir,session_id))	
+		else:
+			del self._data[self._session_id]
+			if self._session_id in os.listdir(self._session_dir):
+				os.remove(os.path.join(self._session_dir,self._session_id))
+				self._session_id=self._generate_session_id()
+			self._data[self._session_id]={}
 	def __getitem__(self,key):
 		return self._data[self._session_id].get(key)
 	def __setitem__(self,key,value):
@@ -274,7 +288,12 @@ class SessionManager(object):
 		if not self._specific_driver:
 			return self._default_driver[key] 
 		else:
-			return self._specific_driver[key] 
+			return self._specific_driver[key]
+	def delete(self,session_id=None):
+		if not self._specific_driver:
+			self._default_driver.delete(session_id)
+		else:
+			self._specific_driver.delete(sesion_id)
 if __name__=='__main__':
 	r'''
 	filesession=SessionManager()
@@ -302,14 +321,8 @@ if __name__=='__main__':
 	#redis['name']='jell'
 	#redis['age']=21
 	#redis.save(30)
-	file=SessionManager("3aea7990ed2e11e58ae6080027116c59")
-	print(file['hello'])
-	print(file['shabi'])
-	print(file.get('hello'))
-	print(file.get('shabi'))
+	file=SessionManager("a9beba48ed9211e582f4080027116c59")
 	print(file.session_id)
-	#file['hello']='tom'	
-	#file['shabi']='tom'
-	#file.save()
+	file.delete()
 	
 	#file.renew().set('name','xiaoming').set('age',48).save()
