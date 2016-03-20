@@ -59,7 +59,7 @@ class FileSession(Session):
 		if not config:
 			self._session_dir='/tmp/session'
 			self._session_expire_file='/tmp/session/session_expire'
-			self._expire=0
+			self._session_expire=0
 		else:
 			if not isinstance(config,dict):
 				raise TypeError("FileSession config must be dict type")
@@ -361,6 +361,7 @@ class SessionManager(object):
 		else:
 			return self._specific_driver.delete(sesion_id)
 if __name__=='__main__':
+	r'''
 	#file=SessionManager()
 	#file.set('name','Jell')
 	#file.set('email','dejiejfioe@gmail.com')
@@ -394,3 +395,4 @@ if __name__=='__main__':
 	#file.delete()
 	
 	#file.renew().set('name','xiaoming').set('age',48).save()
+	'''
