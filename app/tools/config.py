@@ -57,7 +57,17 @@ class SessionConfigLoader(object):
 			return self._get_specific_driver_config_item(key,self._default_driver)
 		else:
 			return self._get_specific_driver_config_item(key,self._specific_driver)
-
+class AuthConfigLoader(object):
+	def __new__(cls,*args,**kw):
+		if not hasattr(cls,'_config_instance'):
+			cls._config_instance=object.__new__(cls,*args,**kw)
+		return cls._config_instance
+	def __init__(self):
+		self._config=__import__("conf",'app.config').authentication
+	def __getattr__(self,key):
+		if key not in self._config:
+			raise AttributeError("authentication config has no such item '%s'"%(key))
+		return self._config[key]
 class classproperty(object):
 	def __init__(self,func):
 		self._func=func
@@ -83,7 +93,7 @@ class Config(dict):
 	>>> Config.database.connection('mongodb').port
 	27017
 	'''
-	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader()}
+	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader()}
 	def __init__(self):
 		print("__init__ start")
 	def __call__(self,*args,**kw):
@@ -94,6 +104,9 @@ class Config(dict):
 	@classproperty
 	def session(cls):
 		return cls._config_loader.get('session')
+	@classproperty
+	def authentication(cls):
+		return cls._config_loader.get('authentication')
 	def __getattr__(cls,key):
 		return 'not attribute found'
 if __name__=='__main__':
@@ -113,4 +126,7 @@ if __name__=='__main__':
 	print(Config.database.port)
 	print(Config.database.password)
 	print(Config.database.connection('mongodb').port)
+	print(Config.authentication.auth_table)
+	print(Config.authentication.auth_id)
+	print(Config.authentication.login_url)
 	'''
