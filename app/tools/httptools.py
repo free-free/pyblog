@@ -83,7 +83,12 @@ class AppContainer(dict):
 				self.clear_cookie('ssnid')
 				if not hasattr(self,'_session_instance'):
 					self._session_instance=SessionManager()
-				self._session_instance.delete(session_id)	
+				self._session_instance.delete(session_id)
+
+class Auth(object):
+	def __init__(self,*arg,**kw):
+		super(Auth,self).__init__(*args,**kw)
+		
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
