@@ -29,6 +29,7 @@ class AppContainer(dict):
 		self._app['set_cookie']=[]
 		self._app['del_cookie']=[]
 		self._app['response']=''
+		self._app['__redirect__']=''
 		super(AppContainer,self).__init__(**kw)
 	def get_argument(self,name,default=None):
 		if name not  in self._post and name not in self._get:
@@ -84,8 +85,11 @@ class AppContainer(dict):
 				if not hasattr(self,'_session_instance'):
 					self._session_instance=SessionManager()
 				self._session_instance.delete(session_id)
-
-					
+	def auth(self,auth=False):
+		if auth:
+			user_id=self.session['name']
+			if not user_id:
+				print('redirect to login_url')
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -108,8 +112,8 @@ class BaseHandler(object):
 		self._app['get']=request.GET if request.GET else {}
 		self._app['post']=post if post else {}
 		container=AppContainer(app=self._app)
+		container.auth(self._handler.__auth__)
 		args=self._handler.__args__
-		
 		if len(args)==1:
 			response=yield from self._handler(container)
 		elif len(args)>1:
