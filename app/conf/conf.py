@@ -40,3 +40,8 @@ session={
 		}
 	}
 }
+authentication={
+	'auth_table':'users',
+	'auth_id':'id',
+	'login_url':'/login'
+}
