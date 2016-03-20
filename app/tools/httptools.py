@@ -9,6 +9,8 @@ import json
 logging.basicConfig(level=logging.INFO)
 from   tools.log import Log
 from   tools.session import SessionManager
+from   tools.config import Config
+import aiohttp.web
 try:
 	import asyncio
 except ImportError:
@@ -29,7 +31,8 @@ class AppContainer(dict):
 		self._app['set_cookie']=[]
 		self._app['del_cookie']=[]
 		self._app['response']=''
-		self._app['__redirect__']=''
+		self._app['redirect']=''
+		self._config=Config
 		super(AppContainer,self).__init__(**kw)
 	def get_argument(self,name,default=None):
 		if name not  in self._post and name not in self._get:
@@ -87,11 +90,12 @@ class AppContainer(dict):
 				self._session_instance.delete(session_id)
 	def auth(self,auth=False):
 		if auth:
-			user_id=self.session['name']
+			user_id=self.session[self._config.authentication.auth_id]
 			if not user_id:
-				self.redirect('/')
+				self.redirect(self._config.authentication.login_url)
 	def redirect(self,url):
-		self._app['__redirect__']=url
+		self._app['redirect']=url
+		print(self._app['redirect'])
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -132,8 +136,6 @@ class BaseHandler(object):
 
 
 
-
-
 class Middleware(object):
 	def response(app,handler):
 		def check_set_cookie(res):
@@ -150,6 +152,10 @@ class Middleware(object):
 		def _response(request):
 			res=yield from handler(request)
 			res=res if res else app.get('response')
+			if app.get('redirect'):
+				redirect_url=app.get('redirect')
+				app['redirect']=''
+				return aiohttp.web.HTTPFound(redirect_url)
 			if isinstance(res,web.StreamResponse):
 				res=res
 			elif isinstance(res,bytes):
@@ -218,6 +224,7 @@ class Route(object):
 				return func(*args,**kw)
 			wrapper.__method__='POST'
 			wrapper.__url__=url
+			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper
@@ -230,6 +237,7 @@ class Route(object):
 				return func(*args,**kw)
 			wrapper.__method__='PUT'
 			wrapper.__url__=url
+			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper
@@ -242,6 +250,7 @@ class Route(object):
 				return func(*args,**kw)
 			wrapper.__method__='DELETE'
 			wrapper.__url__=url
+			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper
