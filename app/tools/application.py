@@ -11,6 +11,7 @@ from tools.httptools import Middleware,Route
 from tools.template  import Template
 from tools.config import Config
 from tools.database import DB
+from tools.session import SessionManager
 logging.basicConfig(level=logging.INFO)
 class Application(web.Application):
 	def __init__(self):
