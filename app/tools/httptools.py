@@ -85,10 +85,7 @@ class AppContainer(dict):
 					self._session_instance=SessionManager()
 				self._session_instance.delete(session_id)
 
-class Auth(object):
-	def __init__(self,*arg,**kw):
-		super(Auth,self).__init__(*args,**kw)
-		
+					
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -195,19 +192,20 @@ class Route(object):
 	def __init__(self):
 		pass
 	@classmethod
-	def get(cls,url):
+	def get(cls,url,*,auth=False):
 		def decorator(func):
 			@functools.wraps(func)
 			def wrapper(*args,**kw):
 				return func(*args,**kw)
 			wrapper.__method__='GET'
 			wrapper.__url__=url
+			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
-	def post(cls,url):
+	def post(cls,url,*,auth=False):
 		def decorator(func):
 			@functools.wraps(func)
 			def wrapper(*args,**kw):
@@ -219,7 +217,7 @@ class Route(object):
 			return wrapper
 		return decorator
 	@classmethod
-	def put(cls,url):
+	def put(cls,url,*,auth=False):
 		def decorator(func):
 			@functools.wraps(func)
 			def wrapper(*args,**kw):
@@ -231,7 +229,7 @@ class Route(object):
 			return wrapper
 		return decorator
 	@classmethod
-	def delete(cls,url):
+	def delete(cls,url,*,auth=False):
 		def decorator(func):
 			@functools.wraps(func)
 			def wrapper(*args,**kw):
