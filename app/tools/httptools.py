@@ -89,7 +89,9 @@ class AppContainer(dict):
 		if auth:
 			user_id=self.session['name']
 			if not user_id:
-				print('redirect to login_url')
+				self.redirect('/')
+	def redirect(self,url):
+		self._app['__redirect__']=url
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
