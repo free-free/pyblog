@@ -94,7 +94,6 @@ class AppContainer(dict):
 				self.redirect(self._config.authentication.login_url)
 	def redirect(self,url):
 		self._app['redirect']=url
-		print(self._app['redirect'])
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
