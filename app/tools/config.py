@@ -141,7 +141,7 @@ class Config(dict):
 	def __getattr__(cls,key):
 		return 'not attribute found'
 if __name__=='__main__':
-	doctest.testmod()
+	'''doctest.testmod()'''
 	r'''
 	print(Config.session.session_dir)
 	print(Config.session.expire_file)
