@@ -66,7 +66,9 @@ class SessionConfigLoader(object):
 		if driver_name.lower() not in self._all_drivers:
 			raise AttributeError("session confgi has no driver '%s'"%(driver_name.lower()))
 		return self._config['drivers'][driver_name.lower()]
-	def _driver(self,driver_name):
+	def _driver(self,driver_name,return_all=False):
+		if return_all:
+			return self._get_specific_driver_all_config_item(driver_name)
 		self._specific_driver=driver_name.lower()
 		return self
 	def __getattr__(self,key):
@@ -79,10 +81,6 @@ class SessionConfigLoader(object):
 				return self._default_driver
 			return self._get_specific_driver_config_item(key,self._default_driver)
 		else:
-			if key.lower()=='all':
-				allitem=self._get_specific_driver_all_config_item(self._specific_driver)
-				self._specific_driver=None
-				return allitem
 			if key.lower()=='driver_name':
 				driver_name=self._specific_driver
 				self._specific_driver=None
@@ -170,10 +168,10 @@ if __name__=='__main__':
 	print(Config.database.connection('mysql').connection_name)
 	print(Config.database.connection('mysql',True))
 	print(Config.database.connection('mysql').port)
-	'''
 	print(Config.session.all)
 	print(Config.session.driver_name)
 	print(Config.session.expire)
-	print(Config.session.driver('redis').all)
+	print(Config.session.driver('redis',True))
 	print(Config.session.driver('redis').driver_name)
 	print(Config.session.driver('redis').port)
+	'''
