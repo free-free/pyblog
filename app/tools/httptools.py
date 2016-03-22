@@ -67,9 +67,9 @@ class AppContainer(dict):
 		if not hasattr(self,'_session_instance'):
 			session_id=self.get_cookie('ssnid')
 			if not session_id:
-				self._session_instance=SessionManager()
+				self._session_instance=SessionManager(driver=self._config.session.driver_name,config=self._config.session.all)
 			else:
-				self._session_instance=SessionManager(session_id)
+				self._session_instance=SessionManager(session_id,driver=self._config.session.driver_name,config=self._config.session.all)
 		return self._session_instance
 	def session_end(self,expire=None):
 		if hasattr(self,'_session_instance'):
@@ -78,14 +78,14 @@ class AppContainer(dict):
 	def session_destroy(self,session_id=None):
 		if session_id:
 			if not hasattr(self,'_session_instance'):
-				self._session_instance=SessionManager()
+				self._session_instance=SessionManager(driver=self._config.session.driver_name,config=self._config.session.all)
 			self._session_instance.delete(session_id)
 		else:
 			session_id=self.get_cookie("ssnid")
 			if  session_id:
 				self.clear_cookie('ssnid')
 				if not hasattr(self,'_session_instance'):
-					self._session_instance=SessionManager()
+					self._session_instance=SessionManager(driver=self._config.session.driver_name,config=self._config.session.all)
 				self._session_instance.delete(session_id)
 	def auth(self,auth=False):
 		if auth:
