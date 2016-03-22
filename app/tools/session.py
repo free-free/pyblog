@@ -249,7 +249,7 @@ class RedisSession(Session):
 			self._data[self._session_id]={}
 		super(RedisSession,self).__init__(self._session_id)
 	def get(self,sname):
-		return self._data[self._session_id].get(sname.encode('utf-8')).decode('utf-8')
+		return self._data[self._session_id].get(sname.encode('utf-8'),b'').decode('utf-8')
 	def set(self,sname,svalue):
 		self._data[self._session_id][sname]=svalue
 		return self
