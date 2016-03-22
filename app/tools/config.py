@@ -84,6 +84,11 @@ class SessionConfigLoader(object):
 			if key.lower()=='all':
 				allitem=self._get_specific_driver_all_config_item(self._specific_driver)
 				self._specific_driver=None
+				return allitem
+			if key.lower()=='driver_name':
+				driver_name=self._specific_driver
+				self._specific_driver=None
+				return driver_name
 			item=self._get_specific_driver_config_item(key,self._specific_driver)
 			self._specific_driver=None
 			return item
@@ -167,4 +172,10 @@ if __name__=='__main__':
 	print(Config.database.connection('mysql').all)
 	print(Config.database.user)
 	print(Config.database.connection('mysql').port)
+	print(Config.session.all)
+	print(Config.session.driver_name)
+	print(Config.session.expire)
+	print(Config.session.driver('redis').all)
+	print(Config.session.driver('redis').driver_name)
+	print(Config.session.driver('redis').port)
 	'''
