@@ -21,7 +21,7 @@ class DBConfigLoader(object):
 			raise AttributeError("database connection has no such item '%s'"%item_name)
 	def _get_specific_connection_all_config_item(self,connection):
 		if connection.lower() not in self._all_connections:
-			raise AttributeError("database config has no connection %"%connection.lower())
+			raise AttributeError("database config has no connection '%s'"%connection.lower())
 		return self._config['connections'][connection]
 	def _connection(self,conn_name):
 		self._specific_connection=conn_name.lower()
@@ -37,7 +37,7 @@ class DBConfigLoader(object):
 			return self._get_specific_connection_config_item(key,self._default_connection)
 		else:
 			if key.lower()=='connection_name':
-				coon_name=self._specific_connection
+				conn_name=self._specific_connection
 				self._specific_connection=None
 				return conn_name
 			if key.lower()=='all':
@@ -64,6 +64,10 @@ class SessionConfigLoader(object):
 			return self._config['drivers'][driver_name].get(item_name)
 		else:
 			raise AttributeError("session driver %s has no such item '%s'"%(driver_name,item_name))
+	def _get_specific_driver_all_config_item(self,driver_name):
+		if driver_name.lower() not in self._all_drivers:
+			raise AttributeError("session confgi has no driver '%s'"%(driver_name.lower()))
+		return self._config['drivers'][driver_name.lower()]
 	def _driver(self,driver_name):
 		self._specific_driver=driver_name.lower()
 		return self
@@ -71,8 +75,15 @@ class SessionConfigLoader(object):
 		if key.upper()=='DRIVER':
 			return self._driver
 		if  not self._specific_driver:
+			if key.lower()=='all':
+				return self._get_specific_driver_all_config_item(self._default_driver)
+			if key.lower()=='driver_name':
+				return self._default_driver
 			return self._get_specific_driver_config_item(key,self._default_driver)
 		else:
+			if key.lower()=='all':
+				allitem=self._get_specific_driver_all_config_item(self._specific_driver)
+				self._specific_driver=None
 			item=self._get_specific_driver_config_item(key,self._specific_driver)
 			self._specific_driver=None
 			return item
@@ -148,4 +159,12 @@ if __name__=='__main__':
 	print(Config.authentication.auth_table)
 	print(Config.authentication.auth_id)
 	print(Config.authentication.login_url)
+	'''
+	r'''
+	print(Config.database.all)
+	print(Config.database.connection_name)
+	print(Config.database.connection('mysql').connection_name)
+	print(Config.database.connection('mysql').all)
+	print(Config.database.user)
+	print(Config.database.connection('mysql').port)
 	'''
