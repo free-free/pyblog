@@ -36,12 +36,11 @@ class AppContainer(dict):
 		super(AppContainer,self).__init__(**kw)
 	def get_argument(self,name,default=None):
 		if name not  in self._post and name not in self._get:
-			raise AttributeError("Can't found '%s' attribute"%name)
+			return default
 		if name in self._post:
 			return self._post[name]
 		if name in self._get:
 			return self._get[name]
-		return default
 	def get_all_cookies(self):
 		return self._cookie
 	def get_cookie(self,cookie_name,default=None):
