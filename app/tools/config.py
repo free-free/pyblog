@@ -14,22 +14,39 @@ class DBConfigLoader(object):
 		self._specific_connection=None
 	def _get_specific_connection_config_item(self,item_name,connection):
 		if connection.lower() not in self._all_connections:
-			raise AttributeError("database config has not connection %s"%connection.lower())
+			raise AttributeError("database config has no connection %s"%connection.lower())
 		if item_name in self._config['connections'][connection]:
 			return self._config['connections'][connection][item_name]
 		else:
-			raise AttributeError("database connection has not such item '%s'"%item_name)
+			raise AttributeError("database connection has no such item '%s'"%item_name)
+	def _get_specific_connection_all_config_item(self,connection):
+		if connection.lower() not in self._all_connections:
+			raise AttributeError("database config has no connection %"%connection.lower())
+		return self._config['connections'][connection]
 	def _connection(self,conn_name):
 		self._specific_connection=conn_name.lower()
 		return self
-
 	def __getattr__(self,key):
 		if key.upper()=='CONNECTION':
 			return self._connection
 		if not self._specific_connection:
+			if key.lower()=='connection_name':
+				return self._default_connection
+			if key.lower()=='all':
+				return self._get_specific_connection_all_config_item(self._default_connection)
 			return self._get_specific_connection_config_item(key,self._default_connection)
 		else:
-			return self._get_specific_connection_config_item(key,self._specific_connection)
+			if key.lower()=='connection_name':
+				coon_name=self._specific_connection
+				self._specific_connection=None
+				return conn_name
+			if key.lower()=='all':
+				allitem= self._get_specific_connection_all_config_item(self._specific_connection)
+				self._specific_connection=None
+				return allitem
+			item=self._get_specific_connection_config_item(key,self._specific_connection)
+			self._specific_connection=None
+			return item
 class SessionConfigLoader(object):
 	_all_drivers=('redis','file','mongo')
 	def __new__(cls,*args,**kw):
@@ -56,7 +73,9 @@ class SessionConfigLoader(object):
 		if  not self._specific_driver:
 			return self._get_specific_driver_config_item(key,self._default_driver)
 		else:
-			return self._get_specific_driver_config_item(key,self._specific_driver)
+			item=self._get_specific_driver_config_item(key,self._specific_driver)
+			self._specific_driver=None
+			return item
 class AuthConfigLoader(object):
 	def __new__(cls,*args,**kw):
 		if not hasattr(cls,'_config_instance'):
