@@ -23,7 +23,9 @@ class DBConfigLoader(object):
 		if connection.lower() not in self._all_connections:
 			raise AttributeError("database config has no connection '%s'"%connection.lower())
 		return self._config['connections'][connection]
-	def _connection(self,conn_name):
+	def _connection(self,conn_name,return_all=False):
+		if return_all:
+			return self._get_specific_connection_all_config_item(conn_name)
 		self._specific_connection=conn_name.lower()
 		return self
 	def __getattr__(self,key):
@@ -40,10 +42,6 @@ class DBConfigLoader(object):
 				conn_name=self._specific_connection
 				self._specific_connection=None
 				return conn_name
-			if key.lower()=='all':
-				allitem= self._get_specific_connection_all_config_item(self._specific_connection)
-				self._specific_connection=None
-				return allitem
 			item=self._get_specific_connection_config_item(key,self._specific_connection)
 			self._specific_connection=None
 			return item
@@ -168,14 +166,14 @@ if __name__=='__main__':
 	r'''
 	print(Config.database.all)
 	print(Config.database.connection_name)
+	print(Config.database.port)
 	print(Config.database.connection('mysql').connection_name)
-	print(Config.database.connection('mysql').all)
-	print(Config.database.user)
+	print(Config.database.connection('mysql',True))
 	print(Config.database.connection('mysql').port)
+	'''
 	print(Config.session.all)
 	print(Config.session.driver_name)
 	print(Config.session.expire)
 	print(Config.session.driver('redis').all)
 	print(Config.session.driver('redis').driver_name)
 	print(Config.session.driver('redis').port)
-	'''
