@@ -32,6 +32,14 @@ class Article(Model):
 	view_num=Column(Int(4,unsigned=True),default=0)
 class Category(Model):
 	__table__='categorys'
+	id=Column(Int(4,unsigned=True),primary_key=True,auto_increment=True)
+	uid=Column(Int(4,unsigned=True))
+	cate_text=Column(String(100))
+	cate_image=Column(String(200))
+	creat_at=Column(Flot(),default=time.time())
+	article_num=Column(Int(4,unsigned=True),default=0)
+	cate_desc=Column(String(400),default='')
+
 #class Need(Model):
 #	__table__='needs'
 #	id=Column(Int(4,unsigned=True),primary_key=True,null=False,auto_increment=True)
