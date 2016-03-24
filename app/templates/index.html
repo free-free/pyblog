@@ -1,22 +1,116 @@
-<!DOCTYPE>
+<!DOCTYPE HTML>
 <html>
 <head>
 <meta charset="utf-8">
-<style type="text/css">
-	.conainer{
-		
-	}
-</style>
+<link rel="stylesheet" type="text/css" href="./font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="./index.css?version=3.0">
+<link rel="stylesheet" type="text/css" href="./buttons.css">
 </head>
 <body>
-	<div class="container">
-		Navigator
+	<div class="header">
+		<div class="navigator-bar">
+			<div class="navigator-bar-container">
+				<span class="nb-title"><a href="index.html" >Whoami's Blog</a></span>
+				    <div class="nb-user-center">
+					        <a class="nb-user-btn" href="#"><i class="icon-user icon-large"></i></a>
+					        <a class="nb-user-dropdown" data-toggle="dropdown" href="#"><span class="icon-caret-down"></span></a>
+					        
+   				 </div>
+		   </div>
+		</div>
+		<div class="navigator-content">
+			<div class="navigator-content-container">
+				<ul class="category"> 
+					<li ><a class="category-item category-current-item" href="index.html"><i class="icon-home"></i>主页</a></li>	
+					<li ><a  class="category-item"href="article.html"><i class="icon-book"></i>印记</a></li>
+					<li ><a class="category-item" href="list.html"><i class="icon-list-alt"></i>归档</a></li>
+					<li ><a class="category-item" href="me.html"><i class="icon-user"></i>关于</a></li>
+					<div class='clear-fix'></div>
+				</ul>
+				
+			</div>
+ 		</div>
 	</div>
-	<div class="container">
-		Content
+	<div class="main">
+		<div class="main-container">
+			<div class="new-post">	
+				<div class="np-seg-title"><span class="np-seg-icon-lightbulb-span"><i class="icon-lightbulb"></i></span>最新<span class="np-seg-icon-folder-span"><i class="icon-folder-close-alt"></i></span>
+				</div>
+				<div class="new-post-container">
+					<div class="post-article post-article1" id="1">
+							<div class="post-article-header-line">
+								<span class="icon-file-span"><i class="icon-file-alt icon-large"></i></span><a href="#" class="post-article-name-span">linux container</a>
+								<a class="read-btn"></a>
+							</div>
+							<div class="post-article-desc">
+								MSIE 正好相反，它使用 event.clientX 和 event.clientY 表示鼠标相当于窗口的位置，而不是文档。在同样的例子中，如果你向下滚动500，clientY 依然是 250，因此，我们需要添加 scrollLeft 和 scrollTop 这两个相对于文档的属性。最后，MSIE 中文档并不是从 0，0 开始，而是通常有一个小的边框（通常是 2 象素），边框的大小定义在 document.body.clientLeft 和 clientTop 中，我们也把这些加进去
+								MSIE 正好相反，它使用 event.clientX 和 event.clientY 表示鼠标相当于窗口的位置，而不是文档。在同样的例子中，如果你向下滚动500，clientY 依然是 250，因此，我们需要添加 scrollLeft 和 scrollTop 这两个相对于文档的属性。最后，MSIE 中文档并不是从 0，0 开始，而是通常有一个小的边框（通常是 2 象素），边框的大小定义在 document.body.clientLeft 和 clientTop 中，我们也把这些加进去
+							</div>
+							<div class="post-article-info">
+									<span class="info-item post-date">发表日期:2016/03/22</span>
+									<span class="info-item post-category">分类:linux</span>
+									<span class="info-item check-num">阅读(20)</span>
+							</div>
+					</div>
+					<div class="post-article post-article2" id="2">
+						<div class="post-article-header-line">
+								<span class="icon-file-span"><i class="icon-file-alt icon-large"></i></span><span class="post-article-name-span"></span>
+								<a class="read-btn"></a>
+						</div>
+						<div class="post-article-desc"></div>
+					</div>
+					<div class="post-article post-article3" id="3">
+						<div class="post-article-header-line">
+								<span class="icon-file-span"><i class="icon-file-alt icon-large"></i></span><span class="post-article-name-span"></span>
+								<a class="read-btn"></a>
+						</div>
+							<div class="post-article-desc"></div>
+					</div>
+					<div class="post-article post-article4" id="4">
+						<div class="post-article-header-line">
+								<span class="icon-file-span"><i class="icon-file-alt icon-large"></i></span><span class="post-article-name-span"></span>
+								<a class="read-btn"></a>
+						</div>
+							<div class="post-article-desc"></div>
+					</div>
+				</div>
+			</div>
+			<div class="user-activity">
+				<div class="user-activity-header">
+					<span class="u-a-span share hand-right-current-span">分享<span class="icon-hand-right-span"><i class="icon-hand-right"></i></span></span>
+					<span class="u-a-span recommend">推荐</span>
+					<span class="u-a-span reading">在读</span>
+				</div>
+				<div class="user-activity-content-container">
+					<div class="share-content">
+
+					</div>
+					<div clas="recomment-content">
+
+					</div>
+					<div class="reading-content">
+
+					</div >
+				</div>
+			</div>
+		</div>
 	</div>
-	<div class="container">
-		Footer
-	</div>
+	<div class="footer">
+		<div class="footer-container">
+			<div class="footer-content">
+				<span class="copyright">&copy;2015-2016,By Whoami.</span>
+				<a class="footer-item" href="https://twitter.com"><i class="icon-twitter"></i>Twitter</a>
+				<a class="footer-item" href="https://www.facebook.com"><i class="icon-facebook" ></i>facebook</a>
+				<a class="footer-item" href="https://www.facebook.com"><i class="icon-github" href="https://github.com/free-free"></i>Github</a>
+				<a class="footer-item" href="https://www.facebook.com"><i class="icon-spinner" href="https://weibo.com"></i>Weibo</a>
+				<a class="footer-item" href="mailto:19941222hb@gmail.com"><i class="icon-envelope"></i>Mail</a>
+			</div>
+		</div>
+	</div>	
+	
 </body>
+<script type="text/javascript" src="./jquery.min.js">
+</script>
+<script type="text/javascript" src="./navigator.js"></script>
+<script type="text/javascript" src="index.js"></script>
 </html>
