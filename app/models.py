@@ -39,7 +39,13 @@ class Category(Model):
 	creat_at=Column(Flot(),default=time.time())
 	article_num=Column(Int(4,unsigned=True),default=0)
 	cate_desc=Column(String(400),default='')
-
+class Comment(Model):
+	__table__='comments'
+	id=Column(Int(4,unsigned=True),primary_key=True,auto_increment=True)
+	uid=Column(Int(4,unsigned=True),null=False)
+	article_id=Column(Int(4,unsigned=True))
+	comment_text=Column(String(1000))
+	
 #class Need(Model):
 #	__table__='needs'
 #	id=Column(Int(4,unsigned=True),primary_key=True,null=False,auto_increment=True)
