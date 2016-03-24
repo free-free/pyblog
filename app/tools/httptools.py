@@ -9,6 +9,8 @@ import json
 logging.basicConfig(level=logging.INFO)
 from   tools.log import Log
 from   tools.session import SessionManager
+from   tools.config import Config
+import aiohttp.web
 try:
 	import asyncio
 except ImportError:
@@ -29,15 +31,16 @@ class AppContainer(dict):
 		self._app['set_cookie']=[]
 		self._app['del_cookie']=[]
 		self._app['response']=''
+		self._app['redirect']=''
+		self._config=Config
 		super(AppContainer,self).__init__(**kw)
 	def get_argument(self,name,default=None):
 		if name not  in self._post and name not in self._get:
-			raise AttributeError("Can't found '%s' attribute"%name)
+			return default
 		if name in self._post:
 			return self._post[name]
 		if name in self._get:
 			return self._get[name]
-		return default
 	def get_all_cookies(self):
 		return self._cookie
 	def get_cookie(self,cookie_name,default=None):
@@ -64,9 +67,9 @@ class AppContainer(dict):
 		if not hasattr(self,'_session_instance'):
 			session_id=self.get_cookie('ssnid')
 			if not session_id:
-				self._session_instance=SessionManager()
+				self._session_instance=SessionManager(driver=self._config.session.driver_name,config=self._config.session.all)
 			else:
-				self._session_instance=SessionManager(session_id)
+				self._session_instance=SessionManager(session_id,driver=self._config.session.driver_name,config=self._config.session.all)
 		return self._session_instance
 	def session_end(self,expire=None):
 		if hasattr(self,'_session_instance'):
@@ -75,15 +78,22 @@ class AppContainer(dict):
 	def session_destroy(self,session_id=None):
 		if session_id:
 			if not hasattr(self,'_session_instance'):
-				self._session_instance=SessionManager()
+				self._session_instance=SessionManager(driver=self._config.session.driver_name,config=self._config.session.all)
 			self._session_instance.delete(session_id)
 		else:
 			session_id=self.get_cookie("ssnid")
 			if  session_id:
 				self.clear_cookie('ssnid')
 				if not hasattr(self,'_session_instance'):
-					self._session_instance=SessionManager()
-				self._session_instance.delete(session_id)	
+					self._session_instance=SessionManager(driver=self._config.session.driver_name,config=self._config.session.all)
+				self._session_instance.delete(session_id)
+	def auth(self,auth=False):
+		if auth:
+			user_id=self.session[self._config.authentication.auth_id]
+			if not user_id:
+				self.redirect(self._config.authentication.login_url)
+	def redirect(self,url):
+		self._app['redirect']=url
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -106,8 +116,8 @@ class BaseHandler(object):
 		self._app['get']=request.GET if request.GET else {}
 		self._app['post']=post if post else {}
 		container=AppContainer(app=self._app)
+		container.auth(self._handler.__auth__)
 		args=self._handler.__args__
-		
 		if len(args)==1:
 			response=yield from self._handler(container)
 		elif len(args)>1:
@@ -121,8 +131,6 @@ class BaseHandler(object):
 		else:
 			response=None
 		return response
-
-
 
 
 
@@ -142,6 +150,10 @@ class Middleware(object):
 		def _response(request):
 			res=yield from handler(request)
 			res=res if res else app.get('response')
+			if app.get('redirect'):
+				redirect_url=app.get('redirect')
+				app['redirect']=''
+				return aiohttp.web.HTTPFound(redirect_url)
 			if isinstance(res,web.StreamResponse):
 				res=res
 			elif isinstance(res,bytes):
@@ -190,49 +202,53 @@ class Route(object):
 	def __init__(self):
 		pass
 	@classmethod
-	def get(cls,url):
+	def get(cls,url,*,auth=False):
 		def decorator(func):
 			@functools.wraps(func)
 			def wrapper(*args,**kw):
 				return func(*args,**kw)
 			wrapper.__method__='GET'
 			wrapper.__url__=url
+			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
-	def post(cls,url):
+	def post(cls,url,*,auth=False):
 		def decorator(func):
 			@functools.wraps(func)
 			def wrapper(*args,**kw):
 				return func(*args,**kw)
 			wrapper.__method__='POST'
 			wrapper.__url__=url
+			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
-	def put(cls,url):
+	def put(cls,url,*,auth=False):
 		def decorator(func):
 			@functools.wraps(func)
 			def wrapper(*args,**kw):
 				return func(*args,**kw)
 			wrapper.__method__='PUT'
 			wrapper.__url__=url
+			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
-	def delete(cls,url):
+	def delete(cls,url,*,auth=False):
 		def decorator(func):
 			@functools.wraps(func)
 			def wrapper(*args,**kw):
 				return func(*args,**kw)
 			wrapper.__method__='DELETE'
 			wrapper.__url__=url
+			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
 			Route._routes.add(wrapper)
 			return wrapper

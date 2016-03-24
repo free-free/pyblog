@@ -3,24 +3,28 @@ from tools.application import Application
 from tools.template import Template
 from tools.httptools import Route
 from models import *
+import aiohttp.web
 import hashlib
 import uuid
 @Route.get('/')
 def index(app):
 	user=yield from  User().findone()
-	print(user.email)
-	app.session['dog']='Tom'
-	app.session['age']=2
+	app.session['id']=1
+	app.session['name']='huamgbiao'
 	app.session_end()
 	#app.set_cookie('sl',uuid.uuid1())
 	#app.set_cookie('date',uuid.uuid4())
 	#app.clear_cookie('sl')
 	#return Template('index.html').render(user=user)
-	app.render('hello')
-@Route.get('/session_get')
+	app.redirect('/login')
+@Route.get('/session_get',auth=True)
 def session_get(app):
-	print("dog",app.session['dog'])
-	print("dog",app.session['age'])	
+	print("id",app.session['id'])
+	print("name",app.session['name'])
+	return 'sessin_get'
+@Route.get('/login')
+def login(app):
+	return 'login'	
 @Route.get('/session_destroy')
 def session_destroy(app):
 	app.session_destroy()
@@ -34,7 +38,7 @@ def get_cookie(app):
 	date=app.get_cookie('date')
 	print(app.get_all_cookies())
 	app.render( '%s\r\n%s'%(sl,date))
-@Route.get('/user/{id}/comment/{comment}')
+@Route.get('/user/{id}/comment/{comment}',auth=True)
 def user(app,id,comment):
 	u=User()
 	user=yield from u.findone()

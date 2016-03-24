@@ -59,7 +59,7 @@ class FileSession(Session):
 		if not config:
 			self._session_dir='/tmp/session'
 			self._session_expire_file='/tmp/session/session_expire'
-			self._expire=0
+			self._session_expire=0
 		else:
 			if not isinstance(config,dict):
 				raise TypeError("FileSession config must be dict type")
@@ -249,7 +249,7 @@ class RedisSession(Session):
 			self._data[self._session_id]={}
 		super(RedisSession,self).__init__(self._session_id)
 	def get(self,sname):
-		return self._data[self._session_id].get(sname.encode('utf-8'))
+		return self._data[self._session_id].get(sname.encode('utf-8'),b'').decode('utf-8')
 	def set(self,sname,svalue):
 		self._data[self._session_id][sname]=svalue
 		return self
@@ -288,9 +288,9 @@ class RedisSession(Session):
 			self._data[self._session_id]={}
 			return ssid	
 	def __getitem__(self,key):
-		return self._data[self._session_id].get(key)
+		return self.get(key)
 	def __setitem__(self,key,value):
-		self._data[self._session_id][key]=value
+		self.set(key,value)
 class SessionManager(object):
 	_drivers={}
 	_default_driver=None
@@ -361,6 +361,7 @@ class SessionManager(object):
 		else:
 			return self._specific_driver.delete(sesion_id)
 if __name__=='__main__':
+	r'''
 	#file=SessionManager()
 	#file.set('name','Jell')
 	#file.set('email','dejiejfioe@gmail.com')
@@ -375,13 +376,11 @@ if __name__=='__main__':
 	#redis.set('email','18281573692@163.com')
 	#print(redis.session_id)
 	#redis.save()
-
-	#redis=SessionManager("84f4d9f0edd211e5b3bb080027116c59",driver='redis')
+	#redis=SessionManager("6a552f58efe111e5b143080027116c59",driver='redis')
+	#print(redis['id'])
 	#print(redis['name'])
-	#print(redis['email'])
 	#print(redis.session_id)
 	#print(redis.delete())
-
 	#redis=SessionManager(driver='redis')
 	#redis['name']='xiaohong'
 	#redis['age']=100
@@ -394,3 +393,4 @@ if __name__=='__main__':
 	#file.delete()
 	
 	#file.renew().set('name','xiaoming').set('age',48).save()
+	'''
