@@ -45,7 +45,14 @@ class Comment(Model):
 	uid=Column(Int(4,unsigned=True),null=False)
 	article_id=Column(Int(4,unsigned=True))
 	comment_text=Column(String(1000))
-	
+class Image(Model):
+	__table__='images'
+	id=Column(Int(4,unsigned=True),primary_key=True,auto_increment=True)
+	uid=Column(Int(4,unsigned=True))
+	type_id=Column(Int(2,unsigned=True))	
+	belong_id=Column(Int(4,unsigned=True))
+	url=Column(String(300))
+
 #class Need(Model):
 #	__table__='needs'
 #	id=Column(Int(4,unsigned=True),primary_key=True,null=False,auto_increment=True)
