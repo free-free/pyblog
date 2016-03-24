@@ -52,7 +52,13 @@ class Image(Model):
 	type_id=Column(Int(2,unsigned=True))	
 	belong_id=Column(Int(4,unsigned=True))
 	url=Column(String(300))
-
+class Music(Model):
+	__table__='musics'
+	id=Column(Int(4,unsigned=True),primary_key=True,auto_increment=True)
+	uid=Column(Int(4,unsigned=True))
+	type_id=Column(Int(4,unsigned=True))
+	belong_id=Column(Int(4,unsigned=True))
+	url=Column(String(300))
 #class Need(Model):
 #	__table__='needs'
 #	id=Column(Int(4,unsigned=True),primary_key=True,null=False,auto_increment=True)
