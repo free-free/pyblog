@@ -13,17 +13,33 @@ class User(Model):
 	user_name=Column(String(50),unique_key=True,null=False)
 	password=Column(String(100),null=False)
 	email=Column(String(50),unique_key=True,null=False)
-	image=Column(String(300))
+	user_image=Column(String(300))
+	last_login=Column(String(20))
 	create_at=Column(Float(),default=time.time())
-
-class Need(Model):
-	__table__='needs'
+	gender=Column(Int(1,unsigned=True))
+	location=Column(String(50))
+	desc=Column(String(600))
+class Article(Model):
+	__table__='articles'
 	id=Column(Int(4,unsigned=True),primary_key=True,null=False,auto_increment=True)
-	user_id=Column(Int(4,unsigned=True),null=False)
-	content=Column(Text(),null=False)
-	create_at=Column(Float(),default=time.time())
-	is_solved=Column(Boolean(),default=False)
-	solved_user_id=Column(Int(4,unsigned=True),default=0)
+	uid=Column(Int(4,unsigned=True),null=False)
+	cate_id=Column(Int(4,unsigned=True),null=False)
+	content=Column(Text())
+	post_at=Column(Float(),default=time.time())
+	modify_at=Column(String(20))
+	auth_password=Column(String(100),default="")
+	abstract=Column(String(400))
+	view_num=Column(Int(4,unsigned=True),default=0)
+class Category(Model):
+	__table__='categorys'
+#class Need(Model):
+#	__table__='needs'
+#	id=Column(Int(4,unsigned=True),primary_key=True,null=False,auto_increment=True)
+#	user_id=Column(Int(4,unsigned=True),null=False)
+#	content=Column(Text(),null=False)
+#	create_at=Column(Float(),default=time.time())
+#	is_solved=Column(Boolean(),default=False)
+#	solved_user_id=Column(Int(4,unsigned=True),default=0)
 
 if __name__=='__main__':
 	print(Need().__table__)	
