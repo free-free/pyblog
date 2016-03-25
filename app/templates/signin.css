@@ -150,11 +150,13 @@ body{
 	text-decoration: none;
 	padding-left: 10px;
 	letter-spacing: 0px;
-	color: #215cb5;
+	/*color: #215cb5;*/
+	color:#408dd1;
 	font-size: 12px;
 	cursor: pointer;
 }
 .footer-item:hover{
-	color: #215cb5;
+	/*color: #215cb5;*/
+	color:#408dd1;
 	text-decoration: underline;
 }
