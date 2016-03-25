@@ -74,7 +74,8 @@ $(function(){
 				'height':'30px',
 				'lineHeight':'30px',
 				'letterSpacing':'0px',
-				'overflow':'hidden'
+				'overflow':'hidden',
+				'zIndex':99999999999
 			}).hover(function(){
 				$(dropMenu).find('.item-link').css({'color':'#999','background':'#f5f5f5'});
 				$(this).css({
