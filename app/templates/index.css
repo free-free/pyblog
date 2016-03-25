@@ -141,6 +141,8 @@ body{
 	float: right;
 	font-size: 20px;
 }
+
+
 .new-post-container{
 	width: 100%;
 	height: 170px;
@@ -179,12 +181,14 @@ body{
 	line-height: 30px;
 	text-align: center;
 	letter-spacing: 0px;
-	color: #55aaff;
+/*	color: #55aaff;*/
+	color: #4078c0;
 	font-size: 18px;
 }
 .post-article-name-span:hover{
 	text-decoration: underline;
-	color: #55aaff;
+	/*color: #55aaff;*/
+	color: #4078c0;
 }
 .post-article-desc{
 	letter-spacing: 0px;
@@ -205,7 +209,7 @@ body{
 	line-height: 30px;
 	height: 30px;
 	display: inline-block;
-	color: #55aaff;
+	color:#4078c0;
 	font-size: 13px;
 	float: left;
 	letter-spacing: 0px;
@@ -265,11 +269,13 @@ body{
 	padding-right: 10px;
 	text-align: center;
 	/*color: #55aaff;*/
-	color: #8b8b8b;
+	color: #7a7a7a;
 	cursor: pointer;
 }
 .u-a-span:hover{
-	color: #55aaff;
+	/*color: #55aaff;*/
+	color:#408dd1;
+
 
 }
 .icon-hand-right-span{
@@ -279,7 +285,7 @@ body{
 	padding-left: 10px;
 }
 .hand-right-current-span{
-	color: #55aaff;
+	color:#408dd1;
 }
 .user-activity-content-container{
 	height: 400px;
@@ -289,13 +295,55 @@ body{
 	position: relative;
 	box-shadow: 0 0 5px #ccc;
 }
+.user-activity-content{
+	height: 400px;
+	width: 700px;
+	position: absolute;
+	display: none;
+	left: 0px;
+	top: 0px;
+}
+.share-content{
+	top: 0px;
+	display: block;
+	overflow: hidden;
+}
+.reading-content{
+	
+}
+.book-name{
+	width: 100%;
+	height:30px;
+	color: #5b5b5b;
+	line-height: 30px;
+	letter-spacing: 1px;
+	font-size: 22px;
+	overflow: hidden;
+}
+.book-author{
+	width: 100%; 
+	letter-spacing:1px;
+	height:30px;
+	line-height: 30px;
+	font-size: 14px;
+	color: #5b5b5b;
+	overflow: hidden;
+}
+.book-desc{
+	width: 100%;
+	letter-spacing: 0px;
+	line-height: 20px;
+	font-size: 14px;
+	height: 200px;
+	color: #5b5b5b;
+	overflow: hidden;
+}
 .footer-container{
 	height: 100px;
 	width: 100%;
 	border-top: 1px solid #ccc;
 	position: relative;
 }
-
 .footer-content{
 	position: absolute;
 	top: 40px;
@@ -312,11 +360,19 @@ body{
 	text-decoration: none;
 	padding-left: 10px;
 	letter-spacing: 0px;
-	color: #215cb5;
+/*	color: #215cb5;*/
+	color: #408dd1;
 	font-size: 12px;
 	cursor: pointer;
 }
 .footer-item:hover{
-	color: #215cb5;
+	/*color: #215cb5;*/
+	color:#408dd1;
 	text-decoration: underline;
+}
+
+.music-player-container{
+	position: fixed;
+	top: 400px;
+	left: -310px;
 }

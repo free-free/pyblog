@@ -5,6 +5,7 @@
 <link rel="stylesheet" type="text/css" href="./font-awesome.min.css">
 <link rel="stylesheet" type="text/css" href="./index.css?version=3.0">
 <link rel="stylesheet" type="text/css" href="./buttons.css">
+<link rel="stylesheet" type="text/css" href="./player/styles.css">
 </head>
 <body>
 	<div class="header">
@@ -37,7 +38,7 @@
 				<div class="np-seg-title"><span class="np-seg-icon-lightbulb-span"><i class="icon-lightbulb"></i></span>最新<span class="np-seg-icon-folder-span"><i class="icon-folder-close-alt"></i></span>
 				</div>
 				<div class="new-post-container">
-					<div class="post-article post-article1" id="1">
+				<!-- 	<div class="post-article post-article1" id="1">
 							<div class="post-article-header-line">
 								<span class="icon-file-span"><i class="icon-file-alt icon-large"></i></span><a href="#" class="post-article-name-span">linux container</a>
 								<a class="read-btn"></a>
@@ -72,23 +73,19 @@
 								<a class="read-btn"></a>
 						</div>
 							<div class="post-article-desc"></div>
-					</div>
+					</div> -->
 				</div>
 			</div>
 			<div class="user-activity">
 				<div class="user-activity-header">
-					<span class="u-a-span share hand-right-current-span">分享<span class="icon-hand-right-span"><i class="icon-hand-right"></i></span></span>
-					<span class="u-a-span recommend">推荐</span>
-					<span class="u-a-span reading">在读</span>
+					<span id="1" class="u-a-span share hand-right-current-span">分享<span class="icon-hand-right-span"><i class="icon-hand-right"></i></span></span>
+					<span id="2" class="u-a-span reading">在读</span>
 				</div>
 				<div class="user-activity-content-container">
-					<div class="share-content">
+					<div class="user-activity-content share-content current-content" id="1">
 
 					</div>
-					<div clas="recomment-content">
-
-					</div>
-					<div class="reading-content">
+					<div class="user-activity-content reading-content" id="2">
 
 					</div >
 				</div>
@@ -107,10 +104,17 @@
 			</div>
 		</div>
 	</div>	
-	
+	<div class="music-player-container">
+		<div id="myAudio"  class="music-player" style="margin:0px 0px">
+
+	    </div>
+	</div>
+	</div>
 </body>
 <script type="text/javascript" src="./jquery.min.js">
 </script>
 <script type="text/javascript" src="./navigator.js"></script>
+<script type="text/javascript" src="./player/AudioPlayer.js"></script>
 <script type="text/javascript" src="index.js"></script>
+
 </html>
