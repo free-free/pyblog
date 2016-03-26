@@ -81,7 +81,7 @@ body{
 .main-container{
 	height: 100%;
 	width: 100%;
-	background: #000;
+	background: #fff;
 	position: relative;
 }
 .left-content-container{
@@ -89,15 +89,33 @@ body{
 	position: absolute;
 	width: 64%;
 	left: 4%;
-	top: 0px;
+	top: 30px;
 	height: 100%;
 }
+.article-content-container{
+	height: 100%;
+	background: #f5f5f5;
+	position: relative;
+	overflow: hidden;
+	border-radius: 15px;
+}
+.article-content{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	text-indent: 50px;
+	letter-spacing: 1px;
+	color: #5b5b5b;
+	/*background: #f5f5f5;*/
+
+}
+
 .middle-content-container{
-	background: #e1e1e1;
+	background: #f5f5f5;
 	position: absolute;
 	width: 20px;
 	left: 68%;
-	top: 0px;
+	top: 30px;
 	height: 75px;
 	border:2px solid #bebebe;
 	cursor: pointer;
@@ -120,20 +138,82 @@ body{
 	height: 100%;
 	right: 0px;
 	top: 0px;
-	background: #eee;
+	background: #f5f5f5;
 }
-.article-content-container{
+
+.comment-container{
+	width: 100%;
 	height: 100%;
-	background: #44aaff;
-	position: relative;
-	overflow: hidden;
 }
-.article-content{
+.comment-input-container{
+	height: 280px;
+	width: 100%;
+}
+.comment-form{
+	position: relative;
+	height: 280px;
+	width: 100%;
+}
+.comment-name{
 	position: absolute;
-	top: 0px;
-	left: 0px;
-	text-indent: 50px;
-	letter-spacing: 1px;
+	display: block;
+	height: 30px;
+	letter-spacing: 2px;
 	color: #5b5b5b;
-	background: #fefefe;
+	font-size: 16px;
+	top: 20px;
+	left: 20px;
+}
+.comment-content{
+	position: absolute;
+	width: 80%;
+	height: 160px;
+	padding: 5px 10px;
+	overflow-x:hidden;
+	letter-spacing: 0px;
+	color: #8b8b8b;
+	left: 10%;
+	top: 50px;
+	right: 20px;
+	border-radius: 5px;
+	max-width: 80%;
+	min-width: 80%;
+	min-height: 160px;
+	max-height: 160px;
+	resize:none;
+	text-align: left;
+	line-height: 20px;
+}
+.comment-content:hover{
+	box-shadow: 0 0 10px #55aaff;
+}
+.comment-btn{
+	position: absolute;
+	width: 150px;
+	height: 30px;
+	display: block;
+	line-height: 30px;
+	top:240px;
+	right: 30px;
+}
+
+
+.old-comment-container{
+	width: 100%;
+	overflow-x:hidden;
+}
+.old-comment-list{
+	width: 90%;
+	margin-right: 5%;
+	margin-left: 5%;
+	margin-top: 20px;
+	border:1px solid #ccc;
+	border-radius: 5px;
+	height: 100px;
+
+}
+.music-player-container{
+	position: fixed;
+	top: 400px;
+	left: -310px;
 }
