@@ -383,20 +383,20 @@ $(function(){
 	function create_music_player()
 	{
 		var data=[
-			{'music_title':'hello','music_url':'http://localhost/json.php'},
-			{'music_title':'hello','music_url':'http://localhost/json.php'},
-			{'music_title':'hello','music_url':'http://localhost/json.php'},
-			{'music_title':'hello','music_url':'http://localhost/json.php'},
-			{'music_title':'hello','music_url':'http://localhost/json.php'},
-			{'music_title':'hello','music_url':'http://localhost/json.php'},
-			{'music_title':'hello','music_url':'http://localhost/json.php'},
+			{'music_name':'hello','music_url':'http://localhost/json.php'},
+			{'music_name':'hello','music_url':'http://localhost/json.php'},
+			{'music_name':'hello','music_url':'http://localhost/json.php'},
+			{'music_name':'hello','music_url':'http://localhost/json.php'},
+			{'music_name':'hello','music_url':'http://localhost/json.php'},
+			{'music_name':'hello','music_url':'http://localhost/json.php'},
+			{'music_name':'hello','music_url':'http://localhost/json.php'},
 		];
 		var pHeight=parseInt($(window).innerHeight());
 		var audioContent=document.createElement('audio');
 		for(var i=0;i<data.length;i++)
 		{
 			var source=document.createElement('source');
-			$(source).attr('title',data[i].music_title);
+			$(source).attr('title',data[i].music_name);
 			$(source).attr('src',data[i].music_url);
 			$(audioContent).append(source);
 		}
@@ -428,8 +428,8 @@ $(function(){
 					},1500);
 			}
 		});
+		$('#myAudio').append(audioContent)
 		$('#myAudio').initAudio();
-		$('.music-player-container').append(audioContent);
 	}
 	$(window).resize(function(){
 		var postWidth=parseInt($('.new-post').width());
