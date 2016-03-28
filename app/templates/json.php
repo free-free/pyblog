@@ -37,10 +37,32 @@ if(!empty($_POST))
 			];
 
 	}
+	else if($_POST['rtype']==3)
+	{
+			$d=[
+				'code'=>200,
+				'msg'=>'ok',
+				'type'=>3,
+				'data'=>[
+					'date'=>['2016/03/12','2016/03/13','2016/03/14','2016/03/15','2016/03/16','2016/03/17'],
+					'post_data'=>[
+						[['is_post'=>false],['is_post'=>true,'article_title'=>'Linux container'],['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false]],
+						[['is_post'=>true,'article_title'=>'Github and Git'],['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false]],
+						[['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false]],
+						[['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false]],
+						[['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>false]],
+						[['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>true,'article_title'=>'the value of my life'],['is_post'=>false],['is_post'=>false]],
+						[['is_post'=>false],['is_post'=>false],['is_post'=>false],['is_post'=>true,'article_title'=>'python io模型'],['is_post'=>false],['is_post'=>false]],
+					]
+				]
+			];
+	}
 	else
 	{
 			$d=[
 			  'code'=>300,
+			  [[],[],[],[],[],[]],
+			  [[],[],[],[],[],[]],
 			  'msg'=>'bad request',
 			  'type'=>'',
 			  'data'=>'',
