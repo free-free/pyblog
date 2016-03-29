@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+#!/usr/bin/env python3.5
 
 from tools.config import Config
 import logging
@@ -9,13 +9,13 @@ try:
 except ImportError:
 	logging.error("can't import 'MySQLdb' module")
 
-class AutoCreate(object):
+class DBAutoBuilder(object):
 	def __init__(self):
 		pass
 	def run(self):
 		pass
 
-class MysqlAutoCreate(AutoCreate):
+class MysqlAutoBuilder(DBAutoBuilder):
 	def __new__(cls,*args,**kw):
 		if not hasattr(cls,'_instance'):
 			cls._instance=super().__new__(cls)
@@ -54,11 +54,18 @@ class MysqlAutoCreate(AutoCreate):
 		cursor.execute(self._sql)
 		cursor.close()
 		type(self)._conn.commit()
-
+class DBBuilder(object):
+	_all_builders={"mysql":MysqlAutoBuilder}
+	_models=[User(),Article(),Category(),Comment(),Music(),Image()]
+	def __init__(self):
+		pass
+	@classmethod
+	def build(self):
+		default_connection=Config.database.connection_name
+		for model in self._models:
+			self._all_builders[default_connection](model).run()
 if __name__=='__main__':
-	auto=MysqlAutoCreate(User())
-	#print(auto._create_table_sql())
-	auto.run()
+	DBBuilder.build()
 
 	
 
