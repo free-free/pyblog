@@ -1,9 +1,7 @@
 #!/usr/bin/env python3.5
 from tools.application import Application
-from tools.template import Template
 from tools.httptools import Route
 from models import *
-import aiohttp.web
 import hashlib
 import uuid
 @Route.get('/')
