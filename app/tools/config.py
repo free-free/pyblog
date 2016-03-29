@@ -52,7 +52,7 @@ class SessionConfigLoader(object):
 			cls._config_instance=object.__new__(cls,*args,**kw)
 		return cls._config_instance
 	def __init__(self):
-		self._config=__import__("conf",'app.confg').session
+		self._config=__import__("conf",'app.conf').session
 		self._default_driver=self._config.get('default')
 		self._specific_driver=None
 	def _get_specific_driver_config_item(self,item_name,driver_name):
