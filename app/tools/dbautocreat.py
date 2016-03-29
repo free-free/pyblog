@@ -4,7 +4,7 @@ import aiomysql
 from tools.config import Config
 
 
-class AutoCreate(obj):
+class AutoCreate(object):
 	def __init__(self):
 		pass
 	def _create_db(self):
@@ -23,7 +23,24 @@ class AutoCreate(obj):
 		pass
 	def run(self):
 		pass
-
+class MysqlAutoCreate(AutoCreate):
+	def __init__(self,model,config):
+		self._config=config
+		self._table=model.__table__
+		self._fields=model.__columns__
+	@asyncio.coroutine
+	def _create_connection(self):
+		type(self)._conn=yield from aiomysql.connect(db=self._config['database'],
+								user=self._config['user'],
+								host=self._config['host'],
+								password=self._config['password'])						
+	@asyncio.coroutine
+	def _db_is_exists(self):
+		cursor=yield from self._conn.cursor()
+		yield from cursor.execute('use '+self._config['database'])
+		ret=yield from cursor.fecthall()
+	def _create_db(self,model):
+		pass	
 @asyncio.coroutine
 def auto_create():
 	conn=yield from aiomysql.connect(db=Config.database.database,
@@ -31,7 +48,7 @@ def auto_create():
 					password=Config.database.password,
 					user=Config.database.user)
 	cursor =yield from conn.cursor()
-	yield from cursor.execute('show databases;')
+	yield from cursor.execute('use xx;')
 	ret=yield from cursor.fetchall()
 	print(ret)
 
