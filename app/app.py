@@ -10,13 +10,14 @@ import uuid
 def index(app):
 	user=yield from  User().findone()
 	app.session['id']=1
-	app.session['name']='huamgbiao'
+	app.session['name']='huangbiao'
 	app.session_end()
 	#app.set_cookie('sl',uuid.uuid1())
 	#app.set_cookie('date',uuid.uuid4())
 	#app.clear_cookie('sl')
 	#return Template('index.html').render(user=user)
-	app.redirect('/login')
+	return {'id':1,'name':'huangbiao'}
+	#app.redirect('/login')
 @Route.get('/session_get',auth=True)
 def session_get(app):
 	print("id",app.session['id'])
@@ -24,7 +25,8 @@ def session_get(app):
 	return 'sessin_get'
 @Route.get('/login')
 def login(app):
-	return 'login'	
+	tab=app.get_argument('tab','')
+	return 'login %s'%tab
 @Route.get('/session_destroy')
 def session_destroy(app):
 	app.session_destroy()
