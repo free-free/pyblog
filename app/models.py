@@ -3,8 +3,6 @@
 from   tools.column  import Column
 from   tools.field   import String,Int,Float,Text,Boolean
 from   tools.model   import Model
-from   tools.database    import *
-from   tools.log         import *
 import time
 class User(Model):
 	__table__='users'
