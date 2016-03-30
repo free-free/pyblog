@@ -5,5 +5,12 @@ from models import *
 
 @Route.get('/')
 def index_handler(app):
-	return app.render("index.html")
+	app.render("index.html")
 
+
+
+
+
+if __name__=='__main__':
+	app=Application()
+	app.run()
