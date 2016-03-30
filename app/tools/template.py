@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.5
 # -*- coding:utf-8 -*-
 import os
+from app.config import Config
 try:
     from jinja2 import Environment,FileSystemLoader
 except ImportError:
@@ -24,7 +25,9 @@ class Template(object):
 			variable_end_string=kw.get("varibale_end_string",'}}'),
 			auto_reload=kw.get("auto_reload",True)
 		)
-		path=os.path.join(os.path.dirname(os.path.dirname(__file__)),'templates')
-		env=Environment(loader=FileSystemLoader(path),**options)
+		template_path=Config.app.template_path
+		if template_path.find('.')==0:
+			template_path=os.path.join(os.path.dirname(os.path.dirname(__file__)),template_path)
+		env=Environment(loader=FileSystemLoader(template_path),**options)
 		app['__templating__']=env
 	
