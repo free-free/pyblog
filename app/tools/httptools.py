@@ -11,6 +11,7 @@ from   tools.log import Log
 from   tools.session import SessionManager
 from   tools.config import Config
 import aiohttp.web
+import os
 try:
 	import asyncio
 except ImportError:
@@ -263,6 +264,7 @@ class Route(object):
 			if not asyncio.iscoroutinefunction(handler) and not inspect.isgeneratorfunction(handler):
 				handler=asyncio.coroutine(handler)
 			app.router.add_route(_method,_path,BaseHandler(app,handler))
+			app.router.add_static(Config.app.static_prefix,os.path.join(os.path.dirname(os.path.dirname(__file__)),Config.app.static_path))
 			#handler('Jell')
 			#print(handler.__method__)
 			#print(handler.__url__)
