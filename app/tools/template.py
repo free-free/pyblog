@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.5
 # -*- coding:utf-8 -*-
 import os
-from app.config import Config
+from tools.config import Config
 try:
     from jinja2 import Environment,FileSystemLoader
 except ImportError:
