@@ -1,4 +1,9 @@
 #-*- coding:utf-8 -*-
+app={
+	'template_path':'./templates',
+	'static_prefix':'/static',
+	'static_path':'templates/static'
+}
 database={
 	'default':'mysql',
 	'connections':{
