@@ -94,11 +94,22 @@ class AuthConfigLoader(object):
 			cls._config_instance=object.__new__(cls,*args,**kw)
 		return cls._config_instance
 	def __init__(self):
-		self._config=__import__("conf",'app.config').authentication
+		self._config=__import__("conf",'app.conf').authentication
 	def __getattr__(self,key):
 		if key not in self._config:
 			raise AttributeError("authentication config has no such item '%s'"%(key))
 		return self._config[key]
+class AppConfigLoader(object):
+	def __new__(cls,*args,**kw):
+		if not hasattr(cls,'_config_insatnce'):
+			cls._config_instance=object.__new__(cls,*args,**kw)
+		return cls._config_instance
+	def __init__(self):
+		self._config=__import__("conf",'app.conf').app
+	def __getattr__(self,key):
+		if key not in self._config:
+			raise AttributeError("app config has no such item '%s'"%key)
+		return self._config.get(key)
 class classproperty(object):
 	def __init__(self,func):
 		self._func=func
@@ -124,7 +135,7 @@ class Config(dict):
 	>>> Config.database.connection('mongodb').port
 	27017
 	'''
-	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader()}
+	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader(),'app':AppConfigLoader()}
 	def __init__(self):
 		print("__init__ start")
 	def __call__(self,*args,**kw):
@@ -138,6 +149,9 @@ class Config(dict):
 	@classproperty
 	def authentication(cls):
 		return cls._config_loader.get('authentication')
+	@classproperty
+	def app(cls):
+		return cls._config_loader.get('app')
 	def __getattr__(cls,key):
 		return 'not attribute found'
 if __name__=='__main__':
@@ -174,4 +188,5 @@ if __name__=='__main__':
 	print(Config.session.driver('redis',True))
 	print(Config.session.driver('redis').driver_name)
 	print(Config.session.driver('redis').port)
+	print(Config.app.template_path)
 	'''
