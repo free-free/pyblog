@@ -6,14 +6,15 @@ $(function(){
 		'position':'relative',
 		'overFlowX':'hidden'
 	});
-	function load_server_data(url,callback_func,data){
+	function load_server_data(url,callback_func,type,data){
 			data=data||{};
+			type=type||'get';
 			$.ajax({
 				'url':url,
 				'dataType':'json',
 				'contentType':'application/x-www-form-urlencoded',
 				'data':data,
-				'type':'post',
+				'type':type,
 				'success':function(data){
 					if (data.code!=200)
 					{

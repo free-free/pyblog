@@ -1,14 +1,15 @@
 $(function(){
 	
-	function load_server_data(url,callback_func,data)
+	function load_server_data(url,callback_func,type,data)
 	{
 		data=data||{};
+		type=type||'get';
 		$.ajax({
 			'url':url,
 			'contentType':'application/x-www-form-urlencoded',
 			'dataType':'json',
 			'data':data,
-			'type':'post',
+			'type':type,
 			 success:function(data){
 			 	if(data.code!=200)
 			 	{
@@ -182,8 +183,8 @@ $(function(){
 	$('.right-box').css('width',parseInt($('.article-history-list').width())-300+'px');
 	$('.right-box').fadeIn(1000);
 	$('.footer-container').fadeIn(1000);
-	load_server_data('http://localhost/random_music.php',create_music_player);
-	load_server_data('http://localhost/json.php',create_history_view,{'rtype':1});
+	load_server_data('/music',create_music_player);
+	load_server_data('',create_history_view,{'rtype':1});
 	
 
 	

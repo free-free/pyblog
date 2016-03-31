@@ -1,14 +1,15 @@
 $(function(){
 
-	function load_server_data(url,callback_func,data)
+	function load_server_data(url,callback_func,type,data)
 	{
 		data=data||{};
+		type=type||'get';
 		$.ajax({
 			'url':url,
 			'contentType':'application/x-www-form-urlencoded',
 			'dataType':'json',
 			'data':data,
-			'type':'post',
+			'type':type,
 			 success:function(data){
 			 	if(data.code!=200)
 			 	{
@@ -75,5 +76,5 @@ $(function(){
 		$('#myAudio').append(audioContent);
 		$('#myAudio').initAudio();
 	}
-	load_server_data('http://localhost/random_music.php',create_music_player)
+	load_server_data('/music',create_music_player)
 })
