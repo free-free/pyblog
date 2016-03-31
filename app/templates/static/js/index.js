@@ -1,6 +1,7 @@
 $(function(){
-	function load_server_data(url,callback_func,data={})
+	function load_server_data(url,callback_func,data)
 	{
+		data=data||{};
 		$.ajax({
 		'url':url,
 		'contentType':'application/x-www-form-urlencoded',
