@@ -15,9 +15,9 @@ def article_history_handler(app):
 @Route.get('/about')
 def aboutme_handler(app):
 	app.render("me.html")
-@Route.post('/music')
-def music_handler(app):
-	d=dict();
+@Route.get('music')
+def get_music_handler(app):
+	d=dict()
 	d['code']=200
 	d['msg']='ok'
 	d['type']=3
@@ -25,6 +25,9 @@ def music_handler(app):
 	{'music_name':'CountrintStars','music_url':'http://7xs7oc.com1.z0.glb.clouddn.com/music%2FJason%20Chen%20-%20Counting%20Stars.mp3'},
 	]
 	return d
+@Route.post('/music')
+def post_music_handler(app):
+	return 'ok'
 
 if __name__=='__main__':
 	app=Application()
