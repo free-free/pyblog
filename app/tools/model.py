@@ -253,7 +253,12 @@ class Model(dict,metaclass=ModelMetaclass):
 	@asyncio.coroutine
 	def max(self,name):
 		return (yield from self.db._execute("select max(`%s`) as %s from %s"%(name,name,self.__table__)))
-	
+	@asyncio.coroutine
+	def min(self,name):
+		return (yield from self.db._execute("select min(`%s`) as %s from %s"%(name,name,self.__table__)))
+	@asyncio.coroutine
+	def avg(self,name):
+		return (yield from self.db._execute("select avg(`%s`) as %s from %s"%(name,name,self.__table__)))
 '''
 class User(Model):
 	name=Column(String(20),primary_key=True,unique_key=True)
