@@ -43,8 +43,9 @@ class MysqlAutoBuilder(DBAutoBuilder):
 		alltables =cursor.fetchall()
 		cursor.close()
 		tables=[]
-		for table in tables:
-			tables.push(table[0])
+		for table in alltables:
+			tables.append(table[0])
+		print (tables)
 		return tables
 	def _create_table_sql(self):
 		self._sql='CREATE TABLE `%s` ('%self._table
@@ -73,7 +74,7 @@ class MysqlAutoBuilder(DBAutoBuilder):
 		type(self)._conn.commit()
 class DBBuilder(object):
 	_all_builders={"mysql":MysqlAutoBuilder}
-	_models=[User(),Article(),Category(),Comment(),Music(),Image()]
+	_models=[User(),Article(),Category(),Comment(),Music(),Image(),Share(),Book()]
 	def __init__(self):
 		pass
 	@classmethod
