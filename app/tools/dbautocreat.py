@@ -29,6 +29,16 @@ class MysqlAutoBuilder(DBAutoBuilder):
 						host=Config.database.host,
 						passwd=Config.database.password)
 		self._sql=''
+		self._all_tables=self._get_db_all_tables()
+	def _get_db_all_tables(self):
+		cursor=self._conn.cursor()
+		cursor.execute("show tables;")
+		alltables =cursor.fetchall()
+		cursor.close()
+		tables=[]
+		for table in tables:
+			tables.push(table[0])
+		return tables
 	def _create_table_sql(self):
 		self._sql='CREATE TABLE `%s` ('%self._table
 		for field_name,field in self._fields.items():
