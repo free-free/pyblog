@@ -23,13 +23,20 @@ class MysqlAutoBuilder(DBAutoBuilder):
 	def __init__(self,model):
 		self._table=model.__table__
 		self._fields=model.__columns__
+		self._sql=''
 		if not hasattr(type(self),'_conn'):
 			type(self)._conn=MySQLdb.connect(db=Config.database.database,
 						user=Config.database.user,
 						host=Config.database.host,
 						passwd=Config.database.password)
-		self._sql=''
-		self._all_tables=self._get_db_all_tables()
+		self._exists_tables=self._get_db_all_tables()
+		if self._table in self._exists_tables:
+			self._delete_db_table(self._table)
+	def _delete_db_table(self,table):
+		cursor=self._conn.cursor()
+		ret=cursor.execute("drop table %s;"%table)
+		cursor.close()
+		return ret
 	def _get_db_all_tables(self):
 		cursor=self._conn.cursor()
 		cursor.execute("show tables;")
