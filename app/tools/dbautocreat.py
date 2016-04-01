@@ -3,6 +3,7 @@
 from tools.config import Config
 import logging
 logging.basicConfig(level=logging.ERROR)
+from tools.model import Model
 from app.models import *
 try:
 	import MySQLdb
@@ -45,7 +46,6 @@ class MysqlAutoBuilder(DBAutoBuilder):
 		tables=[]
 		for table in alltables:
 			tables.append(table[0])
-		print (tables)
 		return tables
 	def _create_table_sql(self):
 		self._sql='CREATE TABLE `%s` ('%self._table
@@ -74,16 +74,21 @@ class MysqlAutoBuilder(DBAutoBuilder):
 		type(self)._conn.commit()
 class DBBuilder(object):
 	_all_builders={"mysql":MysqlAutoBuilder}
-	_models=[User(),Article(),Category(),Comment(),Music(),Image(),Share(),Book()]
-	def __init__(self):
+	def __init__(self,base_model):
 		pass
 	@classmethod
-	def build(self):
+	def _import_models(cls,base_model):
+		cls._models=[]
+		for attr in base_model.__subclasses__():
+			cls._models.append(attr)
+	@classmethod
+	def build(cls,base_model):
+		cls._import_models(base_model) 
 		default_connection=Config.database.connection_name
-		for model in self._models:
-			self._all_builders[default_connection](model).run()
+		for model in cls._models:
+			cls._all_builders[default_connection](model()).run()
 if __name__=='__main__':
-	DBBuilder.build()
+	DBBuilder.build(Model)
 
 	
 
