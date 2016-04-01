@@ -15,27 +15,28 @@ class User(Model):
 	create_at=Column(String(30))
 	gender=Column(Int(1,unsigned=True))
 	location=Column(String(50))
-	desc=Column(String(600))
+	description=Column(String(600))
 class Article(Model):
 	__table__='articles'
 	id=Column(Int(4,unsigned=True),primary_key=True,null=False,auto_increment=True)
 	uid=Column(Int(4,unsigned=True),null=False)
-	cate_id=Column(Int(4,unsigned=True),null=False)
+	category_id=Column(Int(4,unsigned=True),null=False)
+	title=Column(String(200))
 	content=Column(Text())
 	post_at=Column(String(30))
 	modify_at=Column(String(30))
 	auth_password=Column(String(100),default="")
-	desc=Column(String(400))
+	description=Column(String(400))
 	view_num=Column(Int(4,unsigned=True),default=0)
 class Category(Model):
 	__table__='categorys'
 	id=Column(Int(4,unsigned=True),primary_key=True,auto_increment=True)
 	uid=Column(Int(4,unsigned=True))
-	cate_text=Column(String(100))
-	cate_image=Column(String(200))
+	text=Column(String(100))
+	image_url=Column(String(200))
 	create_at=Column(String(30))
 	article_num=Column(Int(4,unsigned=True),default=0)
-	cate_desc=Column(String(400),default='')
+	description=Column(String(400),default='')
 class Comment(Model):
 	__table__='comments'
 	id=Column(Int(4,unsigned=True),primary_key=True,auto_increment=True)
@@ -47,19 +48,36 @@ class Image(Model):
 	__table__='images'
 	id=Column(Int(4,unsigned=True),primary_key=True,auto_increment=True)
 	uid=Column(Int(4,unsigned=True))
-	type_id=Column(Int(2,unsigned=True))	
+	type_id=Column(Int(1,unsigned=True))	
 	belong_id=Column(Int(4,unsigned=True))
 	upload_at=Column(String(30))
-	url=Column(String(300))
+	image_url=Column(String(300))
 class Music(Model):
 	__table__='musics'
 	id=Column(Int(4,unsigned=True),primary_key=True,auto_increment=True)
 	uid=Column(Int(4,unsigned=True))
 	upload_at=Column(String(30))
-	type_id=Column(Int(4,unsigned=True))
+	type_id=Column(Int(1,unsigned=True))
 	belong_id=Column(Int(4,unsigned=True))
 	music_name=Column(String(30))
 	music_url=Column(String(300))
+class Share(Model):
+	__table__='shares'
+	id=Column(Int(4,unsigned=True),primary_key=True,auto_increment=True)
+	uid=Column(Int(4,unsigned=True))
+	type_id=Column(Int(1,unsigned=True))
+	share_at=Column(String(30))
+	share_url=Column(String(300))
+	title=Column(String(100))
+	description=Column(String(100))
+class Book(Model):
+	__table__='books'
+	id=Column(Int(4,unsigned=True),primary_key=True,auto_increment=True)
+	name=Column(String(100))
+	author=Column(String(100))
+	state=Column(Int(1,unsigned=True))
+	description=Column(String(500))
+	comment=Column(String(1000))
 #class Need(Model):
 #	__table__='needs'
 #	id=Column(Int(4,unsigned=True),primary_key=True,null=False,auto_increment=True)
