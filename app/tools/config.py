@@ -45,6 +45,8 @@ class DBConfigLoader(object):
 			item=self._get_specific_connection_config_item(key,self._specific_connection)
 			self._specific_connection=None
 			return item
+
+
 class SessionConfigLoader(object):
 	_all_drivers=('redis','file','mongo')
 	def __new__(cls,*args,**kw):
@@ -64,7 +66,7 @@ class SessionConfigLoader(object):
 			raise AttributeError("session driver %s has no such item '%s'"%(driver_name,item_name))
 	def _get_specific_driver_all_config_item(self,driver_name):
 		if driver_name.lower() not in self._all_drivers:
-			raise AttributeError("session confgi has no driver '%s'"%(driver_name.lower()))
+			raise AttributeError("session config has no driver '%s'"%(driver_name.lower()))
 		return self._config['drivers'][driver_name.lower()]
 	def _driver(self,driver_name,return_all=False):
 		if return_all:
@@ -110,6 +112,48 @@ class AppConfigLoader(object):
 		if key not in self._config:
 			raise AttributeError("app config has no such item '%s'"%key)
 		return self._config.get(key)
+class FileSystemConfigLoader(object):
+	def __new__(cls,*args,**kw):
+		if not hasattr(cls,'_config_instance'):
+			cls._config_instance=object.__new__(cls,*args,**kw)
+		return cls._config_instance
+	def __init__(self):
+		self._config=__import__("conf",locals(),globals()).filesystem
+		self._default_driver=self._config.get('default')
+		self._specific_driver=None
+		self._all_drivers=self._config['drivers'].keys()
+	def _get_specific_driver_config_item(self,item,driver_name):
+		if driver_name.lower() not in  self._all_drivers:
+			raise AttributeError("file system config has no such driver '%s'"%drive_rname.lower())
+		if item.lower() not in self._config['drivers'][driver_name.lower()]:
+			raise AttributeError("file system config driver '%s' has no such config item '%s'"%(driver_name.lower(),item.lower()))
+		return self._config['drivers'][driver_name.lower()].get(item.lower())
+	def _get_specific_driver_all_config_item(self,driver_name):
+		if driver_name.lower() not in self._all_drivers:
+			raise AttributeError("file system config has no such driver '%s'"%driver_name.lower())
+		return self._config['drivers'].get(driver_name.lower())
+	def _driver(self,driver_name,all_return=False):
+		if all_return:
+			return self._get_specific_driver_all_config_item(driver_name)
+		self._specific_driver=driver_name.lower()
+		return self
+	def __getattr__(self,key):
+		if key.lower()=='driver':
+			self._driver
+		if not self._specific_driver:
+			if key.lower()=='all':
+				return self._get_specific_driver_all_config_item(self._default_driver)
+			if key.lower()=='driver_name':
+				return self._default_driver
+			return self._get_specific_driver_config_item(key,self._default_driver)
+		else:
+			if key.lower()=='driver_name':
+				driver_name=self._specific_driver
+				self._specific_driver=None
+				return driver_name
+			item=self._get_specific_driver_config_item(key,self._specific_driver)	
+			self._specific_driver=None
+			return item
 class classproperty(object):
 	def __init__(self,func):
 		self._func=func
@@ -135,7 +179,7 @@ class Config(dict):
 	>>> Config.database.connection('mongodb').port
 	27017
 	'''
-	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader(),'app':AppConfigLoader()}
+	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader(),'app':AppConfigLoader(),'filesystem':FileSystemConfigLoader()}
 	def __init__(self):
 		print("__init__ start")
 	def __call__(self,*args,**kw):
@@ -152,6 +196,9 @@ class Config(dict):
 	@classproperty
 	def app(cls):
 		return cls._config_loader.get('app')
+	@classproperty
+	def filesystem(cls):
+		return cls._config_loader.get('filesystem')
 	def __getattr__(cls,key):
 		return 'not attribute found'
 if __name__=='__main__':
@@ -175,7 +222,7 @@ if __name__=='__main__':
 	print(Config.authentication.auth_id)
 	print(Config.authentication.login_url)
 	'''
-	r'''
+	r'''database testing code
 	print(Config.database.all)
 	print(Config.database.connection_name)
 	print(Config.database.port)
@@ -189,4 +236,10 @@ if __name__=='__main__':
 	print(Config.session.driver('redis').driver_name)
 	print(Config.session.driver('redis').port)
 	print(Config.app.template_path)
+	'''
+	r'''file system testing code
+	print(Config.filesystem.access_key)
+	print(Config.filesystem.secret_key)
+	print(Config.filesystem.driver_name)
+	print(Config.filesystem.all)
 	'''
