@@ -247,10 +247,18 @@ class Model(dict,metaclass=ModelMetaclass):
 			raise AttributeError("'%s' has no column '%s'"%(self.__class__.__name__,name))
 		self.__query__['having']='having `%s` %s %s '%(name,op,value)
 		return self
-		
+	@asyncio.coroutine
+	def count(self,name):
+		return (yield from self.db._execute('select count(`%s`) as %s from %s'%(name,name,self.__table__))) 		
+	@asyncio.coroutine
+	def max(self,name):
+		return (yield from self.db._execute("select max(`%s`) as %s from %s"%(name,name,self.__table__)))
+	
+'''
 class User(Model):
 	name=Column(String(20),primary_key=True,unique_key=True)
 	age=Column(Int(1),default=12)
 	email=Column(String(20),unique_key=True)
+'''
 if __name__=='__main__':
 	pass
