@@ -203,9 +203,9 @@ class Model(dict,metaclass=ModelMetaclass):
 					values.append('"'+self[cname]+'"')
 				else:		
 					values.append(str(self[cname]))
-			self.__fields__['fields']='('
+			self.__fields__['fields']=' '
 			self.__fields__['fields']=self.__fields__['fields']+','.join(fields)
-			self.__fields__['fields']=self.__fields__['fields']+')'
+			self.__fields__['fields']=self.__fields__['fields']+''
 			self.__fields__['values']=' values('
 			self.__fields__['values']=self.__fields__['values']+','.join(values)+') '
 		return self
