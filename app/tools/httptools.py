@@ -68,6 +68,8 @@ class AppContainer(dict):
 		if not hasattr(self,'_session_instance'):
 			session_id=self.get_cookie('ssnid')
 			if not session_id:
+				session_id=self.get_argument("ssnid")
+			if not session_id:
 				self._session_instance=SessionManager(driver=self._config.session.driver_name,config=self._config.session.all)
 			else:
 				self._session_instance=SessionManager(session_id,driver=self._config.session.driver_name,config=self._config.session.all)
