@@ -64,11 +64,14 @@ class ModelMetaclass(type):
 
 
 class Model(dict,metaclass=ModelMetaclass):
-	def __init__(self,**kw):
+	def __init__(self,select=False,**kw):
 		columns=dict()
 		type(self).db=DB()
-		for column_name in self.__columns__:
-			columns[column_name]=self.__columns__[column_name]['constraints']['default']
+		if not select:
+			for column_name in self.__columns__:
+				columns[column_name]=self.__columns__[column_name]['constraints']['default']
+		else:
+			columns={}
 		for  name,value in kw.items():
 			if name not in self.__columns__.keys():
 				info=r"'%s' has no column '%s' "%(self.__class__.__name__,name)
@@ -96,7 +99,7 @@ class Model(dict,metaclass=ModelMetaclass):
 			self.__query__[k]=''
 		#records=yield from select(sql)
 		records=yield from self.db._select(sql)
-		return [type(self)(**k) for k in records]
+		return [type(self)(select=True,**k) for k in records]
 	@asyncio.coroutine
 	def findone(self,n=None):
 		sql='select %s from `%s` '%(self.__fields__['fields'],self.__table__)
@@ -110,7 +113,7 @@ class Model(dict,metaclass=ModelMetaclass):
 				self.__query__[k]=''
 		#record=yield from select(sql)
 		record=yield from self.db._select(sql)
-		return type(self)(**record[0])
+		return type(self)(select=True,**record[0])
 	@asyncio.coroutine
 	def update(self,args):
 		if not isinstance(args,dict):
