@@ -41,6 +41,8 @@ class Comment(Model):
 	__table__='comments'
 	id=Column(Int(4,unsigned=True),primary_key=True,auto_increment=True)
 	uid=Column(Int(4,unsigned=True),null=False)
+	type_id=Column(Int(4,unsigned=True))
+	belong_id=Column(Int(4,unsigned=True))
 	comment_at=Column(String(30))
 	article_id=Column(Int(4,unsigned=True))
 	comment_text=Column(String(1000))
