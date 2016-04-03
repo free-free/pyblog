@@ -153,7 +153,7 @@ class Model(dict,metaclass=ModelMetaclass):
 		if self.__fields__['fields']==' * ':
 			self.__fields__['fields']=' '
 		sql=''
-		if self.__fields__['values']=='':
+		if self.__fields__['values'].strip()=='':
 			insertcolumns=[]
 			insertvalues=[]
 			for cname in self.__columns__.keys():
