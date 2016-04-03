@@ -232,8 +232,8 @@ class Model(dict,metaclass=ModelMetaclass):
 			self.__fields__['values']='  values('
 			self.__fields__['values']=self.__fields__['values']+','.join(values)+') '
 		else:
-			self.__fields__['fields']=' '
-			self.__fields__['values']=' '
+			self.__fields__['fields']=''
+			self.__fields__['values']=''
 		return self
 
 	def where(self,name,op,value):
