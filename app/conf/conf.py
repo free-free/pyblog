@@ -52,13 +52,14 @@ authentication={
 }
 filesystem={
 	'default':'qiniu',
-	'driver':{
+	'drivers':{
 		'file':{
 
 		},
 		'qiniu':{
 			'access_key':'CKQNXugLAXFueA5UlBKQnkWxslYC8rIErwn2ch4I',
 			'secret_key':'4lnKaSKUk1SVmbB4alt6PtkL2O1Sm-jP6e-T7EER',
+			'bucket_name':'static-pyblog-com',
 		}
 	}
 }
