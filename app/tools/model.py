@@ -64,7 +64,7 @@ class ModelMetaclass(type):
 
 
 class Model(dict,metaclass=ModelMetaclass):
-	def __init__(self,select=False,**kw):
+	def __init__(self,select=False,alias=False,**kw):
 		columns=dict()
 		type(self).db=DB()
 		if not select:
@@ -73,12 +73,15 @@ class Model(dict,metaclass=ModelMetaclass):
 		else:
 			columns={}
 		for  name,value in kw.items():
-			if name not in self.__columns__.keys():
-				info=r"'%s' has no column '%s' "%(self.__class__.__name__,name)
-				Log.error(info)
-				raise AttributeError(info)
-			else:
+			if alias:
 				columns[name]=value
+			else:
+				if name not in self.__columns__.keys():
+					info=r"'%s' has no column '%s' "%(self.__class__.__name__,name)
+					Log.error(info)
+					raise AttributeError(info)
+				else:
+					columns[name]=value
 		super(Model,self).__init__(self,**columns)
 	def __setattr__(self,key,value):
 		if key in self.__columns__.keys():
@@ -99,7 +102,7 @@ class Model(dict,metaclass=ModelMetaclass):
 			self.__query__[k]=''
 		#records=yield from select(sql)
 		records=yield from self.db._select(sql)
-		return [type(self)(select=True,**k) for k in records]
+		return [type(self)(select=True,alias=True,**k) for k in records]
 	@asyncio.coroutine
 	def findone(self,n=None):
 		sql='select %s from `%s` '%(self.__fields__['fields'],self.__table__)
@@ -113,7 +116,7 @@ class Model(dict,metaclass=ModelMetaclass):
 				self.__query__[k]=''
 		#record=yield from select(sql)
 		record=yield from self.db._select(sql)
-		return type(self)(select=True,**record[0])
+		return type(self)(select=True,alias=True,**record[0])
 	@asyncio.coroutine
 	def update(self,args):
 		if not isinstance(args,dict):
@@ -197,7 +200,7 @@ class Model(dict,metaclass=ModelMetaclass):
 		if isinstance(field,list):
 			for cname in field:
 				if  cname not  in self.__columns__.keys():
-					raise AttributeError(" '%s' has not column '%s' "%(self.__class__.__name__,cname))
+					raise AttributeError(" '%s' has no column '%s' "%(self.__class__.__name__,cname))
 			values=[]
 			fields=[]
 			for cname in field:
@@ -208,9 +211,29 @@ class Model(dict,metaclass=ModelMetaclass):
 					values.append(str(self[cname]))
 			self.__fields__['fields']=' '
 			self.__fields__['fields']=self.__fields__['fields']+','.join(fields)
-			self.__fields__['fields']=self.__fields__['fields']+''
+			self.__fields__['fields']=self.__fields__['fields']+' '
 			self.__fields__['values']=' values('
 			self.__fields__['values']=self.__fields__['values']+','.join(values)+') '
+		elif isinstance(field,dict):
+			for cname in field.keys():
+				if cname not in self.__columns__.keys():
+					raise AttributeError(" '%s' has no column '%s' "%(type(self).__name__,cname))
+			values=[]
+			fields=[]
+			for cname,alianame in field.items():
+				fields.append('`%s` as %s'%(cname,alianame))
+				if isinstance(self[cname],str):
+					values.append('"%s"'%self[cname])
+				else:
+					values.append(str(self[name]))
+			self.__fields__['fields']=' '
+			self.__fields__['fields']=self.__fields__['fields']+','.join(fields)
+			self.__fields__['fields']=self.__fields__['fields']+' '
+			self.__fields__['values']='  values('
+			self.__fields__['values']=self.__fields__['values']+','.join(values)+') '
+		else:
+			self.__fields__['fields']=' '
+			self.__fields__['values']=' '
 		return self
 
 	def where(self,name,op,value):
