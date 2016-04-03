@@ -241,7 +241,7 @@ $(function(){
 					},1000)	;
 					thisId=$(this).attr('id');
 					setTimeout(function(){
-						load_server_data('http://localhost/json.php',$('.item'+thisId).category_item_click_handler,{'rtype':2});
+						load_server_data('http://localhost/json.php',$('.item'+thisId).category_item_click_handler,'post',{'rtype':2});
 					},1000);
 				})
 				.mouseenter(category_item_mouseenter_handler)
@@ -441,7 +441,7 @@ $(function(){
 		create_tags_header($('.'+$.fn.lparentdefault_name));
 		create_tags_container($('.'+$.fn.lparentdefault_name));
 		$(document).scroll(lparent_scroll_handler);	
-		load_server_data('http://localhost/json.php',render_view,{'rtype':1});
+		load_server_data('http://localhost/json.php',render_view,'post',{'rtype':1});
 	}
 	create_view()
 });
