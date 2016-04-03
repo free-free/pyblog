@@ -15,6 +15,10 @@ def get_article_history_handler(app):
 @Route.get('/about')
 def get_aboutme_handler(app):
 	app.render("me.html")
+@Route.get('/user')
+def get_useradmin_handler(app):
+	app.render("admin.html")
+
 if __name__=='__main__':
 	app=Application()
 	app.run()
