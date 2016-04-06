@@ -265,8 +265,15 @@ class Route(object):
 				raise ValueError('_path or _method not defined in %s.'%str(handler))
 			if not asyncio.iscoroutinefunction(handler) and not inspect.isgeneratorfunction(handler):
 				handler=asyncio.coroutine(handler)
-			app.router.add_route(_method,_path,BaseHandler(app,handler))
-			app.router.add_static(Config.app.static_prefix,os.path.join(os.path.dirname(os.path.dirname(__file__)),Config.app.static_path))
+			if len(_path)>1 and _path.endswith('/'):
+				app.router.add_route(_method,_path.rsplit('/',1)[0],BaseHandler(app,handler))
+				app.router.add_route(_method,_path,BaseHandler(app,handler))
+			elif not _path.endswith('/'):
+				app.router.add_route(_method,_path,BaseHandler(app,handler))
+				app.router.add_route(_method,_path+'/',BaseHandler(app,handler))
+			else:
+				pass	
+		app.router.add_static(Config.app.static_prefix,os.path.join(os.path.dirname(os.path.dirname(__file__)),Config.app.static_path))
 			#handler('Jell')
 			#print(handler.__method__)
 			#print(handler.__url__)
