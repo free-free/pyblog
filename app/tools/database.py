@@ -93,21 +93,20 @@ class DB(dict):
 	def _execute(self,sql,autocommit=False):
 		Log.info(sql)
 		with (yield from type(self)._pool) as conn:
-			if not autocommit:
-				yield from conn.begin()
-			else:
+			if autocommit:
 				yield from conn.autocommit(True)
+			else:
+				yield from conn.begin()
 			try:	
 				cursor=yield from conn.cursor()
 				yield from cursor.execute(sql)
-				affectedrow=cursor.rowcount
-				yield from cursor.close()
+			except Exception as e:
+				yield from conn.rollback()
+			else:
 				if not autocommit:
 					yield from conn.commit()
-			except BaseException as e:
-				if not autocommit:
-					yield from conn.rollback()
-				raise e
+				affectedrow=cursor.rowcount	
+				yield from cursor.close()
 		return affectedrow
 	@asyncio.coroutine	
 	def connection(self,conn):
