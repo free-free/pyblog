@@ -12,14 +12,16 @@ try:
 except ImportError:
 	logging.error("can't import 'qiniu' module")
 
-
 @Route.get("/music")
 def get_music_handler(app):
-	max_id=(yield from Music().max('id'))[0]['id']
-	if max_id<7:
-		max_id=7
+	max_id_arr=(yield from Music().max('id'))
+	if len(max_id_arr)==0:
+		max_id=8
+	else:
+		max_id=max_id_arr[0].get('id')
+	if  not max_id or max_id<7:
+		max_id=8
 	rand_id=random.randrange(1,max_id-6)
-	#data=(yield from m.fields(['music_name','music_url']).where('id','>=',rand_id).limit(6).findall())
 	data=(yield from Music().fields({'music_name':'title','music_url':'url'}).where('id','>=',rand_id).limit(6).findall())
 	ret={}
 	ret['code']=200
@@ -27,7 +29,6 @@ def get_music_handler(app):
 	ret['type']=3
 	ret['data']=data
 	return ret
-
 @Route.get("/music/token",auth=True)
 def post_music_token_handler(app):
 	auth=Auth(Config.filesystem.access_key,Config.filesystem.secret_key)
@@ -47,6 +48,7 @@ def post_music_callback_handler(app):
 	m.music_name='CountingStar'
 	m.music_url='http://7xs7oc.com1.z0.glb.clouddn.com/music%2FJason%20Chen%20-%20Counting%20Stars.mp3'
 	ret=(yield from m.save())
+	print(ret)
 	if ret:
 		return {'code':200,'msg':'ok'}
 	return {'code':300,'msg':"bad"}
