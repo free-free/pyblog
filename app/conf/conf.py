@@ -11,14 +11,14 @@ database={
 			'host':'127.0.0.1',
 			'user':'root',
 			'port':3306,
-			'password':'526114',
+			'password':'xxxxx',
 			'database':'pyblog'
 		},
 		'mongodb':{
 			'host':'127.0.0.1',
 			'user':'xxxx',
 			'port':27017,
-			'auth':'526114'
+			'auth':'xxxx'
 		}
 	}
 }
