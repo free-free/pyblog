@@ -272,7 +272,7 @@ class Route(object):
 				app.router.add_route(_method,_path,BaseHandler(app,handler))
 				app.router.add_route(_method,_path+'/',BaseHandler(app,handler))
 			else:
-				pass	
+				app.router.add_route(_method,_path,BaseHandler(app,handler))	
 		app.router.add_static(Config.app.static_prefix,os.path.join(os.path.dirname(os.path.dirname(__file__)),Config.app.static_path))
 			#handler('Jell')
 			#print(handler.__method__)
