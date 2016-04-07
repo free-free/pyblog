@@ -92,6 +92,7 @@ class DB(dict):
 	@asyncio.coroutine
 	def _execute(self,sql,autocommit=False):
 		Log.info(sql)
+		affectedrow=0
 		with (yield from type(self)._pool) as conn:
 			if autocommit:
 				yield from conn.autocommit(True)
@@ -107,7 +108,7 @@ class DB(dict):
 					yield from conn.commit()
 				affectedrow=cursor.rowcount	
 				yield from cursor.close()
-		return affectedrow
+		return affectedrow 
 	@asyncio.coroutine	
 	def connection(self,conn):
 		type(self)._pool=yield from aiomysql.create_pool(
