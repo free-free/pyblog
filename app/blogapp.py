@@ -3,6 +3,7 @@ from tools.application import Application
 from tools.httptools import Route
 from models import *
 from music_handler import *
+from user_handler import *
 @Route.get('/')
 def index_handler(app):
 	app.render("index.html")
@@ -15,9 +16,6 @@ def get_article_history_handler(app):
 @Route.get('/about')
 def get_aboutme_handler(app):
 	app.render("me.html")
-@Route.get('/user')
-def get_useradmin_handler(app):
-	app.render("admin.html")
 
 if __name__=='__main__':
 	app=Application()
