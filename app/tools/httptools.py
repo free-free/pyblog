@@ -60,7 +60,7 @@ class AppContainer(dict):
 				self.clear_cookie(ck)
 	def render(self,content,**kw):
 		if re.match('^[\w]+.html$',content):
-			self._app['response']={'__template__':content,'parameter':kw if kw else {}}
+			self._app['response']={'__template__':content,'parameter':kw}
 		else:
 			self._app['response']=content
 	@property
