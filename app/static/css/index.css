@@ -8,7 +8,7 @@
 	
 }
 body{
-	min-width: 800px;
+	min-width: 1000px;
 }
 a,a:link,a:hover{
 	color:#888;
@@ -338,10 +338,14 @@ body{
 	color: #5b5b5b;
 	overflow: hidden;
 }
+.footer{
+	height: 100px;
+	width: 100%;
+}
 .footer-container{
 	height: 100px;
 	width: 100%;
-	border-top: 1px solid #ccc;
+	border-top: 1px solid #e1e1e1;
 	position: relative;
 }
 .footer-content{

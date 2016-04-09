@@ -7,20 +7,11 @@
 	text-decoration: none;
 }
 body{
-	min-width: 800px;
-}
-a{
-	color: #888;
-}
-a:hover
-{
-	color: #888;
-}
-a:link{
-	color: #888;
-}
-body{
+	min-width: 1000px;
 	background: #f5f5f5;
+}
+a,a:hover,a:link{
+	color: #888;
 }
 
 .navigator-bar{
@@ -35,6 +26,7 @@ body{
 	*/
 	background: #5b5b5b;
 	box-shadow: 0 0 10px #111;
+	min-width: 1000px;
 }
 .navigator-bar-container{
 	padding-top: 6px;
@@ -66,71 +58,211 @@ body{
 	text-align: center;
 	left: 80%;
 }
+.nb-user-dropdown-tangle-btn{
+	color: #ababab;
+	cursor: pointer;
+	position: relative;
+
+}
+.nb-user-dropdown-menu{
+	position: absolute;
+	top: 40px;
+	left: -200px;
+	width: 220px;
+	height: 300px;
+	background:#fff;
+	display: none;
+	box-shadow: 0 0 10px #333;
+	-webkit-box-shadow: 0 0 10px #333;
+	-o-box-shadow: 0 0 10px #333;
+	-moz-box-shadow: 0 0 10px #333;
+	-ms-box-shadow: 0 0 10px #333;
+}
+.nb-user-dropdown-menu-tangle{
+	display: block;
+	position: absolute;
+	width: 0px;
+	height: 0px;
+	border: 5px solid transparent;
+	border-bottom: 5px solid #fff;
+	top: 30px;
+	left: 0px;
+	z-index: 9999999;
+	display: none;
+}
+.clear-fix{
+	clear: both;
+}
+
+
 
 .main{
 	height: 500px;
+	width: 100%;
 }
-.login-panel{
-	width: 400px;
-	height: 250px;
-	box-shadow: 0 0 5px #ddd;
-	border-radius: 10px;
+.main-container{
+	height: 500px;
+	width: 100%;
 	position: relative;
-	background: #fff;
 }
-.input-box{
+.login-box{
 	position: absolute;
-	/*height: 35px;*/
+	width: 350px;
+	height: 250px;
+	top: 100px;
+	left: 35%;
+	background:#fff;
+	border-radius: 5px;
+	border: 1px solid rgba(169,169,169,0.5);
+}
+.login-form{
+	position: relative;
+	width: 350px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+.login-form-item{
+	position: absolute;
+	height: 35px;
+	width: 300px;
 	line-height: 35px;
-	left: 40px;
-	right: 40px;
+	border-radius: 5px;
 }
 .email-box{
 	top: 50px;
+	left: 25px;
 }
 .pwd-box{
 	top: 120px;
+	left: 25px;
 }
-.login-btn-box{
+.email-box:before{
+	content:"邮箱";
 	position: absolute;
-	top: 180px;
-	left: 40px;
-	right: 40px;
-	width: 320px;
-	color: #5b5b5b;
-}
-
-.add-on{	
-	height: 35px;
-	line-height: 35px;
-	width: 40px;
-	text-align: center;
-	display: inline-block;
-	border-top-left-radius: 5px;
-	border-bottom-left-radius: 5px;
-	background: #ddd;
-	border-top: 1px  solid #ccc;
-	border-left: 1px solid #ccc;
-	border-bottom: 1px solid #ccc;
-}
-.all-input{
-	height: 35px;
-	line-height: 35px;
+	height: 20px;
+	width: 100%;
+	top: -30px;
+	font-size: 16px;
+	color: #333;
 	letter-spacing: 0px;
-	border: none;
-	width: 267px;
-	padding-left: 10px;
-	border-top: 1px solid #ccc;
-	border-right: 1px solid #ccc;
-	border-bottom: 1px solid #ccc;
-	border-top-right-radius: 5px;
-	border-bottom-right-radius: 5px;
+}
+.pwd-box:before{
+	content:"密码";
+	position: absolute;
+	height: 20px;
+	width: 50%;
+	top: -30px;
+	color: #333;
+	font-size: 16px;
+	letter-spacing: 0px;
+}
+.login-form-item input{
+	height: 35px;
+	line-height: 20px;
+	width: 280px;
+	font-size: 16px;
+	letter-spacing: 0px;
+	border: 1px solid rgba(169,169,169,0.3);
+	border-radius: 5px;
+	outline: 0px;
+	padding-left: 20px;
+	position: relative;
+}
+.login-form-item input:focus{
+	box-shadow: 0 0 5px #1bbcf2;
+	-webkit-box-shadow: 0 0 5px #1bbcf2;
+	-o-box-shadow: 0 0 5px #1bbcf2;
+	-moz-box-shadow: 0 0 5px #1bbcf2;
+	-ms-box-shadow: 0 0 5px #1bbcf2;
+
+}
+.forget-password-box{
+	height: 30px;
+	line-height: 30px;
+	width:100px;
+	position: absolute;
+	top: 155px;
+	right: -25px;
+}
+.forget-password,.forget-password:link{
+	font-size: 12px;
+	color: #408dd1;
+	letter-spacing: 0px;
+}
+.forget-password:hover{
+	text-decoration: underline;
+	color: #408dd1;
+}
+.register-link-box{
+	position: absolute;
+	top: 155px;
+	height: 30px;
+	width: 100px;
+	line-height: 30px;
+	left: 25px;
+}
+.register-link,.register-link:link{
+	font-size: 12px;
+	color: #408dd1;
+	letter-spacing: 0px;	
+}
+.register-link:hover{
+	text-decoration: underline;
+	color: #408dd1;	
 }
 
+.login-btn{
+	position: absolute;
+	top: 190px;
+	left: 25px;
+	height: 40px;
+	width: 300px;
+	line-height: 20px;
+	padding-left: 20px;
+	padding-right: 20px;
+	border-radius: 5px;
+	cursor: pointer;
+	letter-spacing: 1px;
+	font-size: 18px;
+	text-align: center;
+	color: #fff;
+    text-shadow: 0 -1px 0 rgba(0,0,0,0.15);
+    background-color: #6cc644;
+    background-image: -webkit-linear-gradient(#7bcc58, #60b838);
+    background-image: -moz-linear-gradient(#7bcc58, #60b838);
+    background-image: -o-linear-gradient(#7bcc58, #60b838);
+    background-image: -ms-linear-gradient(#7bcc58, #60b838);
+    background-image: linear-gradient(#7bcc58, #60b838);
+    border-color: #55a532;
+}
+.login-btn:hover{
+	color: #fff;
+    background-color: #60b838;
+    background-image: -webkit-linear-gradient(#6cc644, #55a532);
+    background-image: -moz-linear-gradient(#6cc644, #55a532);
+    background-image: -o-linear-gradient(#6cc644, #55a532);
+    background-image: -ms-linear-gradient(#6cc644, #55a532);
+    background-image: linear-gradient(#6cc644, #55a532);
+    border-color: #4b912c;
+}
+
+
+.all-input:focus{
+	box-shadow: 0 0 5px #1bbcf2;
+	-webkit-box-shadow: 0 0 5px #1bbcf2;
+	-moz-box-shadow: 0 0 5px #1bbcf2;
+	-o-box-shadow: 0 0 5px #1bbcf2;
+	-ms-box-shadow: 0 0 5px #1bbcf2;
+}
+
+.footer{
+	height: 100px;
+	width: 100%;
+}
 .footer-container{
 	height: 100px;
 	width: 100%;
-	border-top: 1px solid #ccc;
+	border-top: 1px solid #e1e1e1;
 	position: relative;
 }
 

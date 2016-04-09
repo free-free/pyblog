@@ -296,11 +296,14 @@ body{
 
 
 
-
+.footer{
+	height: 100px;
+	width: 100%;
+}
 .footer-container{
 	height: 100px;
 	width: 100%;
-	border-top: 1px solid #ccc;
+	border-top: 1px solid #e1e1e1;
 	position: relative;
 	display: none;
 }
