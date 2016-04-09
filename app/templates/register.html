@@ -1,12 +1,73 @@
-<!DOCTYPE>
+<!DOCTYPE HTML>
 <html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/static/css/register.css?version=3.0">
+<link rel="stylesheet" type="text/css" href="/static/css/buttons.css">
+</head>
 <body>
-	<form method="POST" action="/user/register">
-	<p>Name:<input type="text" placeholder="user name" name="username"></p>
-	<p>Email:<input type="text" placeholder="email" name="email"></p>
-	<p>Password:<input type="password" placeholder="password" name="password"></p>
-	<p><button type="submit">Sign Up</button></p>
-	</form>
-	
+	<div class="header">
+		<div class="navigator-bar">
+			<div class="navigator-bar-container">
+				<span class="nb-title">
+				<a  href="index.html">Whoami's Blog</a>
+				</span>
+				<div class="nb-user-center">
+					        <div class="nb-user-dropdown-tangle-btn" data-toggle="dropdown" ><i class="icon-caret-down"></i>
+						        <span class="nb-user-dropdown-menu-tangle"></span>
+						        <div class="nb-user-dropdown-menu">
+						        	<div class="nb-user-dropdown-menu-item">注册</div>
+						        	<div class="nb-user-dropdown-menu-item">登录</div>
+						        	<div class="nb-user-dropdown-menu-item">了解</div>
+						        </div>
+					        </div>
+   				</div>
+		   </div>
+		</div>
+	</div>
+	<div class="main">
+		<div class="main-container">
+			<div class="left-box">
+				<h3 class="left-content">记录你的一点一滴,与他人合作完成你的文章</h3>
+			</div>
+			<div class="right-box">
+				<div class="register-form-box">
+					<form class="register-form" method="POST" action="/register">
+						<p class="register-item-box user-name-box">
+							<input	class="user-name" type="text" placeholder="取个名字吧" name="user_name" id="user-name"/>
+						</p>
+						<span class="error-note user-name-error-note"></span>
+						<p class="register-item-box email-box">
+							<input class="email" type="text" id="email" placeholder="你的邮箱" name="email" autocomplete="off" value=""/>
+						</p>
+						<span class="error-note email-error-note"></span>
+						<p class="register-item-box pwd-box">
+							<input class="password" type="password" id="password" name="password" placeholder="你的密码" autocomplete="off" value=""/>
+						</p>
+						<span class="error-note password-error-note"></span>
+						<button class="submit-btn" >注册</button>
+					</form>
+				</div>
+			</div>
+			<div class="clear-fix"></div>
+		</div>
+	</div>
+	<div class="footer">
+		<div class="footer-container">
+			<div class="footer-content">
+				<span class="copyright">&copy;2015-2016,By Whoami.</span>
+				<a class="footer-item" href="https://twitter.com" target="_blank"><i class="icon-twitter"></i>Twitter</a>
+				<a class="footer-item" href="https://www.facebook.com" target="_blank"><i class="icon-facebook" ></i>facebook</a>
+				<a class="footer-item" href="https://github.com/free-free" target="_blank"><i class="icon-github" ></i>Github</a>
+				<a class="footer-item" href="http://weibo.com/5577495302/profile?topnav=1&wvr=6&is_all=1" target="_blank"><i class="icon-spinner" ></i>Weibo</a>
+				<a class="footer-item" href="mailto:19941222hb@gmail.com" target="_blank"><i class="icon-envelope"></i>Mail</a>
+			</div>
+		</div>
+	</div>	
 </body>
+<script type="text/javascript" src="/static/js/jquery.min.js"></script>
+<!-- <script type="text/javascript" src="/static/js/navigator.js"></script> -->
+<script type="text/javascript" src='/static/js/register.js'></script>
 </html>
+
