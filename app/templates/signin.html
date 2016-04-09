@@ -2,9 +2,9 @@
 <html>
 <head>
 <meta charset="utf-8">
-<link rel="stylesheet" type="text/css" href="./static/css/font-awesome.min.css">
-<link rel="stylesheet" type="text/css" href="./static/css/signin.css?version=3.0">
-<link rel="stylesheet" type="text/css" href="./static/css/buttons.css">
+<link rel="stylesheet" type="text/css" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="/static/css/signin.css?version=3.0">
+<link rel="stylesheet" type="text/css" href="/static/css/buttons.css">
 </head>
 <body>
 	<div class="header">
@@ -12,24 +12,48 @@
 			<div class="navigator-bar-container">
 				<span class="nb-title"><a  href="index.html">Whoami's Blog</a></span>
 				    <div class="nb-user-center">
-					        <a class="nb-user-btn" href="#"><i class="icon-user icon-large"></i></a>
-					        <a class="nb-user-dropdown" data-toggle="dropdown" href="#"><span class="icon-caret-down"></span></a>
+					         <div class="nb-user-dropdown-tangle-btn" data-toggle="dropdown" ><i class="icon-caret-down"></i>
+						        <span class="nb-user-dropdown-menu-tangle"></span>
+						        <div class="nb-user-dropdown-menu">
+						        </div>
+					        </div>
    				 </div>
 		   </div>
 		</div>
 	</div>
 	<div class="main">
-		<div class="login-main-container" style="display:none">
+		<div class="main-container">
+			<div class="login-box">
+					<form class="login-form" method="POST" action="/login">
+						<p class="login-form-item email-box">
+							<input class="email" id="email" type="text" name="email" autocomplete="off"/>
+						</p>
+						<p class="login-form-item pwd-box">
+							<input class="password" id="password" type="password" name="password" autocomplete="off"/>
+						</p>
+						<p class="register-link-box">
+							<a class="register-link" href="/register">注册</a>
+						</p>
+						<p class="forget-password-box">
+							<a href="/password/reset" class="forget-password">忘记密码</a>
+						</p>
+
+						<button class="login-btn">登录</button>
+					</form>
+			</div>
+		</div>
+		<!-- <div class="login-main-container" style="display:none">
+				
 				<div class="login-panel" >
 					<form class="login-form" method="post" action="/login">
-						<div class="email-box input-box"><span class="add-on"><i class="icon-envelope"></i></span><input type="text" class="all-input email-input" name="email"></div>
-						<div class="pwd-box input-box"><span class="add-on"><i class="icon-key"></i></span><input type="password"  class="all-input pwd-input" name="password"></div>
+						<div class="email-box input-box"><span class="add-on"><i class="icon-envelope"></i></span><input type="text" class="all-input email-input" name="email" placeholder="邮箱"></div>
+						<div class="pwd-box input-box"><span class="add-on"><i class="icon-key"></i></span><input type="password"  class="all-input pwd-input" name="password" placeholder="密码"></div>
 						<div class="login-btn-box">
 							<a class="login-btn button button-block button-rounded button-middle button-primary"><span class="login-icon"><i class="icon-signin"></i></span>登录</a>
 						</div>
 					</form>
 				</div>
-		</div>
+		</div> -->
 	</div>
 	<div class="footer">
 		<div class="footer-container">
@@ -44,7 +68,7 @@
 		</div>
 	</div>	
 </body>
-<script type="text/javascript" src="./static/js/jquery.min.js"></script>
-<script type="text/javascript" src="./static/js/navigator.js"></script>
-<script type="text/javascript" src='./static/js/signin.js'></script>
+<script type="text/javascript" src="/static/js/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/navigator.js"></script>
+<script type="text/javascript" src='/static/js/signin.js'></script>
 </html>
