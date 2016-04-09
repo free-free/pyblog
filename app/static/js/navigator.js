@@ -1,5 +1,5 @@
 $(function(){
-	$(document).dblclick(function(){
+	/*$(document).dblclick(function(){
 		$('.dropdown-menu').removeClass('active').hide();
 	});
 	$('.nb-user-dropdown').click(function(){
@@ -7,31 +7,6 @@ $(function(){
 		{
 		    var dropMenu=document.createElement('ul')
 		    $(dropMenu).addClass("dropdown-menu")
-		    /*.click(function(e){
-		    	$('.dropdown-menu').removeClass('active').hide();
-		    	var loginPanel=$('.login-panel');
-		    	var backmuck=document.createElement('div')
-		    	$(backmuck).css({
-		    		'background':'#000',
-		    		'opacity':0.5,
-		    		'position':'fixed',
-		    		'top':'0px',
-		    		'left':'0px',
-		    		'height':'100%',
-		    		'width':'100%',
-		    		'zIndex':999999
-		    	}).addClass('backmuck');
-		    	$(loginPanel).css({
-		    			'position':'fixed',
-		    			'top':parseInt($(document).scrollTop())+document.documentElement.clientHeight/2-125+'px',
-		    			'left':parseInt($(document).width())/2-200+'px',
-		    			'background':'#f5f5f5',
-		    			'opacity':1,
-		    			'zIndex':99999999
-		    	}).addClass('loginPanel');
-		    	$('body').append(backmuck).append(loginPanel);
-		    })
-			*/	
 			$(dropMenu).append('<li><a href="#" class="avatar"><img class="avatar-img" src="avatar.jpeg"/></a></li>');
 			$(dropMenu).append('<li><a href="#" class="avatar">Whoami\'s Blog</a></li>');
 		    $(dropMenu).append('<li><a  href="signin.html"><span class="addon"><i class="icon-signin"></i></span>登录</a></li>');
@@ -98,9 +73,9 @@ $(function(){
 				'display':'block'
 			});
 			$('.nb-user-center').append(dropMenu)
-		}
+		}*/
 		/* if dropdown-menu exists,just hide it and show it*/
-		if($('.dropdown-menu').hasClass('active'))
+		/*if($('.dropdown-menu').hasClass('active'))
 		{
 			$('.dropdown-menu').removeClass('active').hide();
 		}else
@@ -108,5 +83,27 @@ $(function(){
 			$('.dropdown-menu').find('.item-link').css({'color':'#999','background':'#f5f5f5'});
 			$('.dropdown-menu').addClass('active').show();
 		}
+	});*/
+
+	function dropdown_btn_click_handler()
+	{
+		if($(this).hasClass('active'))
+		{
+			$(this).css('color','#ababab').removeClass('active');
+			$('.nb-user-dropdown-menu').hide();
+			$('.nb-user-dropdown-menu-tangle').hide();
+		}
+		else
+		{
+			$(this).css('color','#fff').addClass('active');
+			$('.nb-user-dropdown-menu').show();
+			$('.nb-user-dropdown-menu-tangle').show();	
+		}
+	}
+	$('.nb-user-dropdown-tangle-btn').click(dropdown_btn_click_handler);
+	$(document).dblclick(function(){
+		$('.nb-user-dropdown-tangle-btn').css('color','#ababab').removeClass('active');
+		$('.nb-user-dropdown-menu').hide();
+		$('.nb-user-dropdown-menu-tangle').hide();
 	});
 })
