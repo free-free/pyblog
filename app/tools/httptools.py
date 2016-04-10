@@ -201,9 +201,22 @@ class Route(object):
 	r'''
 		Route class is responsible for routes adding and routes registering to  aiohttp
 	'''
-	_routes=list()
+	_none_variable_routes=list()
+	_incomplete_variable_routes=list()
+	_complete_variable_routes=list()
 	def __init__(self):
 		pass
+	@classmethod
+	def add_routes(cls,wrapper):
+		if wrapper.__url__.count('{')!=0:
+			if wrapper.__url__.endswith('/'):
+				wrapper.__url__=wrapper.__url__[:wrapper.__url__.rindex('/')]
+			if wrapper.__url__.count('{')<wrapper.__url__.count('/'):
+				Route._incomplete_variable_routes.append(wrapper)
+			else:
+				Route._complete_variable_routes.append(wrapper)
+		else:
+			Route._none_variable_routes.append(wrapper)
 	@classmethod
 	def get(cls,url,*,auth=False):
 		def decorator(func):
@@ -214,7 +227,7 @@ class Route(object):
 			wrapper.__url__=url
 			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
-			Route._routes.append(wrapper)
+			cls.add_routes(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
@@ -227,7 +240,7 @@ class Route(object):
 			wrapper.__url__=url
 			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
-			Route._routes.append(wrapper)
+			cls.add_routes(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
@@ -240,7 +253,7 @@ class Route(object):
 			wrapper.__url__=url
 			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
-			Route._routes.append(wrapper)
+			cls.add_routes(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
@@ -253,16 +266,30 @@ class Route(object):
 			wrapper.__url__=url
 			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
-			Route._routes.append(wrapper)
+			cls.add_routes(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
-	def register_route(cls,app):
-		for handler in Route._routes:
+	def sort_routes(cls,routes):
+		route_length=len(routes)
+		i=0
+		while i<route_length:
+			j=i
+			while j>0 and routes[j].__url__.count('{')<routes[j-1].__url__.count('{'):
+				swap=routes[j]
+				routes[j]=routes[j-1]
+				routes[j-1]=swap
+				j-=1
+			i+=1
+		return routes
+	@classmethod
+	def process_routes(cls,app,routes):
+		for handler in routes:
 			_method=getattr(handler,'__method__',None)
 			_path=getattr(handler,'__url__',None)
+			print(_path,'===>',_method)
 			if _path is None or _method is None:
-				raise ValueError('_path or _method not defined in %s.'%str(handler))
+				raise ValueError("__method__ or __url__ not define in %s."%str(handler.__name__))
 			if not asyncio.iscoroutinefunction(handler) and not inspect.isgeneratorfunction(handler):
 				handler=asyncio.coroutine(handler)
 			if len(_path)>1 and _path.endswith('/'):
@@ -272,11 +299,15 @@ class Route(object):
 				app.router.add_route(_method,_path,BaseHandler(app,handler))
 				app.router.add_route(_method,_path+'/',BaseHandler(app,handler))
 			else:
-				app.router.add_route(_method,_path,BaseHandler(app,handler))	
+				app.router.add_route(_method,_path,BaseHandler(app,handler))
+	@classmethod
+	def register_route(cls,app):
+		cls.process_routes(app,Route._none_variable_routes)
+		Route._incomplete_variable_routes=cls.sort_routes(Route._incomplete_variable_routes)
+		cls.process_routes(app,Route._incomplete_variable_routes)
+		Route._complete_variable_routes=cls.sort_routes(Route._complete_variable_routes)
+		cls.process_routes(app,Route._complete_variable_routes)	
 		app.router.add_static(Config.app.static_prefix,os.path.join(os.path.dirname(os.path.dirname(__file__)),Config.app.static_path))
-			#handler('Jell')
-			#print(handler.__method__)
-			#print(handler.__url__)
 if __name__=='__main__':
 	@Route.get('/uer/profile')
 	def user_profile(name):
