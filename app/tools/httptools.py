@@ -156,7 +156,10 @@ class Middleware(object):
 			if app.get('redirect'):
 				redirect_url=app.get('redirect')
 				app['redirect']=''
-				return aiohttp.web.HTTPFound(redirect_url)
+				res= aiohttp.web.HTTPFound(redirect_url)
+				check_set_cookie(res)
+				check_del_cookie(res)
+				return res
 			if isinstance(res,web.StreamResponse):
 				res=res
 			elif isinstance(res,bytes):
