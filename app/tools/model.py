@@ -116,6 +116,8 @@ class Model(dict,metaclass=ModelMetaclass):
 				self.__query__[k]=''
 		#record=yield from select(sql)
 		record=yield from self.db._select(sql)
+		if len(record)==0:
+			return tuple()
 		return type(self)(select=True,alias=True,**record[0])
 	@asyncio.coroutine
 	def update(self,args):
