@@ -83,6 +83,7 @@ class DB(dict):
 		with (yield from type(self)._pool) as conn:
 			cursor=yield from conn.cursor(aiomysql.DictCursor)
 			yield from cursor.execute(sql)
+			yield from conn.commit()
 			if size:
 				records=yield from cursor.fetchmany(int(size))
 			else:
@@ -103,7 +104,7 @@ class DB(dict):
 				yield from cursor.execute(sql)
 			except Exception as e:
 				yield from conn.rollback()
-			else:
+			finally:
 				if not autocommit:
 					yield from conn.commit()
 				affectedrow=cursor.rowcount	
