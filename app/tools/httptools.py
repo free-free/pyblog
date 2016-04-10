@@ -201,7 +201,7 @@ class Route(object):
 	r'''
 		Route class is responsible for routes adding and routes registering to  aiohttp
 	'''
-	_routes=set()
+	_routes=list()
 	def __init__(self):
 		pass
 	@classmethod
@@ -214,7 +214,7 @@ class Route(object):
 			wrapper.__url__=url
 			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
-			Route._routes.add(wrapper)
+			Route._routes.append(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
@@ -227,7 +227,7 @@ class Route(object):
 			wrapper.__url__=url
 			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
-			Route._routes.add(wrapper)
+			Route._routes.append(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
@@ -240,7 +240,7 @@ class Route(object):
 			wrapper.__url__=url
 			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
-			Route._routes.add(wrapper)
+			Route._routes.append(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
@@ -253,7 +253,7 @@ class Route(object):
 			wrapper.__url__=url
 			wrapper.__auth__=auth
 			wrapper.__args__=inspect.getargspec(func)[0]
-			Route._routes.add(wrapper)
+			Route._routes.append(wrapper)
 			return wrapper
 		return decorator
 	@classmethod
