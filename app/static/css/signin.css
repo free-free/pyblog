@@ -159,13 +159,13 @@ a,a:hover,a:link{
 .login-form-item input{
 	height: 35px;
 	line-height: 20px;
-	width: 280px;
+	width: 290px;
 	font-size: 16px;
 	letter-spacing: 0px;
 	border: 1px solid rgba(169,169,169,0.3);
 	border-radius: 5px;
 	outline: 0px;
-	padding-left: 20px;
+	padding-left: 10px;
 	position: relative;
 }
 .login-form-item input:focus{
@@ -175,6 +175,21 @@ a,a:hover,a:link{
 	-moz-box-shadow: 0 0 5px #1bbcf2;
 	-ms-box-shadow: 0 0 5px #1bbcf2;
 
+}
+.error-span{
+	line-height: 20px;
+	position: absolute;
+	font-size: 12px;
+	color: red;
+	letter-spacing: 0px;
+}
+.email-error-span{
+	top: 25px;
+	right: 50px;
+}
+.password-error-span{
+	top: 95px;
+	right:50px;
 }
 .forget-password-box{
 	height: 30px;
