@@ -58,14 +58,12 @@ class FileSession(Session):
 	def __init__(self,session_id=None,config=None):
 		if not config:
 			self._session_dir='/tmp/session'
-			self._session_expire_file='/tmp/session/session_expire'
 			self._session_expire=0
 		else:
 			if not isinstance(config,dict):
 				raise TypeError("FileSession config must be dict type")
 			self._session_dir=config.get('session_dir','/tmp/session')
-			self._session_expire_file=os.path.join(self._session_dir,config.get('expire_file','session_expire'))
-			self._session_expire=config.get('expire',0)
+			self._session_expire=int(config.get('expire',0))
 
 		if not os.path.exists(self._session_dir):
 			os.mkdir(self._session_dir)
@@ -77,9 +75,10 @@ class FileSession(Session):
 		if os.path.exists(self._session_file):	
 			with open(self._session_file,'r',errors='ignore',encoding='utf-8') as f:
 				self._data[self._session_id]=json.load(f)
-			expire=self._data[self._session_id].get('expire',None)
-			if expire:
-				if int(expire)<int(time.time()):
+			expire_time=self._data[self._session_id].get('__expire_delta_time',None)
+			last_active_time=self._data[self._session_id].get('__last_active_time')
+			if expire_time:
+				if (int(time.time())-(last_active_time))>expire_time:
 					os.remove(self._session_file)
 					self._data[self._session_id]={}
 		else:
@@ -91,17 +90,13 @@ class FileSession(Session):
 	def get(self,sname):
 		return self._data[self._session_id].get(sname,None)
 	def save(self,expire=None):
+		current_time=int(time.time())
+		self._data[self._session_id]['__last_active_time']=current_time
 		if expire:
-			expire_timestamp=int(time.time())+int(expire)
-			self._data[self._session_id]['expire']=expire_timestamp
-			with open(self._session_expire_file,'a+',errors='ignore',encoding='utf-8') as f:
-				f.write("%s:%s\r\n"%(self._session_id,expire_timestamp))
+			self._data[self._session_id]['__expire_delta_time']=int(expire)
 		else:
 			if int(self._session_expire)!=0:
-				expire_timestamp=int(time.time())+int(self._session_expire)
-				self._data[self._session]['expire']=expire_timestamp
-				with open(self._session_expire_file,'a+',errors='ignore',encoding='utf-8') as f:
-					f.write("%s:%s\r\n"%(self._session_id,expire_timestamp))
+				self._data[self._session_id]['__expire_delta_time']=self._session_expire
 		with open(self._session_file,'w',errors='ignore',encoding='utf-8') as f:
 			json.dump(self._data[self._session_id],f)
 		
@@ -114,9 +109,10 @@ class FileSession(Session):
 		if os.path.exists(self._session_file):
 			with open(self._session_file,'r',errors='ignore',encoding='utf-8') as f:
 				self._data[self._session_id]=json.load(f)
-			expire=self._data[self._session_id].get('expire',None)
-			if expire:
-				if int(expire)<int(time.time()):
+			expire_time=self._data[self._session_id].get('__expire_delta_time',None)
+			last_active_time=self._data[self._session_id].get('__last_expire_time')
+			if expire_time:
+				if (int(time.time)-last_active_time)>expire_time:
 					os.remove(self._session_file)
 					self._data[self._session_id]={}
 		else:
@@ -366,8 +362,8 @@ if __name__=='__main__':
 	#file.set('name','Jell')
 	#file.set('email','dejiejfioe@gmail.com')
 	#file.save(20)
-		
-	#file=SessionManager("b974c98eedd111e5930f080027116c59")
+	
+	#file=SessionManager("c56fbc34fee411e5afc6080027116c59")
 	#print(file['name'])
 	#print(file['email'])
 
