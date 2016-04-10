@@ -35,15 +35,15 @@
 				<div class="register-form-box">
 					<form class="register-form" method="POST" action="/register">
 						<p class="register-item-box user-name-box">
-							<input	class="user-name" type="text" placeholder="取个名字吧" name="user_name" id="user-name"/>
+							<input	class="user-name" type="text" placeholder="取个名字吧" name="user_name" id="user-name" value="{{ user_name }}"/>
 						</p>
-						<span class="error-note user-name-error-note"></span>
+						<span class="error-note user-name-error-note">{{ user_name_error  }}</span>
 						<p class="register-item-box email-box">
-							<input class="email" type="text" id="email" placeholder="你的邮箱" name="email" autocomplete="off" value=""/>
+							<input class="email" type="text" id="email" placeholder="你的邮箱" name="email" autocomplete="off" value="{{ email }}"/>
 						</p>
-						<span class="error-note email-error-note"></span>
+						<span class="error-note email-error-note">{{ email_error }}</span>
 						<p class="register-item-box pwd-box">
-							<input class="password" type="password" id="password" name="password" placeholder="你的密码" autocomplete="off" value=""/>
+							<input class="password" type="password" id="password" name="password" placeholder="你的密码" autocomplete="off" value="{{ password }}"/>
 						</p>
 						<span class="error-note password-error-note"></span>
 						<button class="submit-btn" >注册</button>

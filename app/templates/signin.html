@@ -26,11 +26,13 @@
 			<div class="login-box">
 					<form class="login-form" method="POST" action="/login">
 						<p class="login-form-item email-box">
-							<input class="email" id="email" type="text" name="email" autocomplete="off"/>
+							<input class="email" id="email" type="text" name="email" autocomplete="off" value="{{ email }}"/>
 						</p>
+						<span class="error-span email-error-span">{{ email_error }}</span>
 						<p class="login-form-item pwd-box">
-							<input class="password" id="password" type="password" name="password" autocomplete="off"/>
+							<input class="password" id="password" type="password" name="password" autocomplete="off" value="{{ password }}"/>
 						</p>
+						<span class="error-span password-error-span">{{ password_error }}</span>
 						<p class="register-link-box">
 							<a class="register-link" href="/register">注册</a>
 						</p>
