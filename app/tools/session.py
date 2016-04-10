@@ -243,6 +243,10 @@ class RedisSession(Session):
 		self._data[self._session_id]=self._redis.hgetall(self._session_id)
 		if not self._data.get(self._session_id):
 			self._data[self._session_id]={}
+		else:
+			expire_delta_time=self._data[self._session_id].get('__expire_delta_time'.encode('utf-8'),b'').decode('utf-8')
+			if expire_delta_time:
+				self._redis.expire(self._session_id,int(expire_delta_time))
 		super(RedisSession,self).__init__(self._session_id)
 	def get(self,sname):
 		return self._data[self._session_id].get(sname.encode('utf-8'),b'').decode('utf-8')
@@ -257,15 +261,23 @@ class RedisSession(Session):
 		self._data[self._session_id]=self._redis.hgetall(self._session_id)
 		if not self._data.get(self._session_id):
 			self._data[self._session_id]={}
+		else:	
+			expire_delta_time=self._data[self._session_id].get('__expire_delta_time'.encode('utf-8'),b'').decode('utf-8')
+			if expire_delta_time:
+				self._redis.expire(self._session_id,int(expire_delta_time))
 		return self
 	def  save(self,expire=None):
 		if expire:
+			self._data[self._session_id]['__expire_delta_time']=int(expire)
 			self._redis.hmset(self._session_id,self._data[self._session_id])
-			self._redis.expire(self._session_id,expire)
+			self._redis.expire(self._session_id,int(expire))
 		else:	
-			self._redis.hmset(self._session_id,self._data[self._session_id])
 			if int(self._expire)!=0:
+				self._data[self._session_id]['__expire_delta_time']=self._expire	
+				self._redis.hmset(self._session_id,self._data[self._session_id])
 				self._redis.expire(self._session_id,self._expire)
+			else:
+				self._redis.hmset(self._session_id,self._data[self._session_id])
 	def delete(self,session_id=None):
 		if session_id:
 			if session_id in self._data:
@@ -371,9 +383,9 @@ if __name__=='__main__':
 	#redis.set('name','huangbiao')
 	#redis.set('email','18281573692@163.com')
 	#print(redis.session_id)
-	#redis.save()
-	#redis=SessionManager("6a552f58efe111e5b143080027116c59",driver='redis')
-	#print(redis['id'])
+	#redis.save(60)
+	#redis=SessionManager("4f9f0a42fee811e59da2080027116c59",driver='redis')
+	#print(redis['email'])
 	#print(redis['name'])
 	#print(redis.session_id)
 	#print(redis.delete())
