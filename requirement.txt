@@ -1,0 +1,6 @@
+aiohttp
+redis
+jinja2
+aiomysql
+pymongo
+mysqlclient
