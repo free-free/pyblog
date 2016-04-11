@@ -77,6 +77,7 @@ class DB(dict):
 				db=kw.get('db',Config.database.database),
 				loop=cls._loop
 		)
+		return cls._pool
 	@asyncio.coroutine
 	def _select(self,sql,size=None):
 		Log.info(sql)
