@@ -273,7 +273,7 @@ class Route(object):
 			return wrapper
 		return decorator
 	@classmethod
-	def sort_routes(cls,routes):
+	def sort_variable_routes(cls,routes):
 		route_length=len(routes)
 		i=0
 		while i<route_length:
@@ -286,11 +286,30 @@ class Route(object):
 			i+=1
 		return routes
 	@classmethod
+	def sort_none_variable_routes(cls,routes):
+		route_length=len(routes)
+		i=0
+		while i<route_length:
+			j=i
+			while j>0 and routes[j].__url__.count('/')<=routes[j-1].__url__.count('/'):
+				if routes[j].__url__.count('/')<routes[j-1].__url__.count('/'):
+					swap=routes[j]
+					routes[j]=routes[j-1]
+					routes[j-1]=swap
+				else:
+					if len(routes[j].__url__)<len(routes[j-1].__url__):
+						swap=routes[j]
+						routes[j]=routes[j-1]
+						routes[j-1]=swap
+				j-=1
+			i+=1
+		return routes
+	
+	@classmethod
 	def process_routes(cls,app,routes):
 		for handler in routes:
 			_method=getattr(handler,'__method__',None)
 			_path=getattr(handler,'__url__',None)
-			print(_path,'===>',_method)
 			if _path is None or _method is None:
 				raise ValueError("__method__ or __url__ not define in %s."%str(handler.__name__))
 			if not asyncio.iscoroutinefunction(handler) and not inspect.isgeneratorfunction(handler):
@@ -305,10 +324,11 @@ class Route(object):
 				app.router.add_route(_method,_path,BaseHandler(app,handler))
 	@classmethod
 	def register_route(cls,app):
+		Route._none_variable_routes=cls.sort_none_variable_routes(Route._none_variable_routes)
 		cls.process_routes(app,Route._none_variable_routes)
-		Route._incomplete_variable_routes=cls.sort_routes(Route._incomplete_variable_routes)
+		Route._incomplete_variable_routes=cls.sort_variable_routes(Route._incomplete_variable_routes)
 		cls.process_routes(app,Route._incomplete_variable_routes)
-		Route._complete_variable_routes=cls.sort_routes(Route._complete_variable_routes)
+		Route._complete_variable_routes=cls.sort_variable_routes(Route._complete_variable_routes)
 		cls.process_routes(app,Route._complete_variable_routes)	
 		app.router.add_static(Config.app.static_prefix,os.path.join(os.path.dirname(os.path.dirname(__file__)),Config.app.static_path))
 if __name__=='__main__':
