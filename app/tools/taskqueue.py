@@ -83,6 +83,8 @@ class MongoConnection(DBConnection):
 		return type(self)._connection
 class MysqlConnection(DBConnection):
 	_connection=None
+	_db_check=False
+	_table_check=False
 	def __init__(self):
 		pass
 	def _create_connection(self,host,port,db,user,password):
@@ -93,6 +95,16 @@ class MysqlConnection(DBConnection):
 		if not type(self)._connection:
 			return False
 		return True
+	def _check_db(self,queue_db):
+		if not type(self)._db_check:
+			cursor=type(self)._connection.cursor()
+			cursor.execute('show databases')
+			alldatabases=cursor.fecthall()
+			for db in alldatabases:
+				if queue_db==db[0]:
+					type(self)._db_check=True
+					break
+		return type(self)._db_check
 	def __get__(self,obj,ownclass):
 		if not self._check_connection:
 			return self._create_connection(obj._host,obj._port,obj._db,obj._user,obj._password)
