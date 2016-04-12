@@ -19,7 +19,7 @@ class DBConnection(object):
 		pass
 	def __set__(self,obj,value):
 		pass
-	def __del__(self,obj):
+	def __del__(self):
 		pass
 class RedisConnection(DBConnection):
 	_connection=None
@@ -43,9 +43,9 @@ class RedisConnection(DBConnection):
 			return False
 		return True
 	def __get__(self,obj,ownclass):
-		if self._check_connection_pool:
+		if not self._check_connection_pool:
 			self._create_connection_pool(obj._host,obj._port,obj._db)
-		if self._check_connection:
+		if not self._check_connection:
 			return self._create_connection()
 		return type(self)._connection
 			
@@ -58,16 +58,17 @@ class Queue(object):
 		pass
 	def __getattr__(self,key):
 		if key.split('_',1)[1] in self._config:
-			return self._config.get(key)
+			return self._config.get(key.split('_',1)[1])
 		else:
 			raise AttributeError("%s has no such attirbute"%type(self))
 class RedisQueue(Queue):
+	_redis_conn=RedisConnection()
 	def __init__(self,config=None):
-		if not config:
+		if not config:	
+			config=dict()
 			config['host']='localhost'
 			config['port']=6379
 			config['db']=0
-		self._redis_conn=RedisConnnection()
 		super(RedisQueue,self).__init__(config)
 	def enqueue(self,queue_name,content):
 		self._redis_conn.lpush(queue_name,content)
@@ -79,6 +80,7 @@ class MongoQueue(Queue):
 	_client=None
 	def __init__(self,config=None):
 		if not config:
+			config=dict()
 			config['host']='localhost'
 			config['port']=27017
 			config['db']='queue'
@@ -94,4 +96,10 @@ class MongoQueue(Queue):
 	def enqueue(self,content,queue_name=None):
 		if queue_name:
 			mongo_conn=self._client[self._db][queue_name]
-		
+if __name__=='__main__':
+	rqueue=RedisQueue()
+	rqueue.dequeue("email")
+	#rqueue.enqueue("email",'sent to 19941222hb@gmail.com')		
+	#rqueue.enqueue("email",'sent to 18281573692@gmail.com')		
+	#rqueue.enqueue("email",'sent to xxxx@gmail.com')		
+	#rqueue.enqueue("email",'sent to yyyyy@gmail.com')		
