@@ -12,6 +12,11 @@ try:
 except ImportError:
 	logging.error("can't import 'pymongo' module")
 	exit()
+try:
+	import MySQLdb
+except ImportError:
+	logging.error("can't import 'MySQLdb' module")
+	exit()
 class DBConnection(object):
 	def __init__(self):
 		pass
@@ -74,6 +79,21 @@ class MongoConnection(DBConnection):
 			self._create_client(obj._host,obj._port)
 		if not self._check_connection:
 			return self._create_connection(obj._db)
+		return type(self)._connection
+class MysqlConnection(DBConnection):
+	_connection=None
+	def __init__(self):
+		pass
+	def _create_connection(self,host,port,db,user,password):
+		pass
+	@property
+	def _check_connection(self):
+		if not type(self)._connection:
+			return False
+		return True
+	def __get__(self,obj,ownclass):
+		if not self._check_connection:
+			return self._create_connection()
 		return type(self)._connection
 class Queue(object):
 	def __init__(self,config):
