@@ -48,7 +48,33 @@ class RedisConnection(DBConnection):
 		if not self._check_connection:
 			return self._create_connection()
 		return type(self)._connection
-			
+class MongoConnection(DBConnection):
+	_client=None
+	_connection=None
+	def __init__(self):
+		pass
+	def _create_client(self,host,port):
+		type(self)._client=MongoClient(host=host,port=port)
+		return type(self)._client
+	def _create_connection(self,db):
+		type(self)._connection=type(self)._client[str(db)]
+		return type(self)._connection
+	@property
+	def _check_client(self):
+		if not type(self)._client:
+			return False
+		return True
+	@property
+	def _check_connection(self):
+		if not type(self)._connection:
+			return False
+		return True
+	def __get__(self,obj,ownclass):
+		if not self._check_client:
+			self._create_client(obj._host,obj._port)
+		if not self._check_connection:
+			return self._create_connection(obj._db)
+		return type(self)._connection
 class Queue(object):
 	def __init__(self,config):
 		self._config=config
@@ -76,26 +102,18 @@ class RedisQueue(Queue):
 	def dequeue(self,queue_name):
 		return self._redis_conn.rpop(queue_name)
 class MongoQueue(Queue):
-	_mongo_conn=None
-	_client=None
+	_mongo_conn=MongoConnection()
 	def __init__(self,config=None):
 		if not config:
 			config=dict()
 			config['host']='localhost'
 			config['port']=27017
 			config['db']='queue'
-			config['collection']='default_queue'
-		self._client=MongoClient(self._host,self._port)
-		self._mongo_conn=self._client[self._db][self._collection]
 		super(MongoQueue,self).__init__(config)
-	def _get_connection(self):
-		if not type(self)._client:
-			type(self)._client=MongoClient(self._host,self._port)
-		if not type(self)._mongo_conn:
-			pass
-	def enqueue(self,content,queue_name=None):
-		if queue_name:
-			mongo_conn=self._client[self._db][queue_name]
+	def enqueue(self,queue_name,content):
+		pass
+	def dequeue(self,queue_name):
+		pass
 if __name__=='__main__':
 	rqueue=RedisQueue()
 	rqueue.dequeue("email")
