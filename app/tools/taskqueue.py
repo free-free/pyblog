@@ -17,6 +17,7 @@ try:
 except ImportError:
 	logging.error("can't import 'MySQLdb' module")
 	exit()
+
 class DBConnection(object):
 	def __init__(self):
 		pass
@@ -85,7 +86,7 @@ class MysqlConnection(DBConnection):
 	def __init__(self):
 		pass
 	def _create_connection(self,host,port,db,user,password):
-		type(self)._connection=MySQLdb.connect(host=host,port=port,db=db,user=user,passwd=password,cursorclass=MySQL.cursors.DictCursor)
+		type(self)._connection=MySQLdb.connect(host=host,port=port,db=db,user=user,passwd=password)
 		return type(self)._connection
 	@property
 	def _check_connection(self):
@@ -94,7 +95,7 @@ class MysqlConnection(DBConnection):
 		return True
 	def __get__(self,obj,ownclass):
 		if not self._check_connection:
-			return self._create_connection()
+			return self._create_connection(obj._host,obj._port,obj._db,obj._user,obj._password)
 		return type(self)._connection
 class Queue(object):
 	def __init__(self,config):
@@ -107,7 +108,7 @@ class Queue(object):
 		if key.split('_',1)[1] in self._config:
 			return self._config.get(key.split('_',1)[1])
 		else:
-			raise AttributeError("%s has no such attirbute"%type(self))
+			raise AttributeError("%s has no such '%s' attirbute"%(type(self),key))
 class RedisQueue(Queue):
 	_redis_conn=RedisConnection()
 	def __init__(self,config=None):
@@ -144,23 +145,31 @@ class MysqlQueue(Queue):
 			config['host']='localhost'
 			config['db']='queue'
 			config['user']='root'
-			config['password']='xxxx'
+			config['password']='526114'
 		super(MysqlQueue,self).__init__(config)
 	def enqueue(self,queue_name,content):
 		cursor=self._mysql_conn.cursor()
-		cursor.execute("insert into `%s`(`content`,`enqueue_at`) values(%s,%s)"%(queue_name,content,content,str(int(time.time()))))
+		cursor.execute("insert into `%s`(`content`) values('%s')"%(queue_name,content))
 		cursor.close()
 		self._mysql_conn.commit()
 		return content
 	def dequeue(self,queue_name):
 		cursor=self._mysql_conn.cursor()
-		ret=cursor.findone()
+		cursor.execute('select * from `%s` order by `id` asc limit 1'%queue_name)
+		ret=cursor.fetchone()
+		if ret and len(ret)>=1:
+			cursor.execute('delete from `%s` where `id`=%s'%(queue_name,ret[0]))
+			self._mysql_conn.commit()
 		cursor.close()
-		return ret
+		return ret[1]
 if __name__=='__main__':
-	rqueue=RedisQueue()
-	rqueue.dequeue("email")
+	#rqueue=RedisQueue()
+	#rqueue.dequeue("email")
 	#rqueue.enqueue("email",'sent to 19941222hb@gmail.com')		
 	#rqueue.enqueue("email",'sent to 18281573692@gmail.com')		
 	#rqueue.enqueue("email",'sent to xxxx@gmail.com')		
 	#rqueue.enqueue("email",'sent to yyyyy@gmail.com')		
+	#mqueue=MysqlQueue()
+	#mqueue.enqueue("mail",'send mail to 19941222hb@gmail.com')
+	#print(mqueue.dequeue("mail"))
+
