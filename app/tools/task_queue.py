@@ -114,6 +114,20 @@ class MongoQueue(Queue):
 		pass
 	def dequeue(self,queue_name):
 		pass
+class MysqlQueue(Queue):
+	def __init__(self,config=None):
+		if not config:
+			config=dict()
+			config['port']=3306
+			config['host']='localhost'
+			config['db']='queue'
+			config['user']='root'
+			config['password']='xxxx'
+		super(MysqlQueue,self).__init__(config)
+	def enqueue(self,queue_name,content):
+		pass
+	def dequeue(self,queue_name):
+		pass
 if __name__=='__main__':
 	rqueue=RedisQueue()
 	rqueue.dequeue("email")
