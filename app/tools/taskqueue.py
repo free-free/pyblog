@@ -85,7 +85,8 @@ class MysqlConnection(DBConnection):
 	def __init__(self):
 		pass
 	def _create_connection(self,host,port,db,user,password):
-		pass
+		type(self)._connection=MySQLdb.connect(host=host,port=port,db=db,user=user,passwd=password,cursorclass=MySQL.cursors.DictCursor)
+		return type(self)._connection
 	@property
 	def _check_connection(self):
 		if not type(self)._connection:
@@ -135,6 +136,7 @@ class MongoQueue(Queue):
 	def dequeue(self,queue_name):
 		pass
 class MysqlQueue(Queue):
+	_mysql_conn=MysqlConnection()
 	def __init__(self,config=None):
 		if not config:
 			config=dict()
@@ -145,9 +147,16 @@ class MysqlQueue(Queue):
 			config['password']='xxxx'
 		super(MysqlQueue,self).__init__(config)
 	def enqueue(self,queue_name,content):
-		pass
+		cursor=self._mysql_conn.cursor()
+		cursor.execute("insert into `%s`(`content`,`enqueue_at`) values(%s,%s)"%(queue_name,content,content,str(int(time.time()))))
+		cursor.close()
+		self._mysql_conn.commit()
+		return content
 	def dequeue(self,queue_name):
-		pass
+		cursor=self._mysql_conn.cursor()
+		ret=cursor.findone()
+		cursor.close()
+		return ret
 if __name__=='__main__':
 	rqueue=RedisQueue()
 	rqueue.dequeue("email")
