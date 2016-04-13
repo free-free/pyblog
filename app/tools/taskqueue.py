@@ -221,17 +221,29 @@ class MysqlQueue(Queue):
 			cursor.close()
 			return ''
 class QueueReader(object):
-	_queues_reader={'redis':RedisQueue,'mongo':MongoQueue,'mysql':MysqlQueue}
-	def __init__(self):
-		pass
-	def get_redis_queue_reader(self,config=None):
-		return self._queues_reader.get('redis')(config)
-	def get_mongo_queue_reader(self,config=None):
-		return self._queues_reader.get('mongo')(config)
+	_queue_driver_class={'redis':RedisQueue,'mongo':MongoQueue,'mysql':MysqlQueue}
+	_queue_driver_instance={}
+	def __init__(self,driver_name='redis',config=None):
+		if config:
+			type(self)._queue_driver_instance[driver_name.lower()]=eval('self.get_%s_queue_driver(%s)'%(driver_name.lower(),config))
+		else:
+			if driver_name.lower() not in type(self)._queue_driver_instance:
+				type(self)._queue_driver_instance[driver_name.lower()]=eval('self.get_%s_queue_driver(%s)'%(driver_name.lower(),None))
+		self._queue_reader=type(self)._queue_driver_instance[driver_name.lower()]
+	def get_redis_queue_driver(self,config=None):
+		return self._queue_driver_class.get('redis')(config)
+	def get_mongo_queue_driver(self,config=None):
+		return self._queue_driver_class.get('mongo')(config)
+	def get_mysql_queue_driver(self,config=None):
+		return self._queue_driver_class.get('mysql')(config)
+	def read_from_queue(self,queue_name):
+		self._queue_reader.dequeue(queue_name)	
 if __name__=='__main__':
 	qr=QueueReader()
-	print(qr.get_redis_queue_reader())
-	print(qr.get_mongo_queue_reader())
+	print(qr.get_redis_queue_driver())
+	print(qr.get_mongo_queue_driver())
+	print(qr.get_mysql_queue_driver())
+	print(qr.read_from_queue('mail'))
 	#rqueue1=RedisQueue()
 	#rqueue.dequeue("email")
 	#rqueue1.enqueue("email",'sent to 19941222hb@gmail.com')		
