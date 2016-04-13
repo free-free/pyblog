@@ -255,6 +255,37 @@ class QueueWriter(QueueOperator):
 	def write_to_queue(self,queue_name,payload):
 		self._queue_writer.enqueue(queue_name,payload)
 		return payload
+
+class MailProcessor(object):
+	r'''
+		MailProcessor is responsible for to send mail
+	'''
+	def __init__(self,content):
+		self._content=content
+	def _get_mail_sender(self):
+		pass
+	def _get_mail_receiver(self):
+		pass
+	def _get_mail_title(self):
+		pass
+	def _get_mail_main(self):
+		pass
+class QueuePayloadParser(object):
+	r'''
+		QueuePayloadParser is class that responsible for parsing the payload reading from queue,
+		after parsing the payload,QueuePayloadParser will call the related payload processor that responsible
+		for executing payload content
+	'''
+	def __init__(self):
+		pass	
+	def _get_payload_type(self):
+		pass
+	def _get_payload_createtime(self):
+		pass
+	def _get_payload_tries(self):
+		pass
+	def _get_payload_content(self):
+		pass
 	
 if __name__=='__main__':
 	pass
