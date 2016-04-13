@@ -153,9 +153,13 @@ class MongoQueue(Queue):
 			config['db']='queue'
 		super(MongoQueue,self).__init__(config)
 	def enqueue(self,queue_name,content):
-		pass
+		self._mongo_conn[queue_name].insert_one({'payload':content})
+		return content
 	def dequeue(self,queue_name):
-		pass
+		ret=self._mongo_conn[queue_name].find_one_and_delete()
+		if ret and len(ret)>=1:
+			return ret['payload']
+		return []
 class MysqlQueue(Queue):
 	_mysql_conn=MysqlConnection()
 	_queue_check=False
