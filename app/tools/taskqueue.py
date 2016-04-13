@@ -220,7 +220,18 @@ class MysqlQueue(Queue):
 		else:
 			cursor.close()
 			return ''
+class QueueReader(object):
+	_queues_reader={'redis':RedisQueue,'mongo':MongoQueue,'mysql':MysqlQueue}
+	def __init__(self):
+		pass
+	def get_redis_queue_reader(self,config=None):
+		return self._queues_reader.get('redis')(config)
+	def get_mongo_queue_reader(self,config=None):
+		return self._queues_reader.get('mongo')(config)
 if __name__=='__main__':
+	qr=QueueReader()
+	print(qr.get_redis_queue_reader())
+	print(qr.get_mongo_queue_reader())
 	#rqueue1=RedisQueue()
 	#rqueue.dequeue("email")
 	#rqueue1.enqueue("email",'sent to 19941222hb@gmail.com')		
