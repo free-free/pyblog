@@ -242,6 +242,7 @@ class QueueReader(QueueOperator):
 		self._queue_reader=type(self)._queue_read_driver_instance[driver_name.lower()]
 	def read_from_queue(self,queue_name):
 		return self._queue_reader.dequeue(queue_name)
+
 class QueueWriter(QueueOperator):
 	_queue_write_driver_instance={}
 	def __init__(self,driver_name='redis',config=None):
@@ -256,37 +257,4 @@ class QueueWriter(QueueOperator):
 		return payload
 	
 if __name__=='__main__':
-	#qw=QueueWriter()
-	#qw.write_to_queue('mail','send to mail to 19941222hb@gmail.com')
-	#qw.write_to_queue('mail','send to mail to 18281573692@163.com')
-	qr=QueueReader()
-	print(qr.read_from_queue('mail'))
-	#rqueue1=RedisQueue()
-	#rqueue.dequeue("email")
-	#rqueue1.enqueue("email",'sent to 19941222hb@gmail.com')		
-	#rqueue1.dequeue('email')
-	#rqueue2=RedisQueue()
-	#rqueue2.enqueue('msg','msg to you')
-	#rqueue2.dequeue('msg')
-	#rqueue.enqueue("email",'sent to 18281573692@gmail.com')		
-	#rqueue.enqueue("email",'sent to xxxx@gmail.com')		
-	#rqueue.enqueue("email",'sent to yyyyy@gmail.com')		
-
-	#mqueue1=MysqlQueue()
-	#mqueue1.enqueue("mail",'send mail to 19941222hb@gmail.com')
-	#mqueue1.dequeue('mail')
-	#mqueue2=MysqlQueue()
-	#mqueue2.enqueue("mail",'send to mail to 18281573692@163.com')
-	#mqueue2.dequeue('mail')
-	#mqueue3=MysqlQueue()
-	#mqueue3.enqueue('msg','hello')
-	#mqueue3.dequeue('msg')
-	#mqueue4=MysqlQueue()
-	#mqueue4.enqueue('msg','hello')
-	#mqueue4.dequeue('msg')
-	
-	#mongoqueue=MongoQueue()
-	#mongoqueue.enqueue('mail','send mail to 19941222hb@gmail.com')
-	#mongoqueue.enqueue('mail','send mail to ssh@gmail.com')
-	#mongoqueue.enqueue('mail','send mail to jerry@gmail.com')
-	#print(mongoqueue.dequeue('mail'))
+	pass
