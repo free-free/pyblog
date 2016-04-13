@@ -1,6 +1,7 @@
 #-*- coding:utf-8 -*-
 import logging
 logging.basicConfig(level=logging.ERROR)
+import time
 try:
 	import redis
 except ImportError:
@@ -153,13 +154,17 @@ class MongoQueue(Queue):
 			config['db']='queue'
 		super(MongoQueue,self).__init__(config)
 	def enqueue(self,queue_name,content):
-		self._mongo_conn[queue_name].insert_one({'payload':content})
+		self._mongo_conn[queue_name].insert_one({'id':time.time(),'payload':content})
 		return content
 	def dequeue(self,queue_name):
-		ret=self._mongo_conn[queue_name].find_one_and_delete()
+		data=self._mongo_conn[queue_name].find().sort('id',1).limit(1)
+		ret=[]
+		for item in data:
+			ret.append(item)
 		if ret and len(ret)>=1:
-			return ret['payload']
-		return []
+			self._mongo_conn[queue_name].remove({"id":ret[0]['id']})
+			return ret[0]['payload']
+		return ''
 class MysqlQueue(Queue):
 	_mysql_conn=MysqlConnection()
 	_queue_check=False
@@ -214,7 +219,7 @@ class MysqlQueue(Queue):
 			return ret[1]
 		else:
 			cursor.close()
-			return []
+			return ''
 if __name__=='__main__':
 	#rqueue1=RedisQueue()
 	#rqueue.dequeue("email")
@@ -239,3 +244,9 @@ if __name__=='__main__':
 	#mqueue4=MysqlQueue()
 	#mqueue4.enqueue('msg','hello')
 	#mqueue4.dequeue('msg')
+	
+	#mongoqueue=MongoQueue()
+	#mongoqueue.enqueue('mail','send mail to 19941222hb@gmail.com')
+	#mongoqueue.enqueue('mail','send mail to ssh@gmail.com')
+	#mongoqueue.enqueue('mail','send mail to jerry@gmail.com')
+	#print(mongoqueue.dequeue('mail'))
