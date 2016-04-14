@@ -257,17 +257,17 @@ class QueueWriter(QueueOperator):
 		self._queue_writer.enqueue(queue_name,payload)
 		return payload
 
-class Processor(object):
+class Executor(object):
 	def __init__(self,content):
 		self._content=content
-	def process(self):
+	def execute(self):
 		pass
-	def set_content(self,content):
+	def set_execution_content(self,content):
 		self._content=content
 
-class MailProcessor(Processor):
+class MailExecutor(Executor):
 	r'''
-		MailProcessor is responsible for to send mail
+		MailExecutor is responsible for to send mail
 	'''
 	def __init__(self,content):
 		super(MailProcessor,self).__init__(content)
@@ -279,17 +279,13 @@ class MailProcessor(Processor):
 		pass
 	def _get_mail_main(self):
 		pass
-	def process(self):
+	def execute(self):
 		pass
 
 class QueuePayloadParser(object):
 	r'''
 		QueuePayloadParser is class that responsible for parsing the payload reading from queue,
-		after parsing the payload,QueuePayloadParser will call the related payload processor that responsible
-		for executing payload content
 	'''
-	_processor={'mail':MailProcessor}
-	_processor_instance_pool={}
 	def __init__(self,payload):
 		self._payload=json.loads(payload)
 	def get_payload_type(self):
@@ -300,18 +296,15 @@ class QueuePayloadParser(object):
 		return self._payload.get('tries')
 	def get_payload_content(self):
 		return self._payload.get('content')
-	def call_processor(self):
-		type_name=self.get_payload_type()
-		if type_name in type(self)._processor_instance_pool:
-			type(self)._processor_instance_pool[type_name].set_content(self.get_payload_content())
-		else:	
-			if type_name in type(self)._processor:
-				type(self)._processor_instance_pool[type_name]=type(self)._processor.get(type_name)(self.get_payload_content())
-			else:
-				return False
-		if type(self)._processor_instance_pool[type_name].process():
-			return True
-		return False
+class QueuePayloadRouter(object):
+	r'''
+		QueuePayloadRouter is a place where queue payload parser parses the payload ,then routes the payload to the related executor
+	'''
+	def __init__(self,payload,*,parser=QueuePayloadParser):
+		self._payload=payload
+		self._parser=parser
+	def route_to_executor(self):
+		pass
 
 class QueuePayloadEncapsulator(object):
 	r'''
@@ -338,8 +331,24 @@ class QueuePayloadEncapsulator(object):
 		self._payload['content']=self._content
 	def _json_encode(self):
 		return json.dumps(self._payload)
-			
-				
+
+class Task(object):
+	def __init__(self,task_type,tries,content,*,encapsulator=QueuePayloadEncapsulator,queue_writer=QueueWriter):
+		self._task_type=task_type
+		self._tries=tries
+		self._content=content
+		self._encapsulator=encapsulator
+		self._writer=queue_writer
+	def start(self,queue_name):
+		self._writer().write_to_queue(queue_name,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
+
+class TaskProcessor(object):				
+	def __init__(self,payload_router=QueuePayloadRouter,queue_reader=QueueReader):
+		self._router=payload_router
+		self._reader=queue_reader
+	def process(self,queue_name):
+		payload=self._reader().read_from_queue(queue_name)
+		self._router(payload).route_to_executor()
 	
 if __name__=='__main__':
 	pass
