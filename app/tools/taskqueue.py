@@ -281,6 +281,7 @@ class MailProcessor(Processor):
 		pass
 	def process(self):
 		pass
+
 class QueuePayloadParser(object):
 	r'''
 		QueuePayloadParser is class that responsible for parsing the payload reading from queue,
@@ -311,7 +312,32 @@ class QueuePayloadParser(object):
 		if type(self)._processor_instance_pool[type_name].process():
 			return True
 		return False
-		
+
+class QueuePayloadEncapsulator(object):
+	r'''
+		before sending something to queue,QueuePayloadEncapsulator must be called to encasulate payload
+	'''
+	def __init__(self,type_name,tries,content):
+		self._type_name=type_name
+		self._tries=tries
+		self._content=content
+		self._payload={}
+	def encapsulate(self):
+		self._add_create_time()
+		self._add_tries()
+		self._add_type()
+		self._add_content()
+		return self._json_encode()
+	def _add_create_time(self):
+		self._payload['create_time']=time.time()
+	def _add_tries(self):
+		self._payload['tries']=self._tries
+	def _add_type(self):
+		self._payload['type']=self._type_name
+	def _add_content(self):
+		self._payload['content']=self._content
+	def _json_encode(self):
+		return json.dumps(self._payload)
 			
 				
 	
