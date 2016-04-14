@@ -257,12 +257,20 @@ class QueueWriter(QueueOperator):
 		self._queue_writer.enqueue(queue_name,payload)
 		return payload
 
-class MailProcessor(object):
+class Processor(object):
+	def __init__(self,content):
+		self._content=content
+	def process(self):
+		pass
+	def set_content(self,content):
+		self._content=content
+
+class MailProcessor(Processor):
 	r'''
 		MailProcessor is responsible for to send mail
 	'''
 	def __init__(self,content):
-		self._content=content
+		super(MailProcessor,self).__init__(content)
 	def _get_mail_sender(self):
 		pass
 	def _get_mail_receiver(self):
@@ -271,8 +279,8 @@ class MailProcessor(object):
 		pass
 	def _get_mail_main(self):
 		pass
-	def set_content(self,content):
-		self._content=content
+	def process(self):
+		pass
 class QueuePayloadParser(object):
 	r'''
 		QueuePayloadParser is class that responsible for parsing the payload reading from queue,
@@ -291,13 +299,19 @@ class QueuePayloadParser(object):
 		return self._payload.get('tries')
 	def get_payload_content(self):
 		return self._payload.get('content')
-	def _call_processor(self,type_name):
+	def call_processor(self):
+		type_name=self.get_payload_type()
 		if type_name in type(self)._processor_instance_pool:
-			type(self)._processor_instance_pool.get(type_name).set_content(self.get_payload_content)
+			type(self)._processor_instance_pool[type_name].set_content(self.get_payload_content())
 		else:	
 			if type_name in type(self)._processor:
 				type(self)._processor_instance_pool[type_name]=type(self)._processor.get(type_name)(self.get_payload_content())
-			
+			else:
+				return False
+		if type(self)._processor_instance_pool[type_name].process():
+			return True
+		return False
+		
 			
 				
 	
