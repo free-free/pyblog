@@ -140,11 +140,14 @@ class RedisQueue(Queue):
 			config['port']=6379
 			config['db']=0
 		super(RedisQueue,self).__init__(config)
-	def enqueue(self,queue_name,content):
-		self._redis_conn.lpush(queue_name,content)
-		return content
+	def enqueue(self,queue_name,payload):
+		self._redis_conn.lpush(queue_name,payload)
+		return payload
 	def dequeue(self,queue_name):
-		return self._redis_conn.rpop(queue_name)
+		payload=self._redis_conn.rpop(queue_name)
+		if isinstance(payload,bytes):
+			payload=payload.decode('utf-8')
+		return payload
 class MongoQueue(Queue):
 	_mongo_conn=MongoConnection()
 	def __init__(self,config=None):
@@ -154,8 +157,8 @@ class MongoQueue(Queue):
 			config['port']=27017
 			config['db']='queue'
 		super(MongoQueue,self).__init__(config)
-	def enqueue(self,queue_name,content):
-		self._mongo_conn[queue_name].insert_one({'id':time.time(),'payload':content})
+	def enqueue(self,queue_name,payload):
+		self._mongo_conn[queue_name].insert_one({'id':time.time(),'payload':payload})
 		return content
 	def dequeue(self,queue_name):
 		data=self._mongo_conn[queue_name].find().sort('id',1).limit(1)
@@ -201,10 +204,10 @@ class MysqlQueue(Queue):
 		cursor=self._mysql_conn.cursor()
 		cursor.execute('create table `%s`( `id` int unsigned not null auto_increment primary key,`payload` longtext)charset utf8'%(queue_name))
 		cursor.close()
-	def enqueue(self,queue_name,content):
+	def enqueue(self,queue_name,payload):
 		self._check_queue(queue_name)
 		cursor=self._mysql_conn.cursor()
-		cursor.execute("insert into `%s`(`payload`) values('%s')"%(queue_name,content))
+		cursor.execute("insert into `%s`(`payload`) values('%s')"%(queue_name,payload))
 		cursor.close()
 		self._mysql_conn.commit()
 		return content
@@ -271,8 +274,6 @@ class MailExecutor(Executor):
 	r'''
 		MailExecutor is responsible for to send mail
 	'''
-	def __init__(self,content,tries):
-		super(MailProcessor,self).__init__(content)
 	def _get_mail_sender(self):
 		pass
 	def _get_mail_receiver(self):
@@ -282,14 +283,33 @@ class MailExecutor(Executor):
 	def _get_mail_main(self):
 		pass
 	def execute(self):
-		pass
+		print(self._content)
+		print(self._tries)	
 
 class QueuePayloadParser(object):
+	def __init__(self,payload):
+		pass
+	def get_payload_type(self):
+		pass
+	def get_payload_createtime(self):
+		pass
+	def get_payload_tries(self):
+		pass
+	def get_payload_content(self):
+		pass
+	def set_payload(self):
+		pass
+
+class QueuePayloadJsonParser(QueuePayloadParser):
 	r'''
 		QueuePayloadParser is class that responsible for parsing the payload reading from queue,
 	'''
 	def __init__(self,payload):
-		self._payload=json.loads(payload)
+		if isinstance(payload,str):
+			self._payload=json.loads(payload)
+		else:
+			self._payload={}
+		super(type(self),self).__init__(self._payload)
 	def get_payload_type(self):
 		return self._payload.get('type')
 	def get_payload_createtime(self):
@@ -300,6 +320,7 @@ class QueuePayloadParser(object):
 		return self._payload.get('content')
 	def set_payload(self,payload):
 		self._payload=json.loads(payload)
+
 class QueuePayloadRouter(object):
 	r'''
 		QueuePayloadRouter is a place where queue payload parser parses the payload ,
@@ -311,7 +332,7 @@ class QueuePayloadRouter(object):
 	_executor={}
 	_executor_instance={}
 	_parser_instance=None
-	def __init__(self,payload,*,parser=QueuePayloadParser):
+	def __init__(self,payload,*,parser=QueuePayloadJsonParser):
 		self._payload=payload
 		self._parser_class=parser
 	def route_to_executor(self):
@@ -330,7 +351,7 @@ class QueuePayloadRouter(object):
 			else:
 				return False
 		#call executor to process payload
-		self._executor_instance[payload_type].process()
+		self._executor_instance[payload_type].execute()
 		return True
 	@classmethod
 	def register_executor(cls,**executor):
@@ -340,44 +361,50 @@ class QueuePayloadRouter(object):
 	def unregister_executor(cls,executor_name):
 		if executor_name in cls._executor:
 			del cls._executor[executor_name]
-		if executor_name in cls._executor_instance
+		if executor_name in cls._executor_instance:
 			del cls._executor_instance[executor_name]
-
 class QueuePayloadEncapsulator(object):
-	r'''
-		before sending something to queue,QueuePayloadEncapsulator must be called to encasulate payload
-	'''
 	def __init__(self,type_name,tries,content):
-		self._type_name=type_name
+		self._type=type_name
 		self._tries=tries
 		self._content=content
 		self._payload={}
+		self._create_time=time.time()
 	def encapsulate(self):
-		self._add_create_time()
-		self._add_tries()
-		self._add_type()
-		self._add_content()
-		return self._json_encode()
-	def _add_create_time(self):
-		self._payload['create_time']=time.time()
-	def _add_tries(self):
-		self._payload['tries']=self._tries
-	def _add_type(self):
-		self._payload['type']=self._type_name
-	def _add_content(self):
-		self._payload['content']=self._content
-	def _json_encode(self):
-		return json.dumps(self._payload)
+		pass
+	def _add_create_time(self,create_time):
+		self._payload['create_time']=create_time
+	def _add_tries(self,tries):
+		self._payload['tries']=tries
+	def _add_type(self,type_name):
+		self._payload['type']=type_name
+	def _add_content(self,content):
+		self._payload['content']=content
+class QueuePayloadJsonEncapsulator(QueuePayloadEncapsulator):
+	r'''
+		before sending something to queue,QueuePayloadEncapsulator must be called to encasulate payload
+	'''
+	def encapsulate(self):
+		self._add_create_time(self._create_time)
+		self._add_tries(self._tries)
+		self._add_type(self._type)
+		self._add_content(self._content)
+		return self._json_encode(self._payload)
+	def _json_encode(self,payload):
+		return json.dumps(payload)
 
 class Task(object):
-	def __init__(self,task_type,tries,content,*,encapsulator=QueuePayloadEncapsulator,queue_writer=QueueWriter):
+	def __init__(self,task_type,tries,content,*,encapsulator=QueuePayloadJsonEncapsulator,queue_writer=QueueWriter):
 		self._task_type=task_type
 		self._tries=tries
 		self._content=content
 		self._encapsulator=encapsulator
 		self._writer=queue_writer
-	def start(self,queue_name):
-		self._writer().write_to_queue(queue_name,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
+	def start(self,queue_name=None):
+		if queue_name:
+			self._writer().write_to_queue(queue_name,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
+		else:
+			self._writer().write_to_queue(self._task_type,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
 
 class TaskProcessor(object):				
 	def __init__(self,payload_router=QueuePayloadRouter,queue_reader=QueueReader):
@@ -388,4 +415,10 @@ class TaskProcessor(object):
 		self._router(payload).route_to_executor()
 	
 if __name__=='__main__':
-	pass
+	#QueuePayloadRouter.register_executor(mail=MailExecutor)
+	#tsk1=Task('mail',3,'send to mail to 19941222hb@gmail.com')
+	#tsk1.start()
+	#tsk2=Task('mail',3,'senf to mail to 18281573692@163.com')
+	#tsk2.start()
+	#tskprcss=TaskProcessor()
+	#tskprcss.process('mail')
