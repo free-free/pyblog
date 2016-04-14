@@ -258,18 +258,20 @@ class QueueWriter(QueueOperator):
 		return payload
 
 class Executor(object):
-	def __init__(self,content):
+	def __init__(self,content,tries):
 		self._content=content
+		self._tries=tries
 	def execute(self):
 		pass
-	def set_execution_content(self,content):
+	def set_execution_content(self,content,tries):
 		self._content=content
+		self._tries=tries
 
 class MailExecutor(Executor):
 	r'''
 		MailExecutor is responsible for to send mail
 	'''
-	def __init__(self,content):
+	def __init__(self,content,tries):
 		super(MailProcessor,self).__init__(content)
 	def _get_mail_sender(self):
 		pass
@@ -296,15 +298,50 @@ class QueuePayloadParser(object):
 		return self._payload.get('tries')
 	def get_payload_content(self):
 		return self._payload.get('content')
+	def set_payload(self,payload):
+		self._payload=json.loads(payload)
 class QueuePayloadRouter(object):
 	r'''
-		QueuePayloadRouter is a place where queue payload parser parses the payload ,then routes the payload to the related executor
+		QueuePayloadRouter is a place where queue payload parser parses the payload ,
+		then routes the payload to the related executor.before using QueuePayloadRouter,
+		you need to call it's classmethod register_executor() to register your executor
+		your  executor must be subclass of Executor abstract class. you also can call class 
+		method unregister_executor() to unregister your executor
 	'''
+	_executor={}
+	_executor_instance={}
+	_parser_instance=None
 	def __init__(self,payload,*,parser=QueuePayloadParser):
 		self._payload=payload
-		self._parser=parser
+		self._parser_class=parser
 	def route_to_executor(self):
-		pass
+		#check the parser instance existense
+		if not type(self)._parser_instance:
+			type(self)._parser_instance=self._parser_class(self._payload)
+		else:
+			type(self)._parser_instance.set_payload(self._payload)
+		payload_type=type(self)._parser_instance.get_payload_type()
+		#check payload related executor instance existense
+		if payload_type in type(self)._executor_instance:
+			self._excutor_instance[payload_type].set_execution_content(self._parser_instance.get_payload_content(),self._parser_instance.get_payload_tries())
+		else:
+			if payload_type in type(self)._executor:
+				type(self)._executor_instance[payload_type]=type(self)._executor[payload_type](self._parser_instance.get_payload_content(),self._parser_instance.get_payload_tries())
+			else:
+				return False
+		#call executor to process payload
+		self._executor_instance[payload_type].process()
+		return True
+	@classmethod
+	def register_executor(cls,**executor):
+		for executor_name,executor_class in executor.items():
+			cls._executor[executor_name]=executor_class
+	@classmethod
+	def unregister_executor(cls,executor_name):
+		if executor_name in cls._executor:
+			del cls._executor[executor_name]
+		if executor_name in cls._executor_instance
+			del cls._executor_instance[executor_name]
 
 class QueuePayloadEncapsulator(object):
 	r'''
