@@ -2,6 +2,7 @@
 import logging
 logging.basicConfig(level=logging.ERROR)
 import time
+import json
 try:
 	import redis
 except ImportError:
@@ -270,22 +271,35 @@ class MailProcessor(object):
 		pass
 	def _get_mail_main(self):
 		pass
+	def set_content(self,content):
+		self._content=content
 class QueuePayloadParser(object):
 	r'''
 		QueuePayloadParser is class that responsible for parsing the payload reading from queue,
 		after parsing the payload,QueuePayloadParser will call the related payload processor that responsible
 		for executing payload content
 	'''
-	def __init__(self):
-		pass	
-	def _get_payload_type(self):
-		pass
-	def _get_payload_createtime(self):
-		pass
-	def _get_payload_tries(self):
-		pass
-	def _get_payload_content(self):
-		pass
+	_processor={'mail':MailProcessor}
+	_processor_instance_pool={}
+	def __init__(self,payload):
+		self._payload=json.loads(payload)
+	def get_payload_type(self):
+		return self._payload.get('type')
+	def get_payload_createtime(self):
+		return self._payload.get('create_time')
+	def get_payload_tries(self):
+		return self._payload.get('tries')
+	def get_payload_content(self):
+		return self._payload.get('content')
+	def _call_processor(self,type_name):
+		if type_name in type(self)._processor_instance_pool:
+			type(self)._processor_instance_pool.get(type_name).set_content(self.get_payload_content)
+		else:	
+			if type_name in type(self)._processor:
+				type(self)._processor_instance_pool[type_name]=type(self)._processor.get(type_name)(self.get_payload_content())
+			
+			
+				
 	
 if __name__=='__main__':
 	pass
