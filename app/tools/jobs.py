@@ -1,8 +1,9 @@
 #-*- coding:utf-8 -*-
 from tools.taskqueue import Task
 import re
+
 class MailAddress(object):
-	_mail_regexp=r'^[0-9\w]+\.*[0-9\w]+@[0-9\w]+(\.[\w0-9]+)+$'
+	_mail_regexp=r'^[0-9\w]+[\.0-9\w]+@[0-9\w]+(\.[\w0-9]+)+$'
 	def __init__(self):
 		self._mail_address=''
 	def __get__(self,obj,ownclass):
