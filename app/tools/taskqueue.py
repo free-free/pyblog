@@ -415,6 +415,7 @@ class TaskProcessor(object):
 		self._router(payload).route_to_executor()
 	
 if __name__=='__main__':
+	r'''
 	#QueuePayloadRouter.register_executor(mail=MailExecutor)
 	#tsk1=Task('mail',3,'send to mail to 19941222hb@gmail.com')
 	#tsk1.start()
@@ -422,3 +423,4 @@ if __name__=='__main__':
 	#tsk2.start()
 	#tskprcss=TaskProcessor()
 	#tskprcss.process('mail')
+	'''
