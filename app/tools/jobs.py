@@ -30,14 +30,14 @@ class MailJob(Job):
 	def send(self):
 		content={}
 		content['receiver']=self._receiver
-		content['title']=self._title
+		content['subject']=self._subject
 		content['sender']=self._sender
 		content['main']=self._main
 		self._tasker('mail',self._tries,content).start('mail')
 	def set_mail_receiver(self,receiver):
 		self._receiver=receiver
-	def set_mail_title(self,title):
-		self._title=title
+	def set_mail_subject(self,subject):
+		self._subject=subject
 	def set_mail_sender(self,sender):
 		self._sender=sender
 	def set_mail_main(self,main):
@@ -49,11 +49,11 @@ class MailJob(Job):
 	def main(self,main):
 		self._main=main
 	@property
-	def title(self):
-		return self._title
-	@title.setter
-	def title(self,title):
-		self._title=title
+	def subject(self):
+		return self._subject
+	@subject.setter
+	def subject(self,subject):
+		self._subject=subject
 	@property
 	def sender(self):
 		return self._sender
@@ -69,7 +69,7 @@ class MailJob(Job):
 	
 if __name__=='__main__':
 	mail=MailJob()
-	mail.title='hello'
+	mail.subject='hello'
 	mail.main='shabi'
 	mail.sender='18281573692@163.com'
 	mail.receiver='19941222hb@gmail.com'
