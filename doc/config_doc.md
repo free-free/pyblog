@@ -1,5 +1,5 @@
 ###description
->config.py include all config loader,those config loader read config item 
+config.py include all config loader,those config loader read config item 
 from config file,and privode a common interface  for you to access all the config item in your config file
 ###class
 1.DBConfigLoader
@@ -50,7 +50,7 @@ Config.filesystem.secret_key
 Config.filesystem.driver_name
 Config.filesystem.all
 ```
-6. access queue config
+6.access queue config
 ```python
 Config.queue.all
 Config.queue.host
