@@ -85,3 +85,17 @@ queue={
 		}
 	}
 }
+service={
+	'mail':{
+		'default':'mailtrap',
+		'drivers':{
+			'mailtrap':{
+				'host':'mailtrap.io'
+				'user':'xxxxx',
+				'password':'xxxxx',
+				'port':2525
+			}
+		}
+	}
+}
+
