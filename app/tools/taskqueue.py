@@ -402,16 +402,16 @@ class Task(object):
 		self._writer=queue_writer
 	def start(self,queue_name=None):
 		if queue_name:
-			self._writer(driver_name='mysql').write_to_queue(queue_name,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
+			self._writer().write_to_queue(queue_name,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
 		else:
-			self._writer(driver_name='mysql').write_to_queue(self._task_type,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
+			self._writer().write_to_queue(self._task_type,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
 
 class TaskProcessor(object):				
 	def __init__(self,payload_router=QueuePayloadRouter,queue_reader=QueueReader):
 		self._router=payload_router
 		self._reader=queue_reader
 	def process(self,queue_name):
-		payload=self._reader(driver_name='mysql').read_from_queue(queue_name)
+		payload=self._reader().read_from_queue(queue_name)
 		self._router(payload).route_to_executor()
 	
 if __name__=='__main__':
