@@ -4,14 +4,14 @@ from config file,and privode a common interface  for you to access all the confi
 
 
 ##2.class
-> 1.DBConfigLoader
-> 2.SessionConfigLoader
-> 3.AuthConfigLoader
-> 4.AppConfigLoader
-> 5.FileSystemConfigLoader
-> 6.QueueConfigLoader
-> 7.MailConfigLoader
-> 8.Config
+> DBConfigLoader
+> SessionConfigLoader
+> AuthConfigLoader
+> AppConfigLoader
+> FileSystemConfigLoader
+> QueueConfigLoader
+> MailConfigLoader
+> Config
 
 
 ##3.quick start
