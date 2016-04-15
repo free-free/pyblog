@@ -154,6 +154,49 @@ class FileSystemConfigLoader(object):
 			item=self._get_specific_driver_config_item(key,self._specific_driver)	
 			self._specific_driver=None
 			return item
+class QueueConfigLoader(object):
+	def __new__(cls,*args,**kw):
+		if not hasattr(cls,'_config_instance'):
+			cls._config_instance=object.__new__(cls,*args,**kw)	
+		return cls._config_instance
+	def __init__(self):
+		self._config=__import__('conf',globals(),locals()).queue
+		self._default_driver_name=self._config.get('default')
+		self._specific_driver_name=None
+		self._all_drivers_name=self._config['drivers'].keys()
+	def _get_specific_driver_all_config_item(self,driver_name):
+		if driver_name.lower() not in self._all_drivers_name:
+			raise AttributeError(" queue config has no  '%s' driver "%(driver_name.lower()))
+		return self._config.get('drivers').get(driver_name.lower())
+	def _get_specific_driver_config_item(self,item_name,driver_name):
+		config=self._get_specific_driver_all_config_item(driver_name)
+		if item_name.lower() not in config:
+			raise AttributeError("queue driver '%s' has no  '%s' config item"%(driver_name.lower(),item_name.lower()))
+		return config.get(item_name.lower())
+	def _driver(self,driver_name,all_return=False):
+		if all_return:
+			return self._get_specific_driver_all_config_item(driver_name)
+		self._specific_driver_name=driver_name
+		return self
+	def __getattr__(self,key):
+		if key.lower()=='driver':
+			return self._driver
+		if not self._specific_driver_name:
+			if key.lower()=='all':
+				return self._get_specific_driver_all_config_item(self._default_driver_name)
+			elif key.lower()=='driver_name':
+				return self._default_driver_name
+			else:
+				return self._get_specific_driver_config_item(key,self._default_driver_name)
+		else:
+			if key.lower()=='all':
+				config=self._get_specific_driver_all_config_item(self._specific_driver_name)
+			elif key.lower()=='driver_name':
+				config=self._specific_driver_name
+			else:
+				config=self._get_specific_driver_config_item(key,self._specific_driver_name)
+			self._specific_driver_name=None
+			return config
 class classproperty(object):
 	def __init__(self,func):
 		self._func=func
@@ -179,7 +222,7 @@ class Config(dict):
 	>>> Config.database.connection('mongodb').port
 	27017
 	'''
-	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader(),'app':AppConfigLoader(),'filesystem':FileSystemConfigLoader()}
+	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader(),'app':AppConfigLoader(),'filesystem':FileSystemConfigLoader(),'queue':QueueConfigLoader()}
 	def __init__(self):
 		print("__init__ start")
 	def __call__(self,*args,**kw):
@@ -199,6 +242,9 @@ class Config(dict):
 	@classproperty
 	def filesystem(cls):
 		return cls._config_loader.get('filesystem')
+	@classproperty
+	def queue(cls):
+		return cls._config_loader.get('queue')
 	def __getattr__(cls,key):
 		return 'not attribute found'
 if __name__=='__main__':
@@ -242,4 +288,27 @@ if __name__=='__main__':
 	print(Config.filesystem.secret_key)
 	print(Config.filesystem.driver_name)
 	print(Config.filesystem.all)
+	'''
+	r''' queue testing code
+	#redis
+	print(Config.queue.all)
+	print(Config.queue.host)
+	print(Config.queue.port)
+	print(Config.queue.db)
+	print(Config.queue.driver_name)
+	#mysql
+	print(Config.queue.driver('mysql',True))
+	print(Config.queue.driver('mysql').all)
+	print(Config.queue.driver('mysql').user)
+	print(Config.queue.driver('mysql').host)
+	print(Config.queue.driver('mysql').port)
+	print(Config.queue.driver('mysql').password)
+	print(Config.queue.driver('mysql').driver_name)
+	#mongo
+	print(Config.queue.driver('mongo',True))
+	print(Config.queue.driver('mongo').all)
+	print(Config.queue.driver('mongo').host)
+	print(Config.queue.driver('mongo').port)
+	print(Config.queue.driver('mongo').db)
+	print(Config.queue.driver('mongo').driver_name)
 	'''
