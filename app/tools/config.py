@@ -2,10 +2,6 @@
 import doctest
 
 class ConfigLoader(object):
-	def __new__(cls,*args,**kw):
-		if not hasattr(cls,'_config_instance'):
-			cls._config_instance=object.__new__(cls,*args,**kw)
-		return cls._config_instance
 	def __init__(self,config):
 		self._config=config
 		self._default_driver_name=self._config.get('default')
@@ -197,6 +193,7 @@ class FileSystemConfigLoader(object):
 			item=self._get_specific_driver_config_item(key,self._specific_driver)	
 			self._specific_driver=None
 			return item
+
 class QueueConfigLoader(object):
 	def __new__(cls,*args,**kw):
 		if not hasattr(cls,'_config_instance'):
@@ -240,7 +237,12 @@ class QueueConfigLoader(object):
 				config=self._get_specific_driver_config_item(key,self._specific_driver_name)
 			self._specific_driver_name=None
 			return config
+
 class MailConfigLoader(ConfigLoader):
+	def __new__(cls,*args,**kw):
+		if not hasattr(cls,'_config_instance'):
+			cls._config_instance=object.__new__(cls,*args,**kw)
+		return cls._config_instance
 	def __init__(self):
 		config=__import__('conf',locals(),globals()).service['mail']
 		self._config_name='mail'
@@ -340,7 +342,6 @@ if __name__=='__main__':
 	print(Config.filesystem.driver_name)
 	print(Config.filesystem.all)
 	'''
-	r'''
 	#queue testing code
 	#redis
 	print(Config.queue.all)
@@ -363,7 +364,6 @@ if __name__=='__main__':
 	print(Config.queue.driver('mongo').port)
 	print(Config.queue.driver('mongo').db)
 	print(Config.queue.driver('mongo').driver_name)
-	'''
 	r'''
 	#mail
 	print(Config.mail.host)
