@@ -159,7 +159,7 @@ class MongoQueue(Queue):
 		super(MongoQueue,self).__init__(config)
 	def enqueue(self,queue_name,payload):
 		self._mongo_conn[queue_name].insert_one({'id':time.time(),'payload':payload})
-		return content
+		return payload
 	def dequeue(self,queue_name):
 		data=self._mongo_conn[queue_name].find().sort('id',1).limit(1)
 		ret=[]
@@ -210,7 +210,7 @@ class MysqlQueue(Queue):
 		cursor.execute("insert into `%s`(`payload`) values('%s')"%(queue_name,payload))
 		cursor.close()
 		self._mysql_conn.commit()
-		return content
+		return payload
 	def dequeue(self,queue_name):
 		self._check_queue(queue_name)
 		cursor=self._mysql_conn.cursor()
@@ -402,16 +402,16 @@ class Task(object):
 		self._writer=queue_writer
 	def start(self,queue_name=None):
 		if queue_name:
-			self._writer().write_to_queue(queue_name,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
+			self._writer(driver_name='mysql').write_to_queue(queue_name,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
 		else:
-			self._writer().write_to_queue(self._task_type,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
+			self._writer(driver_name='mysql').write_to_queue(self._task_type,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
 
 class TaskProcessor(object):				
 	def __init__(self,payload_router=QueuePayloadRouter,queue_reader=QueueReader):
 		self._router=payload_router
 		self._reader=queue_reader
 	def process(self,queue_name):
-		payload=self._reader().read_from_queue(queue_name)
+		payload=self._reader(driver_name='mysql').read_from_queue(queue_name)
 		self._router(payload).route_to_executor()
 	
 if __name__=='__main__':
@@ -421,6 +421,13 @@ if __name__=='__main__':
 	#tsk1.start()
 	#tsk2=Task('mail',3,'senf to mail to 18281573692@163.com')
 	#tsk2.start()
+	#tskprcss=TaskProcessor()
+	#tskprcss.process('mail')
+	'''
+	r'''
+	#tsk1=Task('mail',3,'send to you')
+	#tsk1.start()
+	#QueuePayloadRouter.register_executor(mail=MailExecutor)
 	#tskprcss=TaskProcessor()
 	#tskprcss.process('mail')
 	'''
