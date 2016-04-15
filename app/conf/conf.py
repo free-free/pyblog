@@ -11,7 +11,7 @@ database={
 			'host':'127.0.0.1',
 			'user':'root',
 			'port':3306,
-			'password':'xxxxx',
+			'password':'526114',
 			'database':'pyblog'
 		},
 		'mongodb':{
@@ -28,7 +28,7 @@ session={
 		'file':{
 			'session_dir':'/tmp/session/',
 			'expire_file':'session_expire',
-			'expire':0
+			'expire':3600
 		},
 		'redis':{
 			'host':'localhost',
@@ -60,6 +60,28 @@ filesystem={
 			'access_key':'CKQNXugLAXFueA5UlBKQnkWxslYC8rIErwn2ch4I',
 			'secret_key':'4lnKaSKUk1SVmbB4alt6PtkL2O1Sm-jP6e-T7EER',
 			'bucket_name':'static-pyblog-com',
+		}
+	}
+}
+queue={
+	'default':'redis',#mysql,mongo,redis
+	'drivers':{
+		'redis':{
+			'port':6379,
+			'host':'127.0.0.1',
+			'db':0,
+		},
+		'mongo':{
+			'port':27017,
+			'host':'127.0.0.1',
+			'db':'queue'
+		},
+		'mysql':{
+			'host':'127.0.0.1',
+			'port':3306,
+			'db':'queue',
+			'user':'root',
+			'password':'xxxxx',
 		}
 	}
 }
