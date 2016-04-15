@@ -163,7 +163,7 @@ class MongoSession(Session):
 			self._session_id=self._generate_session_id()
 		else:
 			self._session_id=session_id
-		self._data[self._session_id]=self._mongo.find_one({'session_id':self._session_id})
+		self._data[self._session_id]=dict(self._mongo.find_one({'session_id':self._session_id}))
 		expire=self._data[self._session_id].get('expire',None)
 		if not self._data.get(self._session_id):
 			self._data[self._session_id]={}
