@@ -1,17 +1,17 @@
 #-*- coding:utf-8 -*-
 import logging
-logging.basciConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.ERROR)
 import asyncio
 try:
 	import aiomysql
 except ImportError:
 	logging.error("can't import 'aiomysql' module")
 
-class ConfigError(StandardError):
+class ConfigError(Exception):
 	pass
 
 class AsyncMysqlConnection(object):
-	conn=dict()
+	_conn_pool=dict()
 	def __init__(self,host,port,user,password,db):
 		assert isinstance(host,str)
 		assert isinstance(port,int)
@@ -23,25 +23,24 @@ class AsyncMysqlConnection(object):
 		self._user=user
 		self._password=password
 		self._db=db
-		self._loop
 	@asyncio.coroutine
 	def get_connection(self,loop,db=None):
 		if not db:
-			if self._db not self._conn:
-				self._conn[self._db]=yield from aiomysql.connect(host=self._host,
+			if self._db not in self._conn_pool:
+				self._conn_pool[self._db]=yield from aiomysql.connect(host=self._host,
 								port=self._port,
 								user=self._user,
 								password=self._password,
 								loop=loop)
-			return self._conn[self._db]
+			return self._conn_pool[self._db]
 		else:
-			if db not in self._conn:
-				self._conn[self._db]=yield from aiomysql.connect(host=self._host,
+			if db not in self._conn_pool:
+				self._conn_pool[self._db]=yield from aiomysql.connect(host=self._host,
 									port=self._port,
 									user=self._user,
 									password=self._password,
 									loop=loop)
-			return self._conn[db]
+			return self._conn_pool[db]
 class AsyncQueue(object):
 	def __init__(self,config):
 		self._config=config
@@ -65,13 +64,11 @@ class AsyncMysqlQueue(AsyncQueue):
 		assert isinstance(config,dict)
 		self._connection_class=connection
 		self._loop=loop
-		super(MysqlAsyncQueue,self).__init__(config)
-	@property
+		super(AsyncMysqlQueue,self).__init__(config)
 	def _check_queue_db(self,db_name):
 		if db_name in self._db_list:
 			return True
 		return False
-	@property
 	def _check_queue(self,queue_name):
 		if queue_name in self._queue_list:
 			return True
@@ -123,9 +120,9 @@ class AsyncMysqlQueue(AsyncQueue):
 	@asyncio.coroutine
 	def enqueue(self,queue_name,payload):
 		yield from self._check_connection()
-		if not self._check_queue_db:
+		if not self._check_queue_db(self._db):
 			yield from self._create_queue_db(self._db)
-		if not self._check_queue:
+		if not self._check_queue(queue_name):
 			yield from self._create_queue(queue_name)	
 		cursor=yield from self._queue_conn.cursor()
 		yield from self._queue_conn.begin()
@@ -154,4 +151,19 @@ class AsyncMysqlQueue(AsyncQueue):
 				return ret[1]
 			return []
 if __name__=='__main__':
-	pass
+	@asyncio.coroutine
+	def go(loop,config):
+		asyncqueue=AsyncMysqlQueue(loop,config)
+		yield from asyncqueue.enqueue("msg","hello")
+		
+	loop=asyncio.get_event_loop()
+	config={
+		'host':'127.0.0.1',
+		'port':3306,
+		'user':'root',
+		'password':'526114',
+		'db':'queue'
+	}
+	loop.run_until_complete(go(loop,config))
+	loop.close()
+	
