@@ -57,7 +57,7 @@ class AsyncQueue(object):
 		else:
 			raise ConfigError("no '%s' config item"%key.split('_',1)[1])
 	
-class AsyncMysqlQueue(Queue):
+class AsyncMysqlQueue(AsyncQueue):
 	_queue_conn=None
 	_db_list=tuple()
 	_queue_list=tuple()
@@ -66,31 +66,16 @@ class AsyncMysqlQueue(Queue):
 		self._connection_class=connection
 		self._loop=loop
 		super(MysqlAsyncQueue,self).__init__(config)
+	@property
 	def _check_queue_db(self,db_name):
-		if len(self._db_list)==0:
-			cursor=yield from self._queue_conn.cursor()	
-			dbs=yield from cursor.execute('show databases')
-			db_list=[]
-			dbs=yield from cursor.fetchall()
-			yield from cursor.close()
-			for db in dbs:
-				db_list.append(db)
-			self._db_list=tuple(db_list)
-		if db_name not  in self._db_list:
-			return False
-		return True
+		if db_name in self._db_list:
+			return True
+		return False
+	@property
 	def _check_queue(self,queue_name):
-		if len(self._queue_list)==0:
-			cursor=yield from self._queue_conn.cursor()
-			yield from cursor.execute('show tables')
-			tables=yield from cursor.fetchall()
-			queue_list=[]
-			for table in tables:
-				queue_list.append(table)
-			self._queue_list=tuple(queue_list)
-		if queue_name not in self._queue_list:
-			return False
-		return True
+		if queue_name in self._queue_list:
+			return True
+		return False
 	@asyncio.coroutine
 	def _create_queue(self,queue_name):
 		cursor=yield from self._queue_conn.cursor()
@@ -119,10 +104,29 @@ class AsyncMysqlQueue(Queue):
 	def _check_connection(self):
 		if not self._queue_conn:
 			self._queue_conn=yield from self._connection_class(self._host,self._port,self._user,self._password,self._db).get_connection(self._loop)
+			cursor=yield from self._queue_conn.cursor()
+			db_list=[]
+			yield from cursor.execute("show databases")
+			dbs=yield from cursor.fetchall()
+			for db in dbs:
+				db_list.append(db)
+			yield from self._queue_conn.select_db(self._db)
+			self._db_list=tuple(db_list)
+			yield from cursor.execute("show tables")
+			tables=yield from cursor.fetchall()
+			queue_list=[]
+			for table in tables:
+				queue_list.append(table)
+			self._queue_list=tuple(queue_list)
+			yield from cursor.close()
 		return self._queue_conn
 	@asyncio.coroutine
 	def enqueue(self,queue_name,payload):
 		yield from self._check_connection()
+		if not self._check_queue_db:
+			yield from self._create_queue_db(self._db)
+		if not self._check_queue:
+			yield from self._create_queue(queue_name)	
 		cursor=yield from self._queue_conn.cursor()
 		yield from self._queue_conn.begin()
 		try:
