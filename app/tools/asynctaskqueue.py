@@ -11,7 +11,8 @@ class ConfigError(Exception):
 	pass
 
 class AsyncMysqlConnection(object):
-	_conn_pool=dict()
+	_db_list=tuple()
+	_table_list=tuple()
 	def __init__(self,host,port,user,password,db):
 		assert isinstance(host,str)
 		assert isinstance(port,int)
@@ -25,22 +26,43 @@ class AsyncMysqlConnection(object):
 		self._db=db
 	@asyncio.coroutine
 	def get_connection(self,loop,db=None):
-		if not db:
-			if self._db not in self._conn_pool:
-				self._conn_pool[self._db]=yield from aiomysql.connect(host=self._host,
-								port=self._port,
-								user=self._user,
-								password=self._password,
-								loop=loop)
-			return self._conn_pool[self._db]
-		else:
-			if db not in self._conn_pool:
-				self._conn_pool[self._db]=yield from aiomysql.connect(host=self._host,
-									port=self._port,
-									user=self._user,
-									password=self._password,
-									loop=loop)
-			return self._conn_pool[db]
+		self._conn=yield from aiomysql.connect(host=self._host,
+							port=self._port,
+							user=self._user,
+							password=self._password,
+							loop=loop)
+		yield from self._get_db_list()
+		if not self._check_db(self._db):
+			yield from self._create_db(self._db)
+		yield from self._conn.select_db(self._db)
+		return self._conn
+	def _check_db(self,db_name):
+		if db_name in self._db_list:
+			return True
+		return False
+	@asyncio.coroutine
+	def _get_db_list(self):
+		cursor=yield from self._conn.cursor()
+		yield from cursor.execute('show databases')
+		dbs=yield from cursor.fetchall()
+		yield from cursor.close()
+		db_list=list()
+		for db in dbs:
+			db_list.append(db[0])
+		self._db_list=tuple(db_list)
+		return self._db_list
+	@asyncio.coroutine
+	def _create_db(self,db_name):
+		yield from self._conn.begin()
+		cursor=yield from self._conn.cursor()
+		try:
+			yield from cursor.execute("create database %s character set utf8"%db_name)
+		except Exception:
+			yield from self._conn.rollback()
+		finally:
+			yield from self._conn.commit()
+			yield from cursor.close()
+		
 class AsyncQueue(object):
 	def __init__(self,config):
 		self._config=config
@@ -57,22 +79,27 @@ class AsyncQueue(object):
 			raise ConfigError("no '%s' config item"%key.split('_',1)[1])
 	
 class AsyncMysqlQueue(AsyncQueue):
-	_queue_conn=None
-	_db_list=tuple()
 	_queue_list=tuple()
 	def __init__(self,loop,config,connection=AsyncMysqlConnection):
 		assert isinstance(config,dict)
 		self._connection_class=connection
 		self._loop=loop
+		self._queue_conn=None
 		super(AsyncMysqlQueue,self).__init__(config)
-	def _check_queue_db(self,db_name):
-		if db_name in self._db_list:
-			return True
-		return False
 	def _check_queue(self,queue_name):
 		if queue_name in self._queue_list:
 			return True
 		return False
+	@asyncio.coroutine
+	def _get_queue_list(self):
+		cursor=yield from self._queue_conn.cursor()
+		yield from cursor.execute('show tables')
+		tables=yield from cursor.fetchall()
+		queue_list=[]
+		for table in tables:
+			queue_list.append(table[0])
+		self._queue_list=tuple(queue_list)
+		return self._queue_list
 	@asyncio.coroutine
 	def _create_queue(self,queue_name):
 		cursor=yield from self._queue_conn.cursor()
@@ -85,49 +112,24 @@ class AsyncMysqlQueue(AsyncQueue):
 			yield from self._queue_conn.commit()
 			yield from cursor.close()
 	@asyncio.coroutine
-	def _create_queue_db(self,db_name):
-		cursor=yield from self._queue_conn.cursor()
-		yield from self._queue_conn.begin()
-		try:
-			yield from cursor.execute('create database %s character set utf8'%db_name)
-		except Exception:
-			yield from self._queue_conn.rollback()
-		finally:
-			yield from self._queue_conn.commit()
-			yield from cursor.close()
-			yield from self._queue_conn.select_db(db_name)
-	
-	@asyncio.coroutine
 	def _check_connection(self):
 		if not self._queue_conn:
 			self._queue_conn=yield from self._connection_class(self._host,self._port,self._user,self._password,self._db).get_connection(self._loop)
-			cursor=yield from self._queue_conn.cursor()
-			db_list=[]
-			yield from cursor.execute("show databases")
-			dbs=yield from cursor.fetchall()
-			for db in dbs:
-				db_list.append(db)
 			yield from self._queue_conn.select_db(self._db)
-			self._db_list=tuple(db_list)
-			yield from cursor.execute("show tables")
-			tables=yield from cursor.fetchall()
-			queue_list=[]
-			for table in tables:
-				queue_list.append(table)
-			self._queue_list=tuple(queue_list)
-			yield from cursor.close()
+			yield from self._get_queue_list()	
 		return self._queue_conn
 	@asyncio.coroutine
 	def enqueue(self,queue_name,payload):
+		assert isinstance(payload,(str,bytes))
+		assert isinstance(queue_name,str)
 		yield from self._check_connection()
-		if not self._check_queue_db(self._db):
-			yield from self._create_queue_db(self._db)
 		if not self._check_queue(queue_name):
-			yield from self._create_queue(queue_name)	
+			yield from self._create_queue(queue_name)
+			yield from self._get_queue_list()
 		cursor=yield from self._queue_conn.cursor()
 		yield from self._queue_conn.begin()
 		try:
-			yield from cursor.execute('insert into `%s`(`payload`) values(%s)'%(queue_name,payload))
+			yield from cursor.execute('insert into `%s`(`payload`) values("%s")'%(queue_name,payload))
 		except Exception:
 			yield from self._queue_conn.rollback()
 		finally:
@@ -136,25 +138,31 @@ class AsyncMysqlQueue(AsyncQueue):
 		return payload
 	@asyncio.coroutine
 	def dequeue(self,queue_name):
+		assert isinstance(queue_name,str)
 		yield from self._check_connection()
+		if not self._check_queue(queue_name):
+			yield from self._create_queue(queue_name)
+			yield from self._get_queue_list()
 		cursor=yield from self._queue_conn.cursor()
-		yield from self._queue_conn.begin()
-		try:
-			yield from cursor.execute('select `id`,`payload` from `%s` order by `id` asc limit 1'%(queue_name))
-		except Exception:
-			yield from self._queue_conn.rollback()
-		finally:
-			yield from self._queue_conn.commit()
-			ret=yield from cursor.fetchone()
-			yield from cursor.close()
-			if ret and len(ret)>=1:
-				return ret[1]
-			return []
+		yield from cursor.execute('select `id`,`payload` from `%s` order by `id` asc limit 1'%(queue_name))
+		ret=yield from cursor.fetchone()
+		if ret and len(ret)>=1:
+			try:
+				yield from cursor.execute("delete from `%s` where `id`=%s"%(queue_name,ret[0]))
+			except Exception:
+				yield from self._queue_conn.rollback()
+			finally:
+				yield from self._queue_conn.commit()
+				yield from cursor.close()
+			return ret[1]
+		return []
 if __name__=='__main__':
+	r'''
 	@asyncio.coroutine
 	def go(loop,config):
 		asyncqueue=AsyncMysqlQueue(loop,config)
-		yield from asyncqueue.enqueue("msg","hello")
+		data=yield from asyncqueue.dequeue("msg")
+		print(data)
 		
 	loop=asyncio.get_event_loop()
 	config={
@@ -166,4 +174,4 @@ if __name__=='__main__':
 	}
 	loop.run_until_complete(go(loop,config))
 	loop.close()
-	
+	'''
