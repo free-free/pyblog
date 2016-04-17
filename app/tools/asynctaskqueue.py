@@ -166,8 +166,8 @@ class AsyncQueueReader(AsyncQueueOperator):
 	def __init__(self,loop,config,driver_name='mysql'):
 		self._config=config
 		self._driver_name=driver_name
-		super(AsyncQueueReader,self).__init__(loop)
-		self._reader_instance=eval("self._get_%s_queue_driver(%s,%s)"%(self._driver_name,self._config))
+		self._loop=loop
+		self._reader_instance=eval("self._get_%s_queue_driver(%s)"%(self._driver_name,self._config))
 	@asyncio.coroutine
 	def read_from_queue(self,queue_name):
 		ret=yield from self._reader_instance.dequeue(queue_name)
@@ -186,10 +186,13 @@ if __name__=='__main__':
 	@asyncio.coroutine
 	def go(loop,config):
 		#asyncqueue=AsyncMysqlQueue(loop,config)
-		#data=yield from asyncqueue.enqueue("msg",'hello to world')
+		#data=yield from asyncqueue.enqueue("msg",'shabi')
 		#print(data)
-		asyncqueuewriter=AsyncQueueWriter(loop,config)
-		yield from asyncqueuewriter.write_to_queue('mail','shabi')
+		#asyncqueuewriter=AsyncQueueWriter(loop,config)
+		#data=yield from asyncqueuewriter.write_to_queue('msg','shabi')
+		asyncreader=AsyncQueueReader(loop,config)
+		data=yield from asyncreader.read_from_queue("msg")
+		print(data)
 		
 	loop=asyncio.get_event_loop()
 	config={
