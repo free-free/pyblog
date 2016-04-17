@@ -156,13 +156,40 @@ class AsyncMysqlQueue(AsyncQueue):
 				yield from cursor.close()
 			return ret[1]
 		return []
+class AsyncQueueOperator(object):
+	_queue_driver_class={'mysql':AsyncMysqlQueue}
+	def __init__(self):
+		pass
+	def _get_mysql_queue_driver(self,config):
+		return self._queue_driver_class.get('mysql')(self._loop,config)
+class AsyncQueueReader(AsyncQueueOperator):
+	def __init__(self,loop,config,driver_name='mysql'):
+		self._config=config
+		self._driver_name=driver_name
+		super(AsyncQueueReader,self).__init__(loop)
+		self._reader_instance=eval("self._get_%s_queue_driver(%s,%s)"%(self._driver_name,self._config))
+	@asyncio.coroutine
+	def read_from_queue(self,queue_name):
+		ret=yield from self._reader_instance.dequeue(queue_name)
+		return ret
+class AsyncQueueWriter(AsyncQueueOperator):
+	def __init__(self,loop,config,driver_name='mysql'):
+		self._config=config
+		self._driver_name=driver_name
+		self._loop=loop
+		self._writer_instance=eval("self._get_%s_queue_driver(%s)"%(self._driver_name,self._config))
+	@asyncio.coroutine
+	def write_to_queue(self,queue_name,payload):
+		yield from self._writer_instance.enqueue(queue_name,payload)
+		return payload
 if __name__=='__main__':
-	r'''
 	@asyncio.coroutine
 	def go(loop,config):
-		asyncqueue=AsyncMysqlQueue(loop,config)
-		data=yield from asyncqueue.dequeue("msg")
-		print(data)
+		#asyncqueue=AsyncMysqlQueue(loop,config)
+		#data=yield from asyncqueue.enqueue("msg",'hello to world')
+		#print(data)
+		asyncqueuewriter=AsyncQueueWriter(loop,config)
+		yield from asyncqueuewriter.write_to_queue('mail','shabi')
 		
 	loop=asyncio.get_event_loop()
 	config={
@@ -174,4 +201,3 @@ if __name__=='__main__':
 	}
 	loop.run_until_complete(go(loop,config))
 	loop.close()
-	'''
