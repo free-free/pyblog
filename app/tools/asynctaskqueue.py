@@ -2,6 +2,8 @@
 import logging
 logging.basicConfig(level=logging.ERROR)
 import asyncio
+from tools.taskQueue import QueuePayloadJsonEncapsulator
+from tools.config import Config
 try:
 	import aiomysql
 except ImportError:
@@ -182,6 +184,20 @@ class AsyncQueueWriter(AsyncQueueOperator):
 	def write_to_queue(self,queue_name,payload):
 		yield from self._writer_instance.enqueue(queue_name,payload)
 		return payload
+class AsyncTask(object):
+	def __init__(self,task_type,tries,content,loop,encapsulator=QueuePayloadJsonEncapsulator,writer=AsyncQueueWriter):
+		assert isinstance(config,dict)
+		assert isinstance(driver_name,str)
+		self._content=content
+		self._task_type=task_type
+		self._tries=tries
+		self._config=Config.queue.all
+		self._driver_name=Config.queue.driver_name
+		self._encapsulator=encapsulator(self._task_type,self._tries,self._content)
+		self._writer=AsyncQueueWriter(loop,self._config,self._driver_name)
+	@asyncio.coroutine
+	def start(self,queue_name):
+		yield from self._writer.writer_to_queue(queue_name,self._encapsulator.encapsulate())
 if __name__=='__main__':
 	@asyncio.coroutine
 	def go(loop,config):
