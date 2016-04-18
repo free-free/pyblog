@@ -2,7 +2,7 @@
 import logging
 logging.basicConfig(level=logging.ERROR)
 import asyncio
-from tools.taskQueue import QueuePayloadJsonEncapsulator
+from tools.taskqueue import QueuePayloadJsonEncapsulator
 from tools.config import Config
 try:
 	import aiomysql
@@ -122,7 +122,6 @@ class AsyncMysqlQueue(AsyncQueue):
 		return self._queue_conn
 	@asyncio.coroutine
 	def enqueue(self,queue_name,payload):
-		assert isinstance(payload,(str,bytes))
 		assert isinstance(queue_name,str)
 		yield from self._check_connection()
 		if not self._check_queue(queue_name):
@@ -131,8 +130,8 @@ class AsyncMysqlQueue(AsyncQueue):
 		cursor=yield from self._queue_conn.cursor()
 		yield from self._queue_conn.begin()
 		try:
-			yield from cursor.execute('insert into `%s`(`payload`) values("%s")'%(queue_name,payload))
-		except Exception:
+			yield from cursor.execute("insert into `%s` (`payload`) values('%s')"%(queue_name,payload))
+		except Exception as e:
 			yield from self._queue_conn.rollback()
 		finally:
 			yield from self._queue_conn.commit()
@@ -141,6 +140,7 @@ class AsyncMysqlQueue(AsyncQueue):
 	@asyncio.coroutine
 	def dequeue(self,queue_name):
 		assert isinstance(queue_name,str)
+		assert isinstance(payload,(str,bytes))
 		yield from self._check_connection()
 		if not self._check_queue(queue_name):
 			yield from self._create_queue(queue_name)
@@ -185,19 +185,24 @@ class AsyncQueueWriter(AsyncQueueOperator):
 		yield from self._writer_instance.enqueue(queue_name,payload)
 		return payload
 class AsyncTask(object):
-	def __init__(self,task_type,tries,content,loop,encapsulator=QueuePayloadJsonEncapsulator,writer=AsyncQueueWriter):
+	def __init__(self,task_type,tries,content,loop,config={},driver_name=None,encapsulator=QueuePayloadJsonEncapsulator,writer=AsyncQueueWriter):
 		assert isinstance(config,dict)
 		assert isinstance(driver_name,str)
+		assert isinstance(task_type,str)
+		assert isinstance(tries,int)
+		assert isinstance(content,(str,bytes))
 		self._content=content
 		self._task_type=task_type
 		self._tries=tries
-		self._config=Config.queue.all
-		self._driver_name=Config.queue.driver_name
+		self._config=config or Config.queue.all
+		self._driver_name=driver_name or Config.queue.driver_name
 		self._encapsulator=encapsulator(self._task_type,self._tries,self._content)
 		self._writer=AsyncQueueWriter(loop,self._config,self._driver_name)
 	@asyncio.coroutine
-	def start(self,queue_name):
-		yield from self._writer.writer_to_queue(queue_name,self._encapsulator.encapsulate())
+	def start(self,queue_name=None):
+		if not queue_name:
+			queue_name=self._task_type
+		data=yield from self._writer.write_to_queue(queue_name,self._encapsulator.encapsulate())
 if __name__=='__main__':
 	@asyncio.coroutine
 	def go(loop,config):
@@ -205,11 +210,13 @@ if __name__=='__main__':
 		#data=yield from asyncqueue.enqueue("msg",'shabi')
 		#print(data)
 		#asyncqueuewriter=AsyncQueueWriter(loop,config)
-		#data=yield from asyncqueuewriter.write_to_queue('msg','shabi')
-		asyncreader=AsyncQueueReader(loop,config)
-		data=yield from asyncreader.read_from_queue("msg")
-		print(data)
-		
+		#data=yield from asyncqueuewriter.write_to_queue('mail','send mail to you')
+		#asyncreader=AsyncQueueReader(loop,config)
+		#data=yield from asyncreader.read_from_queue("msg")
+		#print(data)
+		asynctask=AsyncTask('mail',3,'send mail to 18281573692@163.com',loop,config,'mysql')
+		yield from asynctask.start()
+
 	loop=asyncio.get_event_loop()
 	config={
 		'host':'127.0.0.1',
