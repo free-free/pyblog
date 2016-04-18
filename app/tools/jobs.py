@@ -3,27 +3,19 @@ from tools.taskqueue import Task
 import re
 from tools.asynctaskqueue import AsyncTask
 import asyncio
-import smtplib
-from email.mime.text import MIMEText
 
 class MailAddress(object):
 	_mail_regexp=r'^[0-9\w]+[\.0-9\w]+@[0-9\w]+(\.[\w0-9]+)+$'
 	def __init__(self,mail_address=None):
-		self._mail_address=[]
+		self._mail_address=''
 		if mail_address:
-			self._mail_address.append(mail_address)
+			self._mail_address=mail_address
 	def __get__(self,obj,ownclass):
-		if len(self._mail_address)==1:
-			return self._mail_address.pop()
-		elif len(self._mail_address)==0:
-			return ''
-		else:
-			return self._mail_address
+		return self._mail_address
 	def __set__(self,obj,value):
 		if not re.match(self._mail_regexp,value):
 			raise ValueError("mail address is not correct address")
-		if value not in self._mail_address:		
-			self._mail_address.append(value)	
+		self._mail_address=value
 class Job(object):
 	def __init__(self,tries=None,*,tasker=Task):
 		if tries:
@@ -88,29 +80,12 @@ class AsyncMailJob(MailJob):
 		content['main']=self._main		
 		yield from self._tasker('mail',self._tries,content,self._loop).start()
 
-class MailSender(object):
-	def __init__(self,email_content,*,host=None,port=None,username=None,password=None,mail_server=smtplib.SMTP):
-		assert isinstance(content,MIMEText)
-		self._email_content=email_content
-		self._host=host or Config.mail.host
-		self._port=port or Config.mail.port
-		self._username=username or Config.mail.user
-		self._password=password or Config.mail.password
-		self._mail_server=mail_server
-	def send_mail(self):
-		server=self._mail_server(self._host,self._port)
-		server.starttls()
-		server.login(self._username,self._password)
-		server.sendmail(self._mail_content['From'],self._mail_content['To'],msg.as_string())
-		server.quit()
-
 if __name__=='__main__':
 	loop=asyncio.get_event_loop()
 	mail=AsyncMailJob(loop,3)
 	mail.subject='hello'
-	mail.main='shabi'
+	mail.main='john shabi'
 	mail.sender='18281573692@163.com'
 	mail.receiver='19941222hb@gmail.com'
-	mail.receiver='1462086237@qq.com'
 	loop.run_until_complete(mail.send())
 	loop.close()
