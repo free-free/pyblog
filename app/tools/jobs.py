@@ -15,7 +15,7 @@ class MailAddress(object):
 	def __set__(self,obj,value):
 		if not re.match(self._mail_regexp,value):
 			raise ValueError("mail address is not correct address")
-		self._main_address=value	
+		self._mail_address=value	
 class Job(object):
 	def __init__(self,tries=None,*,tasker=Task):
 		if tries:
@@ -61,6 +61,7 @@ class MailJob(Job):
 	@sender.setter
 	def sender(self,sender):
 		self._sender=sender
+		print(sender)
 	@property
 	def receiver(self):
 		return self._receiver
