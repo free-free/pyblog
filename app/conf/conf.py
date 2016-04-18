@@ -11,7 +11,7 @@ database={
 			'host':'127.0.0.1',
 			'user':'root',
 			'port':3306,
-			'password':'526114',
+			'password':'xxx',
 			'database':'pyblog'
 		},
 		'mongodb':{
@@ -64,7 +64,7 @@ filesystem={
 	}
 }
 queue={
-	'default':'redis',#mysql,mongo,redis
+	'default':'mysql',#mysql,mongo,redis
 	'drivers':{
 		'redis':{
 			'port':6379,
@@ -90,7 +90,7 @@ service={
 		'default':'mailtrap',
 		'drivers':{
 			'mailtrap':{
-				'host':'mailtrap.io'
+				'host':'mailtrap.io',
 				'user':'xxxxx',
 				'password':'xxxxx',
 				'port':2525
