@@ -4,6 +4,7 @@ logging.basicConfig(level=logging.ERROR)
 import time
 import json
 from tools.config import Config
+from tools.mail import MailSender
 try:
 	import redis
 except ImportError:
@@ -278,16 +279,10 @@ class MailExecutor(Executor):
 	r'''
 		MailExecutor is responsible for to send mail
 	'''
-	def _get_mail_sender(self):
-		return self._content.get('sender')
-	def _get_mail_receiver(self):
-		return self._content.get('receiver')
-	def _get_mail_subject(self):
-		return self._content.get('subject')
-	def _get_mail_main(self):
-		return self._content.get('main')
+	
 	def execute(self):
-		pass		
+		mailsender=MailSender(self._content)
+		mailsender.send_mail()	
 
 class QueuePayloadParser(object):
 	def __init__(self,payload):
@@ -308,10 +303,10 @@ class QueuePayloadJsonParser(QueuePayloadParser):
 		QueuePayloadParser is class that responsible for parsing the payload reading from queue,
 	'''
 	def __init__(self,payload):
-		if isinstance(payload,str):
-			self._payload=json.loads(payload)
-		else:
+		if not payload or len(payload)==0:
 			self._payload={}
+		else:
+			self._payload=json.loads(payload)
 		super(type(self),self).__init__(self._payload)
 	def get_payload_type(self):
 		return self._payload.get('type')
@@ -427,10 +422,10 @@ if __name__=='__main__':
 	#tskprcss=TaskProcessor()
 	#tskprcss.process('mail')
 	'''
-	r'''
+	r'''	
 	#tsk1=Task('mail',3,'send to you')
 	#tsk1.start()
-	#QueuePayloadRouter.register_executor(mail=MailExecutor)
-	#tskprcss=TaskProcessor()
-	#tskprcss.process('mail')
 	'''
+	QueuePayloadRouter.register_executor(mail=MailExecutor)
+	tskprcss=TaskProcessor()
+	tskprcss.process('mail')
