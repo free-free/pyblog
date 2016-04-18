@@ -186,11 +186,6 @@ class AsyncQueueWriter(AsyncQueueOperator):
 		return payload
 class AsyncTask(object):
 	def __init__(self,task_type,tries,content,loop,config={},driver_name=None,encapsulator=QueuePayloadJsonEncapsulator,writer=AsyncQueueWriter):
-		assert isinstance(config,dict)
-		assert isinstance(driver_name,str)
-		assert isinstance(task_type,str)
-		assert isinstance(tries,int)
-		assert isinstance(content,(str,bytes))
 		self._content=content
 		self._task_type=task_type
 		self._tries=tries
