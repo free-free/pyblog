@@ -1,7 +1,8 @@
 #-*- coding:utf-8 -*-
 from tools.taskqueue import Task
 import re
-
+from tools.asynctaskqueue import AsyncTask
+import asyncio
 class MailAddress(object):
 	_mail_regexp=r'^[0-9\w]+[\.0-9\w]+@[0-9\w]+(\.[\w0-9]+)+$'
 	def __init__(self,mail_address=None):
@@ -66,11 +67,24 @@ class MailJob(Job):
 	@receiver.setter
 	def receiver(self,receiver):
 		self._receiver=receiver
-	
+class AsyncMailJob(MailJob):
+	def __init__(self,loop,tries,tasker=AsyncTask):
+		self._loop=loop
+		super(AsyncMailJob,self).__init__(tries,tasker=tasker)
+	@asyncio.coroutine
+	def send(self):
+		content={}
+		content['receiver']=self._receiver
+		content['subject']=self._subject
+		content['sender']=self._sender
+		content['main']=self._main		
+		yield from self._tasker('mail',self._tries,content,self._loop).start()
 if __name__=='__main__':
-	mail=MailJob()
+	loop=asyncio.get_event_loop()
+	mail=AsyncMailJob(loop,3)
 	mail.subject='hello'
 	mail.main='shabi'
 	mail.sender='18281573692@163.com'
 	mail.receiver='19941222hb@gmail.com'
-	mail.send()
+	loop.run_until_complete(mail.send())
+	loop.close()
