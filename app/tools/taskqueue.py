@@ -262,6 +262,9 @@ class QueueWriter(QueueOperator):
 		return payload
 
 class Executor(object):
+	r'''
+		parameter 'content' is dict obj,you can access the related item ,using general dict accession method
+	'''
 	def __init__(self,content,tries):
 		self._content=content
 		self._tries=tries
@@ -276,16 +279,15 @@ class MailExecutor(Executor):
 		MailExecutor is responsible for to send mail
 	'''
 	def _get_mail_sender(self):
-		pass
+		return self._content.get('sender')
 	def _get_mail_receiver(self):
-		pass
-	def _get_mail_title(self):
-		pass
+		return self._content.get('receiver')
+	def _get_mail_subject(self):
+		return self._content.get('subject')
 	def _get_mail_main(self):
-		pass
+		return self._content.get('main')
 	def execute(self):
-		print(self._content)
-		print(self._tries)	
+		pass		
 
 class QueuePayloadParser(object):
 	def __init__(self,payload):
