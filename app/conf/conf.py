@@ -81,7 +81,7 @@ queue={
 			'port':3306,
 			'db':'queue',
 			'user':'root',
-			'password':'xxxxx',
+			'password':'526114',
 		}
 	}
 }
