@@ -7,6 +7,9 @@ import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
 from tools.config import Config
+import socket
+import select
+from threading import Thread
 try:
 	import redis
 except ImportError:
@@ -23,6 +26,8 @@ try:
 except ImportError:
 	logging.error("can't import 'MySQLdb' module")
 	exit()
+
+
 
 class DBConnection(object):
 	def __init__(self):
@@ -440,8 +445,62 @@ class TaskProcessor(object):
 	def process(self,queue_name):
 		payload=self._reader(driver_name=Config.queue.driver_name,config=Config.queue.all).read_from_queue(queue_name)
 		self._router(payload).route_to_executor()
-	
+
+class TaskProcessionReminder(object):
+	def __init__(self,host,port):
+		assert isinstance(host,str)
+		assert isinstance(port,int)
+		self._port=port
+		self._host=host	
+	def remind(self,on_queue):
+		assert isinstance(on_queue,str)
+		self._client=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+		self._client.sendto(on_queue.encode('utf-8'),(self._host,self._port))
+		self._client.close()
+
+class TaskProcessionReceiver(object):
+	def __init__(self,host,port):
+		assert isinstance(host,str)
+		assert isinstance(port,int)
+		self._port=port
+		self._host=host
+	def listen(self):
+		self._udp_server=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+		self._udp_server.bind((self._host,self._port))
+		self._udp_server.setblocking(0)
+		self._threads=list()
+		self._epoll=select.epoll()
+		self._epoll.register(self._udp_server.fileno(),select.EPOLLIN)
+		print("liten on %s:%s"%(self._host,self._port))
+		while True:
+			try:
+				events=self._epoll.poll(1)
+				for fileno,event in events:
+					if fileno==self._udp_server.fileno():
+						data,addr=self._udp_server.recvfrom(1024)
+						if len(self._threads)>=6:
+							threads=self._threads
+							for thread in threads:
+								if not thread.is_alive():
+									self._threads.remove(thread)	
+						t=Thread(target=self.call_task_processor,args=(data.decode('utf-8'),),daemon=True)
+						t.start()
+						self._threads.append(t)
+						print("thread number",len(self._threads))
+			except KeyboardInterrupt:
+				self._epoll.unregister(self._udp_server.fileno())
+				self._epoll.close()
+				self._udp_server.close()
+				for thread in self._threads:
+					thread.join()
+				break
+	def call_task_processor(self,on_queue):
+		print(on_queue)
+		TaskProcessor().process(on_queue)
+
+			
 if __name__=='__main__':
+	pass
 	r'''
 	#QueuePayloadRouter.register_executor(mail=MailExecutor)
 	#tsk1=Task('mail',3,'send to mail to 19941222hb@gmail.com')
@@ -454,7 +513,10 @@ if __name__=='__main__':
 	r'''	
 	#tsk1=Task('mail',3,'send to you')
 	#tsk1.start()
+	QueuePayloadRouter.register_executor(mail=MailExecutor)
+	#tskprcss=TaskProcessor()
+	#tskprcss.process('mail')
 	'''
 	QueuePayloadRouter.register_executor(mail=MailExecutor)
-	tskprcss=TaskProcessor()
-	tskprcss.process('mail')
+	tasklistener=TaskProcessionReceiver('127.0.0.1',9999)
+	tasklistener.listen()
