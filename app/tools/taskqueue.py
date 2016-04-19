@@ -362,28 +362,28 @@ class QueuePayloadRouter(object):
 		method unregister_executor() to unregister your executor
 	'''
 	_executor={}
-	_executor_instance={}
-	_parser_instance=None
 	def __init__(self,payload,*,parser=QueuePayloadJsonParser):
 		self._payload=payload
 		self._parser_class=parser
+		self._parser_instance=None
+		self._executor_instance=None
 	def route_to_executor(self):
 		#check the parser instance existense
-		if not type(self)._parser_instance:
-			type(self)._parser_instance=self._parser_class(self._payload)
+		if not	self._parser_instance:
+			self._parser_instance=self._parser_class(self._payload)
 		else:
-			type(self)._parser_instance.set_payload(self._payload)
-		payload_type=type(self)._parser_instance.get_payload_type()
+			self._parser_instance.set_payload(self._payload)
+		payload_type=self._parser_instance.get_payload_type()
 		#check payload related executor instance existense
-		if payload_type in type(self)._executor_instance:
-			self._excutor_instance[payload_type].set_execution_content(self._parser_instance.get_payload_content(),self._parser_instance.get_payload_tries())
+		if  self._executor_instance:
+			self._executor_instance.set_execution_content(self._parser_instance.get_payload_content(),self._parser_instance.get_payload_tries())
 		else:
 			if payload_type in type(self)._executor:
-				type(self)._executor_instance[payload_type]=type(self)._executor[payload_type](self._parser_instance.get_payload_content(),self._parser_instance.get_payload_tries())
+				self._executor_instance=type(self)._executor[payload_type](self._parser_instance.get_payload_content(),self._parser_instance.get_payload_tries())
 			else:
 				return False
 		#call executor to process payload
-		self._executor_instance[payload_type].execute()
+		self._executor_instance.execute()
 		return True
 	@classmethod
 	def register_executor(cls,**executor):
