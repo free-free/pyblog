@@ -373,6 +373,9 @@ class QueuePayloadRouter(object):
 			self._parser_instance=self._parser_class(self._payload)
 		else:
 			self._parser_instance.set_payload(self._payload)
+		#when payload's content is null,stop executing and return
+		if not self._parser_instance.get_payload_content():
+			return False
 		payload_type=self._parser_instance.get_payload_type()
 		#check payload related executor instance existense
 		if  self._executor_instance:
@@ -443,9 +446,13 @@ class TaskProcessor(object):
 		self._router=payload_router
 		self._reader=queue_reader
 	def process(self,queue_name):
+		queue_not_empty=True
 		payload=self._reader(driver_name=Config.queue.driver_name,config=Config.queue.all).read_from_queue(queue_name)
-		self._router(payload).route_to_executor()
-
+		queue_not_empty=self._router(payload).route_to_executor()
+		while  queue_not_empty:
+			payload=self._reader(driver_name=Config.queue.driver_name,config=Config.queue.all).read_from_queue(queue_name)
+			queue_not_empty=self._router(payload).route_to_executor()
+			
 class TaskProcessionReminder(object):
 	def __init__(self,host,port):
 		assert isinstance(host,str)
@@ -495,7 +502,6 @@ class TaskProcessionReceiver(object):
 					thread.join()
 				break
 	def call_task_processor(self,on_queue):
-		print(on_queue)
 		TaskProcessor().process(on_queue)
 
 			
