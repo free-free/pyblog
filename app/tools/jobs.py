@@ -1,5 +1,5 @@
 #-*- coding:utf-8 -*-
-from tools.taskqueue import Task
+from tools.taskqueue import Task,TaskProcessionReminder
 import re
 from tools.asynctaskqueue import AsyncTask
 import asyncio
@@ -17,12 +17,13 @@ class MailAddress(object):
 			raise ValueError("mail address is not correct address")
 		self._mail_address=value
 class Job(object):
-	def __init__(self,tries=None,*,tasker=Task):
+	def __init__(self,tries=None,*,tasker=Task,reminder=TaskProcessionReminder):
 		if tries:
 			self._tries=tries
 		else:
 			self._tries=3
 		self._tasker=tasker
+		self._reminder=reminder
 	def set_tries(self,tries):
 		self._tries=tries
 class MailJob(Job):
@@ -35,6 +36,7 @@ class MailJob(Job):
 		content['sender']=self._sender
 		content['main']=self._main
 		self._tasker('mail',self._tries,content).start('mail')
+		self._reminder('127.0.0.1',9999).remind('mail')
 	def set_mail_receiver(self,receiver):
 		self._receiver=receiver
 	def set_mail_subject(self,subject):
@@ -79,6 +81,7 @@ class AsyncMailJob(MailJob):
 		content['sender']=self._sender
 		content['main']=self._main		
 		yield from self._tasker('mail',self._tries,content,self._loop).start()
+		
 
 if __name__=='__main__':
 	loop=asyncio.get_event_loop()
