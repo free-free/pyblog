@@ -386,6 +386,10 @@ class QueuePayloadRouter(object):
 		self._parser_class=parser
 		self._parser_instance=None
 		self._executor_instance=None
+	def set_route_payload(self,payload):
+		if not payload:
+			payload="{}"
+		self._payload=payload
 	def route_to_executor(self):
 		#check the parser instance existense
 		if not	self._parser_instance:
@@ -466,11 +470,14 @@ class TaskProcessor(object):
 		self._reader=queue_reader
 	def process(self,queue_name):
 		queue_not_empty=True
-		payload=self._reader(driver_name=Config.queue.driver_name,config=Config.queue.all).read_from_queue(queue_name)
-		queue_not_empty=self._router(payload).route_to_executor()
+		reader=self._reader(driver_name=Config.queue.driver_name,config=Config.queue.all)
+		payload=reader.read_from_queue(queue_name)
+		router=self._router(payload)
+		queue_not_empty=router.route_to_executor()
 		while  queue_not_empty:
-			payload=self._reader(driver_name=Config.queue.driver_name,config=Config.queue.all).read_from_queue(queue_name)
-			queue_not_empty=self._router(payload).route_to_executor()
+			payload=reader.read_from_queue(queue_name)
+			router.set_route_payload(payload)
+			queue_not_empty=router.route_to_executor()
 		print("process end")
 			
 class TaskProcessionReminder(object):
@@ -509,12 +516,11 @@ class TaskProcessionReceiver(object):
 							t=Thread(target=self.call_task_processor,args=(data.decode('utf-8'),),daemon=True)
 							t.start()
 							self._threads.append(t)
-						print("thread number",len(self._threads))
-				if len(self._threads)>=3:
-					threads=self._threads
-					for thread in threads:
-						if not thread.is_alive():
-							self._threads.remove(thread)
+				threads=self._threads
+				for thread in threads:
+					if not thread.is_alive():
+						self._threads.remove(thread)
+				print("thread number",len(self._threads))
 			except KeyboardInterrupt:
 				for thread in self._threads:
 					thread.join()
