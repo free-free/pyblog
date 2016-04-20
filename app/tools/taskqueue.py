@@ -245,16 +245,35 @@ class QueueOperator(object):
 		return self._queue_driver_class.get('mysql')(config)
 		
 class QueueReader(QueueOperator):
+	_free_queue_reader={}
+	_used_queue_reader={}
 	def __init__(self,driver_name='redis',config=None):
-		self._queue_read_driver_instance=None
-		self._queue_reader=None
-		if config:
-			self._queue_read_driver_instance=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),config))
-		else:
-			self._queue_read_driver_instance=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),None))
-		self._queue_reader=self._queue_read_driver_instance
+		assert isinstance(driver_name,str)
+		self._driver_name=driver_name
+		self._config=config
+		self._check_reader=False
+		self._current_reader={}
+		if not type(self)._free_queue_reader.get(self._driver_name,None):
+			type(self)._free_queue_reader[self._driver_name]=[]
+		if not type(self)._used_queue_reader.get(self._driver_name,None):
+			type(self)._used_queue_reader[self._driver_name]=[]
+		free_readers=type(self)._free_queue_reader.get(self._driver_name)
+		for reader in free_readers:
+			if reader.get('config')==self._config:
+				self._check_reader=True
+				type(self)._free_queue_reader[self._driver_name].remove(reader)
+				type(self)._used_queue_reader[self._driver_name].append(reader)
+				self._current_reader=reader
+				break
+		if self._check_reader==False:	
+			instance=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),self._config))
+			self._current_reader={'config':self._config,'instance':instance}
+			type(self)._used_queue_reader[self._driver_name].append(self._current_reader)
 	def read_from_queue(self,queue_name):
-		return self._queue_reader.dequeue(queue_name)
+		return self._current_reader['instance'].dequeue(queue_name)
+	def __del__(self):
+		type(self)._free_queue_reader[self._driver_name].append(self._current_reader)
+		type(self)._used_queue_reader[self._driver_name].remove(self._current_reader)
 
 class QueueWriter(QueueOperator):
 	def __init__(self,driver_name='redis',config=None):
@@ -452,6 +471,7 @@ class TaskProcessor(object):
 		while  queue_not_empty:
 			payload=self._reader(driver_name=Config.queue.driver_name,config=Config.queue.all).read_from_queue(queue_name)
 			queue_not_empty=self._router(payload).route_to_executor()
+		print("process end")
 			
 class TaskProcessionReminder(object):
 	def __init__(self,host,port):
@@ -485,21 +505,22 @@ class TaskProcessionReceiver(object):
 				for fileno,event in events:
 					if fileno==self._udp_server.fileno():
 						data,addr=self._udp_server.recvfrom(1024)
-						if len(self._threads)>=6:
-							threads=self._threads
-							for thread in threads:
-								if not thread.is_alive():
-									self._threads.remove(thread)	
-						t=Thread(target=self.call_task_processor,args=(data.decode('utf-8'),),daemon=True)
-						t.start()
-						self._threads.append(t)
+						if len(self._threads)<=3:
+							t=Thread(target=self.call_task_processor,args=(data.decode('utf-8'),),daemon=True)
+							t.start()
+							self._threads.append(t)
 						print("thread number",len(self._threads))
+				if len(self._threads)>=3:
+					threads=self._threads
+					for thread in threads:
+						if not thread.is_alive():
+							self._threads.remove(thread)
 			except KeyboardInterrupt:
+				for thread in self._threads:
+					thread.join()
 				self._epoll.unregister(self._udp_server.fileno())
 				self._epoll.close()
 				self._udp_server.close()
-				for thread in self._threads:
-					thread.join()
 				break
 	def call_task_processor(self,on_queue):
 		TaskProcessor().process(on_queue)
