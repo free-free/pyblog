@@ -245,26 +245,26 @@ class QueueOperator(object):
 		return self._queue_driver_class.get('mysql')(config)
 		
 class QueueReader(QueueOperator):
-	_queue_read_driver_instance={}
 	def __init__(self,driver_name='redis',config=None):
+		self._queue_read_driver_instance=None
+		self._queue_reader=None
 		if config:
-			type(self)._queue_read_driver_instance[driver_name.lower()]=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),config))
+			self._queue_read_driver_instance=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),config))
 		else:
-			if driver_name.lower() not in type(self)._queue_read_driver_instance:
-				type(self)._queue_read_driver_instance[driver_name.lower()]=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),None))
-		self._queue_reader=type(self)._queue_read_driver_instance[driver_name.lower()]
+			self._queue_read_driver_instance=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),None))
+		self._queue_reader=self._queue_read_driver_instance
 	def read_from_queue(self,queue_name):
 		return self._queue_reader.dequeue(queue_name)
 
 class QueueWriter(QueueOperator):
-	_queue_write_driver_instance={}
 	def __init__(self,driver_name='redis',config=None):
+		self._queue_writer_driver_instance=None
+		self._queue_writer=None
 		if config:
-			type(self)._queue_write_driver_instance[driver_name.lower()]=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),config))
+			self._queue_write_driver_instance=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),config))
 		else:
-			if driver_name.lower() not in type(self)._queue_write_driver_instance:
-				type(self)._queue_write_driver_instance[driver_name.lower()]=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),config))
-		self._queue_writer=type(self)._queue_write_driver_instance[driver_name.lower()]
+			self._queue_write_driver_instance=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),config))
+		self._queue_writer=self._queue_write_driver_instance
 	def write_to_queue(self,queue_name,payload):
 		self._queue_writer.enqueue(queue_name,payload)
 		return payload
