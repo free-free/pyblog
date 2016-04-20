@@ -23,7 +23,7 @@ def get_music_handler(app):
 		max_id=8
 	rand_id=random.randrange(1,max_id-6)
 	data=(yield from Music().fields({'music_name':'title','music_url':'url'}).where('id','>=',rand_id).limit(6).findall())
-	ret={}
+	ret=dict()
 	ret['code']=200
 	ret['msg']='ok'
 	ret['type']=3
@@ -48,7 +48,6 @@ def post_music_callback_handler(app):
 	m.music_name='CountingStar'
 	m.music_url='http://7xs7oc.com1.z0.glb.clouddn.com/music%2FJason%20Chen%20-%20Counting%20Stars.mp3'
 	ret=(yield from m.save())
-	print(ret)
 	if ret:
 		return {'code':200,'msg':'ok'}
 	return {'code':300,'msg':"bad"}
