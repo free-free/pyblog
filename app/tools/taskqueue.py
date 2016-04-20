@@ -381,16 +381,13 @@ class QueuePayloadRouter(object):
 		method unregister_executor() to unregister your executor
 	'''
 	_executor={}
-	def __init__(self,payload,*,parser=QueuePayloadJsonParser):
-		self._payload=payload
+	def __init__(self,*,parser=QueuePayloadJsonParser):
+		self._payload="{}"
 		self._parser_class=parser
 		self._parser_instance=None
 		self._executor_instance=None
-	def set_route_payload(self,payload):
-		if not payload:
-			payload="{}"
+	def route_to_executor(self,payload):
 		self._payload=payload
-	def route_to_executor(self):
 		#check the parser instance existense
 		if not	self._parser_instance:
 			self._parser_instance=self._parser_class(self._payload)
@@ -472,12 +469,11 @@ class TaskProcessor(object):
 		queue_not_empty=True
 		reader=self._reader(driver_name=Config.queue.driver_name,config=Config.queue.all)
 		payload=reader.read_from_queue(queue_name)
-		router=self._router(payload)
-		queue_not_empty=router.route_to_executor()
+		router=self._router()
+		queue_not_empty=router.route_to_executor(payload)
 		while  queue_not_empty:
 			payload=reader.read_from_queue(queue_name)
-			router.set_route_payload(payload)
-			queue_not_empty=router.route_to_executor()
+			queue_not_empty=router.route_to_executor(payload)
 		print("process end")
 			
 class TaskProcessionReminder(object):
