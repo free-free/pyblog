@@ -60,6 +60,16 @@ def execute(sql,autocommit=True):
 			raise e
 		return affectedrow			
 '''
+class Mongodb(dict):
+	def __init__(self,config):
+		assert isinstance(config,dict)
+		self._host=config.get('host','localhost')
+		self._port=config.get('port',27017)
+		self._db=config.get('db')
+		self._collection=config.get('collection')
+		self._client=MongoClient(self._host,self._port)
+		self._mongo=self._client[self._db]
+			
 class DB(dict):
 	_pool=""
 	_loop=""
