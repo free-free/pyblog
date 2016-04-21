@@ -74,7 +74,7 @@ class MysqlAutoBuilder(DBAutoBuilder):
 		type(self)._conn.commit()
 class DBBuilder(object):
 	_all_builders={"mysql":MysqlAutoBuilder}
-	def __init__(self,base_model):
+	def __init__(self,base_model=Model):
 		pass
 	@classmethod
 	def _import_models(cls,base_model):
