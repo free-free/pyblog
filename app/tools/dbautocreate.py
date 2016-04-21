@@ -74,7 +74,7 @@ class MysqlAutoBuilder(DBAutoBuilder):
 		type(self)._conn.commit()
 class DBBuilder(object):
 	_all_builders={"mysql":MysqlAutoBuilder}
-	def __init__(self,base_model=Model):
+	def __init__(self):
 		pass
 	@classmethod
 	def _import_models(cls,base_model):
@@ -82,7 +82,7 @@ class DBBuilder(object):
 		for attr in base_model.__subclasses__():
 			cls._models.append(attr)
 	@classmethod
-	def build(cls,base_model):
+	def build(cls,base_model=Model):
 		cls._import_models(base_model) 
 		default_connection=Config.database.connection_name
 		for model in cls._models:
