@@ -304,6 +304,7 @@ class Middleware(object):
 							</div>
 						</body>
 						</html>"""
+				Log.error(e)
 				res=web.Response(status=500,body=error_page.encode('utf-8'))
 			else:
 				if app.get('status'):
