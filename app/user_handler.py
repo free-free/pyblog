@@ -3,17 +3,20 @@ from tools.httptools import Route
 from models import User
 import time
 import hashlib
+
 @Route.get('/{username}')
 def get_user_index_page_handler(app,username):
 	m=User()
 	data=yield from m.where('user_name','=',username).findone()
 	if len(data)==0:
-		return{'error':'page not found'}
+		app.set_status(404)
 	else:
 		app.render("index.html")
+
 @Route.get('/login')
 def get_login_handler(app):
 	app.render("signin.html")
+
 @Route.post('/login')
 def post_login_handler(app):
 	m=User()
@@ -37,14 +40,17 @@ def post_login_handler(app):
 	app.session_end()
 	is_ok=yield from m.where('id','=',data['id']).update({'last_login':int(time.time())})
 	app.redirect('/%s/home'%data['user_name'])
+
 @Route.get('/logout',auth=True)
 def get_logout_handler(app):
 	user_name=app.session['user_name']
 	app.session_destroy()
 	app.redirect('/%s'%user_name)
+
 @Route.get('/register')
 def get_register_handler(app):
 	app.render("register.html")
+
 @Route.post('/register')
 def post_register_handler(app):
 	m=User()
@@ -81,6 +87,7 @@ def get_user_profile_handler(app,username):
 	else:
 		app.render("me.html")
 	app.render("me.html")
+
 @Route.get('/{username}/activity')
 def get_user_activity_handler(app,username):
 	m=User()
@@ -89,6 +96,7 @@ def get_user_activity_handler(app,username):
 		return {'404':'page not found'}
 	else:
 		app.render('list.html')
+
 @Route.get('/{username}/home',auth=True)
 def get_user_home_page_handler(app,username):
 	if username!=app.session['user_name']:
