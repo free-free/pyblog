@@ -15,7 +15,7 @@ try:
 	import asyncio
 except ImportError:
 	logging.error("Can't Found Module asyncio")
-
+	exit()
 try:
 	import aiohttp
 	import aiohttp.web
@@ -23,7 +23,12 @@ try:
 	from aiohttp import web
 except ImportError:
 	logging.error("Can't Found Module aiohttp")
-
+	exit()
+try:
+	import jinja2
+except ImportError:
+	logging.error("can't import 'jinja2' module")
+	exit()
 class AppContainer(dict):
 	def __init__(self,app,**kw):
 		self._post=app['post']
@@ -104,8 +109,12 @@ class AppContainer(dict):
 		if message:
 			self._app['status']={'code':code,'message':message}
 		else:
-			error_template_name='errors/'+str(code)+'.html'
-			self._app['status']={'code':code,'message':self._app['__templating__'].get_template(error_template_name).render()}
+			error_template='errors/'+str(code)+'.html'
+			try:
+				error_page=self._app['__templating__'].get_template(error_template).render()
+			except jinja2.exceptions.TemplateNotFound:
+				error_page="none"
+			self._app['status']={'code':code,'message':error_page}
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
