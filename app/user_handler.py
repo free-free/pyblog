@@ -74,6 +74,11 @@ def post_register_handler(app):
 	m.last_login=str(int(time.time()))
 	is_ok=yield from m.save()
 	if is_ok:
+		app.session['user_name']=username
+		app.session['password']=password
+		app.session['email']=email
+		app.session['last_login']=m.last_login
+		app.session_end()
 		app.redirect("/%s/home"%username)
 	else:
 		app.render("register.html")
@@ -99,7 +104,7 @@ def get_user_activity_handler(app,username):
 
 @Route.get('/{username}/home',auth=True)
 def get_user_home_page_handler(app,username):
-	if username!=app.session['user_name']:
-		app.redirect('/login')
+	if username==app.session['user_name']:
+		app.render('admin.html')
 	else:
-		app.render("admin.html")
+		app.redirect('/login')
