@@ -113,7 +113,50 @@ class AppContainer(dict):
 			try:
 				error_page=self._app['__templating__'].get_template(error_template).render()
 			except jinja2.exceptions.TemplateNotFound:
-				error_page="none"
+				error_page="""
+					<!DOCTYPE HTML>
+					<html>
+						<head>	
+							<title>
+					"""\
+					+str(code)+\
+					"""
+							</title>
+							<style>	
+							.error-box{
+								height:100%;
+								width:100%;	
+							}
+							.error{
+								display:block;
+								width:100%;
+							}
+							.title{
+								color:#efefef;
+								font-size:100px;
+								height:200px;
+								line-height:200px;
+								text-align:center;
+								letter-spacing:10px;
+								font-weight:1;
+							}
+							.code{
+								color:#999;
+								font-size:48px;
+								text-align:center;
+								height:400px;
+								font-weight:100;
+								line-height:200px;
+							}
+							</style>
+						</head>
+						<body>
+							<div class="error-box">
+								<span class="error title">
+									Pyblog 1.0
+								</span>
+								<span class="error code">	
+						"""+str(code)+"""</span></div></body></html>"""	
 			self._app['status']={'code':code,'message':error_page}
 class BaseHandler(object):
 	r'''
