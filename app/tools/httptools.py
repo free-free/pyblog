@@ -157,20 +157,74 @@ class Middleware(object):
 	def http_error_handler(app,handler):
 		@asyncio.coroutine
 		def _handler(request):
-			res=yield from handler(request)
-			if app.get('status'):
-				res=web.Response(status=app.get('status').get('code'),body=app.get('status').get('message').encode('utf-8'))
-				return res
+			try:
+				res=yield from handler(request)
+			except web.HTTPClientError as e:	
+				print("client error")
+				try:
+					error_template='errors/'+str(e.status_code)+'.html'
+					error_page=app.get('__templating__').get_template(error_template).render()
+				except jinja2.exceptions.TemplateNotFound:
+					error_page="""
+					<!DOCTYPE HTML>
+					<html>
+						<head>	
+							<style>	
+							.error-box{
+								height:100%;
+								width:100%;	
+							}
+							.error{
+								display:block;
+								width:100%;
+							}
+							.title{
+								color:#ccc;
+								font-size:100px;
+								height:200px;
+								line-height:200px;
+								text-align:center;
+								font-weight:200;
+							}
+							.code{
+								color:#999;
+								font-size:80px;
+								text-align:center;
+								height:400px;
+								line-height:200px;
+							}
+							</style>
+						</head>
+						<body>
+							<div class="error-box">
+								<span class="error title">	
+									Pyblog 1.0
+								</span>
+								<span class="error code">
+									404
+								</span>
+							</div>
+						</body>
+					</html>
+					"""
+				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
+			except web.HTTPServerError as e:
+				print("server error")
+				res=web.Response(status=e.status_code,body=e.reason.encode("utf-8"))
+			else:
+				if app.get('status'):
+					res=web.Response(status=app.get('status').get('code'),body=app.get('status').get('message').encode('utf-8'))
+					return res
 			return res
 		return _handler
 	def response(app,handler):
 		def check_set_cookie(res):
-			if len(app['set_cookie'])>0:
+			if app.get('set_cookie') and len(app['set_cookie'])>0:
 				for k in app['set_cookie']:
 					res.set_cookie(k['cookie_name'],k['cookie_value'],path=k['path'],expires=k['expire'],domain=k['domain'],httponly=k['httponly'])
 			return res
 		def check_del_cookie(res):
-			if len(app['del_cookie'])>0:
+			if app.get('del_cookie') and len(app['del_cookie'])>0:
 				for k in app['del_cookie']:
 					res.del_cookie(k['cookie_name'],path=k['path'],domain=k['domain'])
 			return res
