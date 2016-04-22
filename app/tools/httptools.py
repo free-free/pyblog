@@ -205,7 +205,51 @@ class Middleware(object):
 					"""+str(e.status_code)+"  "+e.reason+"""</span></div></body></html>"""
 				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
 			except web.HTTPServerError as e:
-				res=web.Response(status=e.status_code,body=e.reason.encode("utf-8"))
+				print("server error")
+				try:
+					error_template='errors/'+str(e.status_code)+'.html'
+					error_page=app.get('__templating__').get_template(error_template).render()
+				except jinja2.exceptions.TemplateNotFound:
+					error_page="""
+					<!DOCTYPE HTML>
+					<html>
+						<head>	
+							<style>	
+							.error-box{
+								height:100%;
+								width:100%;	
+							}
+							.error{
+								display:block;
+								width:100%;
+							}
+							.title{
+								color:#efefef;
+								font-size:100px;
+								height:200px;
+								line-height:200px;
+								text-align:center;
+								letter-spacing:10px;
+								font-weight:1;
+							}
+							.code{
+								color:#999;
+								font-size:48px;
+								text-align:center;
+								height:400px;
+								font-weight:100;
+								line-height:200px;
+							}
+							</style>
+						</head>
+						<body>
+							<div class="error-box">
+								<span class="error title">	
+									Pyblog 1.0
+								</span>
+								<span class="error code">
+					"""+str(e.status_code)+"  "+e.reason+"""</span></div></body></html>"""
+				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
 			else:
 				if app.get('status'):
 					res=web.Response(status=app.get('status').get('code'),body=app.get('status').get('message').encode('utf-8'))
