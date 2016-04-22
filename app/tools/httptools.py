@@ -160,7 +160,6 @@ class Middleware(object):
 			try:
 				res=yield from handler(request)
 			except web.HTTPClientError as e:	
-				print("client error")
 				try:
 					error_template='errors/'+str(e.status_code)+'.html'
 					error_page=app.get('__templating__').get_template(error_template).render()
@@ -179,18 +178,20 @@ class Middleware(object):
 								width:100%;
 							}
 							.title{
-								color:#ccc;
+								color:#efefef;
 								font-size:100px;
 								height:200px;
 								line-height:200px;
 								text-align:center;
-								font-weight:200;
+								letter-spacing:10px;
+								font-weight:1;
 							}
 							.code{
 								color:#999;
-								font-size:80px;
+								font-size:48px;
 								text-align:center;
 								height:400px;
+								font-weight:100;
 								line-height:200px;
 							}
 							</style>
@@ -201,15 +202,9 @@ class Middleware(object):
 									Pyblog 1.0
 								</span>
 								<span class="error code">
-									404
-								</span>
-							</div>
-						</body>
-					</html>
-					"""
+					"""+str(e.status_code)+"  "+e.reason+"""</span></div></body></html>"""
 				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
 			except web.HTTPServerError as e:
-				print("server error")
 				res=web.Response(status=e.status_code,body=e.reason.encode("utf-8"))
 			else:
 				if app.get('status'):
