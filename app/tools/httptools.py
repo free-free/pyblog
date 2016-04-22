@@ -33,6 +33,7 @@ class AppContainer(dict):
 		self._app['del_cookie']=[]
 		self._app['response']=''
 		self._app['redirect']=''
+		self._app['status']=''
 		self._config=Config
 		super(AppContainer,self).__init__(**kw)
 	def get_argument(self,name,default=None):
@@ -97,6 +98,13 @@ class AppContainer(dict):
 				self.redirect(self._config.authentication.login_url)
 	def redirect(self,url):
 		self._app['redirect']=url
+	def set_status(self,code,*,message=None):
+		assert isinstance(code,int)
+		if message:
+			self._app['status']={'code':code,'message':message}
+		else:
+			error_template_name=+'errors/'+str(code)+'.html'
+			self._app['status']={'code':code,'message':self._app['__templating__'].get_template(error_template_name)}
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -135,8 +143,6 @@ class BaseHandler(object):
 			response=None
 		return response
 
-
-
 class Middleware(object):
 	def response(app,handler):
 		def check_set_cookie(res):
@@ -151,6 +157,8 @@ class Middleware(object):
 			return res
 		@asyncio.coroutine
 		def _response(request):
+			if app.get('status'):
+				return aiohttp.HttpProcessingError(code=app.get('status').get('code'),message=app.get('status').get('message'))
 			res=yield from handler(request)
 			res=res if res else app.get('response')
 			if app.get('redirect'):
