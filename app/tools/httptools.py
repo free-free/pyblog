@@ -10,7 +10,6 @@ logging.basicConfig(level=logging.INFO)
 from   tools.log import Log
 from   tools.session import SessionManager
 from   tools.config import Config
-import aiohttp.web
 import os
 try:
 	import asyncio
@@ -18,8 +17,10 @@ except ImportError:
 	logging.error("Can't Found Module asyncio")
 
 try:
-   import aiohttp
-   from aiohttp import web
+	import aiohttp
+	import aiohttp.web
+	import aiohttp.errors
+	from aiohttp import web
 except ImportError:
 	logging.error("Can't Found Module aiohttp")
 
@@ -103,8 +104,8 @@ class AppContainer(dict):
 		if message:
 			self._app['status']={'code':code,'message':message}
 		else:
-			error_template_name=+'errors/'+str(code)+'.html'
-			self._app['status']={'code':code,'message':self._app['__templating__'].get_template(error_template_name)}
+			error_template_name='errors/'+str(code)+'.html'
+			self._app['status']={'code':code,'message':self._app['__templating__'].get_template(error_template_name).render()}
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
@@ -144,6 +145,15 @@ class BaseHandler(object):
 		return response
 
 class Middleware(object):
+	def http_error_handler(app,handler):
+		@asyncio.coroutine
+		def _handler(request):
+			res=yield from handler(request)
+			if app.get('status'):
+				res=web.Response(status=app.get('status').get('code'),body=app.get('status').get('message').encode('utf-8'))
+				return res
+			return res
+		return _handler
 	def response(app,handler):
 		def check_set_cookie(res):
 			if len(app['set_cookie'])>0:
@@ -157,8 +167,6 @@ class Middleware(object):
 			return res
 		@asyncio.coroutine
 		def _response(request):
-			if app.get('status'):
-				return aiohttp.HttpProcessingError(code=app.get('status').get('code'),message=app.get('status').get('message'))
 			res=yield from handler(request)
 			res=res if res else app.get('response')
 			if app.get('redirect'):
