@@ -355,7 +355,7 @@ class Middleware(object):
 					return res
 			return res
 		return _handler
-	def response(app,handler):
+	def response_middleware(app,handler):
 		def check_set_cookie(res):
 			if app.get('set_cookie') and len(app['set_cookie'])>0:
 				for k in app['set_cookie']:
