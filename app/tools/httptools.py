@@ -137,11 +137,6 @@ class AppContainer(dict):
 				if not hasattr(self,'_session_instance'):
 					self._session_instance=SessionManager(driver=self._config.session.driver_name,config=self._config.session.all)
 				self._session_instance.delete(session_id)
-	def auth(self,auth=False):
-		if auth:
-			user_id=self.session[self._config.authentication.auth_id]
-			if not user_id:
-				self.redirect(self._config.authentication.login_url)
 	def redirect(self,url):
 		self._app['redirect']=url
 	def set_status(self,code,*,message=None):
@@ -176,18 +171,17 @@ class BaseHandler(object):
 		self._app['cookie']=request.cookies if request.cookies else {}
 		self._app['get']=request.GET if request.GET else {}
 		self._app['post']=post if post else {}
-		container=AppContainer(app=self._app)
-		container.auth(self._handler.__auth__)
+		self._app_container=AppContainer(app=self._app)
 		args=self._handler.__args__
 		if len(args)==1:
-			response=yield from self._handler(container)
+			response=yield from self._handler(self._app_container)
 		elif len(args)>1:
 			param={}
 			for k in args[1:]:
 				if k not in request.match_info :
 					raise NameError("Can't Found '%s'"%k)
 				param[k]=request.match_info[k]
-			param[self._handler.__args__[0]]=container
+			param[self._handler.__args__[0]]=self._app_container
 			response=yield from self._handler(**param)
 		else:
 			response=None
@@ -197,6 +191,7 @@ class Middleware(object):
 	def http_error_middleware(app,handler):
 		@asyncio.coroutine
 		def _handler(request):
+			print("http_error_middleware")
 			try:
 				res=yield from handler(request)
 			except web.HTTPClientError as e:	
@@ -236,6 +231,7 @@ class Middleware(object):
 			return res
 		@asyncio.coroutine
 		def _response(request):
+			print("response_middleware")
 			res=yield from handler(request)
 			res=res if res else app.get('response')
 			if app.get('redirect'):
@@ -270,16 +266,34 @@ class Middleware(object):
 	def log_middleware(app,handler):
 		@asyncio.coroutine
 		def _log(request):
+			print("log_middleware")
 			Log.info("%s:%s===>%s"%(request.host,request.method,request))
 			return (yield from handler(request))
 		return _log
-	#def auth_middleware(app,handler):
-	#	@asyncio.coroutine
-	#	def _auth(request):
-	#		print(handler)
-	#		print(dir(handler))
-	#		return web.Response(body=b"auth")
-	#	return _auth
+	def auth_middleware(app,handler):
+		@asyncio.coroutine
+		def _auth(request):
+			print("auth_middleware")
+			if hasattr(request.match_info.handler,'_handler'):
+				matched_handler=request.match_info.handler._handler
+				if matched_handler.__auth__:	
+					session=SessionManager(driver=Config.session.driver_name,config=Config.session.all)
+					user_id=session[Config.authentication.auth_id]
+					if not user_id:
+						res= aiohttp.web.HTTPFound(Config.authentication.login_url)
+						return res
+					else:
+						return (yield from handler(request))
+				else:
+					return (yield from handler(request))
+			else:
+				return (yield from handler(request))
+			#print(dir(getattr(request.match_info.handler,'_handler')))
+			#print(dir(request.match_info.route))
+			#print(type(request.match_info.handler._app))
+			#print(dir(request.match_info.expect_handler))
+			#return web.Response(body=b"auth")
+		return _auth
 	@classmethod
 	def allmiddlewares(cls):
 		middlewares=list()
@@ -289,7 +303,6 @@ class Middleware(object):
 			if not asyncio.iscoroutinefunction(v):
 				v=asyncio.coroutine(v)
 			middlewares.append(v)
-		print(middlewares)
 		return middlewares
 
 
