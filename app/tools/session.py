@@ -34,6 +34,8 @@ class Session(object):
 		pass
 	def renew(self,session_id):
 		pass
+	def all(self):
+		return self._data[self._session_id]
 	def __getitem__(self,key):
 		pass
 	def __setitem__(self,key,value):
@@ -368,6 +370,11 @@ class SessionManager(object):
 			return self._default_driver.delete(session_id)
 		else:
 			return self._specific_driver.delete(sesion_id)
+	def all(self):
+		if not self._specific_driver:
+			return self._default_driver.all()
+		else:
+			return self._specfic_driver.all()
 if __name__=='__main__':
 	r'''
 	#file=SessionManager()
