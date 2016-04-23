@@ -37,7 +37,7 @@ HTTP_ERROR_REASON_EN={
 			403:"Forbidden",
 			404:"Page Not Found",
 			405:"Bad Request",
-			406:"Not Acceptable"
+			406:"Not Acceptable",
 			407:"Proxy Authentication Required",
 			408:"Request Timeed-Out",
 			409:"Conflict",
@@ -164,7 +164,7 @@ class AppContainer(dict):
 			try:
 				error_page=self._app['__templating__'].get_template(error_template).render()
 			except jinja2.exceptions.TemplateNotFound:
-				error_page=(DEFAULT_HTTP_ERROR_PAGE%(code,"Pyblog 1.0",code,"ERROR"))
+				error_page=(DEFAULT_HTTP_ERROR_PAGE%(code,"Pyblog 1.0",code,HTTP_ERROR_REASON_EN.get(code)))
 			self._app['status']={'code':code,'message':error_page}
 class BaseHandler(object):
 	r'''
