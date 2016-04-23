@@ -197,7 +197,7 @@ class BaseHandler(object):
 		return response
 
 class Middleware(object):
-	def http_error_handler(app,handler):
+	def http_error_middleware(app,handler):
 		@asyncio.coroutine
 		def _handler(request):
 			try:
