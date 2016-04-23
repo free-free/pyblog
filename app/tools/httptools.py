@@ -30,8 +30,24 @@ except ImportError:
 	logging.error("can't import 'jinja2' module")
 	exit()
 
-
-
+HTTP_ERROR_REASON_EN={
+			400:"Bad Request",
+			401:"Unauthorized",
+			402:"Payment Required",
+			403:"Forbidden",
+			404:"Page Not Found",
+			405:"Bad Request",
+			406:"Not Acceptable"
+			407:"Proxy Authentication Required",
+			408:"Request Timeed-Out",
+			409:"Conflict",
+			500:"Server Internal Error",
+			501:"Not Implemented",
+			502:"Bad Gateway",
+			503:"Server Unavailable",
+			504:"Gatewy Time-Out",
+			505:"HTTP Version Not Supported"
+		}
 DEFAULT_HTTP_ERROR_PAGE="""
 					<!DOCTYPE HTML>
 					<html><head><title>%s</title><style>	
@@ -293,7 +309,6 @@ class Middleware(object):
 			if not asyncio.iscoroutinefunction(v):
 				v=asyncio.coroutine(v)
 			middlewares.append(v)
-		print(middlewares)
 		return middlewares
 
 
