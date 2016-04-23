@@ -399,7 +399,7 @@ class Middleware(object):
 			res=check_del_cookie(res)
 			return res
 		return _response
-	def log(app,handler):
+	def log_middleware(app,handler):
 		@asyncio.coroutine
 		def _log(request):
 			Log.info("%s:%s===>%s"%(request.host,request.method,request))
