@@ -11,6 +11,43 @@ from   tools.log import Log
 from   tools.session import SessionManager
 from   tools.config import Config
 import os
+DEFAULT_HTTP_ERROR_PAGE="""
+					<!DOCTYPE HTML>
+					<html><head><title>%s</title><style>	
+							.error-box{
+								height:inherit;
+								width:inherit;
+							}
+							.error{
+								display:block;
+								width:inherit;
+							}
+							.title{
+								color:#efefef;
+								font-size:100px;
+								height:200px;
+								line-height:200px;
+								text-align:center;
+								letter-spacing:10px;
+								font-weight:1;
+							}
+							.code{
+								color:#999;
+								font-size:48px;
+								text-align:center;
+								height:400px;
+								font-weight:100;
+								line-height:200px;
+							}
+							</style>
+						</head>
+						<body>
+							<div class="error-box">
+								<span class="error title">	
+									%s
+								</span>
+								<span class="error code">%s %s</span>
+						</div></body></html>"""
 try:
 	import asyncio
 except ImportError:
@@ -113,56 +150,13 @@ class AppContainer(dict):
 			try:
 				error_page=self._app['__templating__'].get_template(error_template).render()
 			except jinja2.exceptions.TemplateNotFound:
-				error_page="""
-					<!DOCTYPE HTML>
-					<html>
-						<head>	
-							<title>
-					"""\
-					+str(code)+\
-					"""
-							</title>
-							<style>	
-							.error-box{
-								height:100%;
-								width:100%;	
-							}
-							.error{
-								display:block;
-								width:100%;
-							}
-							.title{
-								color:#efefef;
-								font-size:100px;
-								height:200px;
-								line-height:200px;
-								text-align:center;
-								letter-spacing:10px;
-								font-weight:1;
-							}
-							.code{
-								color:#999;
-								font-size:48px;
-								text-align:center;
-								height:400px;
-								font-weight:100;
-								line-height:200px;
-							}
-							</style>
-						</head>
-						<body>
-							<div class="error-box">
-								<span class="error title">
-									Pyblog 1.0
-								</span>
-								<span class="error code">	
-						"""+str(code)+"""</span></div></body></html>"""	
+				error_page=(DEFAULT_HTTP_ERROR_PAGE%(code,"Pyblog 1.0",code,"Shabi"))
 			self._app['status']={'code':code,'message':error_page}
 class BaseHandler(object):
 	r'''
 			basic handler process url paramter
 	
-	'''
+	#'''
 	def __init__(self,app,handlerfn):
 		self._app=app
 		self._handler=handlerfn
@@ -405,6 +399,13 @@ class Middleware(object):
 			Log.info("%s:%s===>%s"%(request.host,request.method,request))
 			return (yield from handler(request))
 		return _log
+	#def auth_middleware(app,handler):
+	#	@asyncio.coroutine
+	#	def _auth(request):
+	#		print(handler)
+	#		print(dir(handler))
+	#		return web.Response(body=b"auth")
+	#	return _auth
 	@classmethod
 	def allmiddlewares(cls):
 		middlewares=list()
@@ -414,6 +415,7 @@ class Middleware(object):
 			if not asyncio.iscoroutinefunction(v):
 				v=asyncio.coroutine(v)
 			middlewares.append(v)
+		print(middlewares)
 		return middlewares
 
 
