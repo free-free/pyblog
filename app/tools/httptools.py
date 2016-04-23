@@ -11,6 +11,27 @@ from   tools.log import Log
 from   tools.session import SessionManager
 from   tools.config import Config
 import os
+try:
+	import asyncio
+except ImportError:
+	logging.error("Can't Found Module asyncio")
+	exit()
+try:
+	import aiohttp
+	import aiohttp.web
+	import aiohttp.errors
+	from aiohttp import web
+except ImportError:
+	logging.error("Can't Found Module aiohttp")
+	exit()
+try:
+	import jinja2
+except ImportError:
+	logging.error("can't import 'jinja2' module")
+	exit()
+
+
+
 DEFAULT_HTTP_ERROR_PAGE="""
 					<!DOCTYPE HTML>
 					<html><head><title>%s</title><style>	
@@ -48,24 +69,6 @@ DEFAULT_HTTP_ERROR_PAGE="""
 								</span>
 								<span class="error code">%s %s</span>
 						</div></body></html>"""
-try:
-	import asyncio
-except ImportError:
-	logging.error("Can't Found Module asyncio")
-	exit()
-try:
-	import aiohttp
-	import aiohttp.web
-	import aiohttp.errors
-	from aiohttp import web
-except ImportError:
-	logging.error("Can't Found Module aiohttp")
-	exit()
-try:
-	import jinja2
-except ImportError:
-	logging.error("can't import 'jinja2' module")
-	exit()
 class AppContainer(dict):
 	def __init__(self,app,**kw):
 		self._post=app['post']
@@ -150,7 +153,7 @@ class AppContainer(dict):
 			try:
 				error_page=self._app['__templating__'].get_template(error_template).render()
 			except jinja2.exceptions.TemplateNotFound:
-				error_page=(DEFAULT_HTTP_ERROR_PAGE%(code,"Pyblog 1.0",code,"Shabi"))
+				error_page=(DEFAULT_HTTP_ERROR_PAGE%(code,"Pyblog 1.0",code,"ERROR"))
 			self._app['status']={'code':code,'message':error_page}
 class BaseHandler(object):
 	r'''
@@ -201,146 +204,17 @@ class Middleware(object):
 					error_template='errors/'+str(e.status_code)+'.html'
 					error_page=app.get('__templating__').get_template(error_template).render()
 				except jinja2.exceptions.TemplateNotFound:
-					error_page="""
-					<!DOCTYPE HTML>
-					<html>
-						<head>	
-							<title>
-					"""\
-					+str(e.status_code)+" "+e.reason+\
-					"""
-							</title>
-							<style>	
-							.error-box{
-								height:100%;
-								width:100%;	
-							}
-							.error{
-								display:block;
-								width:100%;
-							}
-							.title{
-								color:#efefef;
-								font-size:100px;
-								height:200px;
-								line-height:200px;
-								text-align:center;
-								letter-spacing:10px;
-								font-weight:1;
-							}
-							.code{
-								color:#999;
-								font-size:48px;
-								text-align:center;
-								height:400px;
-								font-weight:100;
-								line-height:200px;
-							}
-							</style>
-						</head>
-						<body>
-							<div class="error-box">
-								<span class="error title">	
-									Pyblog 1.0
-								</span>
-								<span class="error code">
-					"""+str(e.status_code)+"  "+e.reason+"""</span></div></body></html>"""
+					error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
 				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
 			except web.HTTPServerError as e:
 				try:
 					error_template='errors/'+str(e.status_code)+'.html'
 					error_page=app.get('__templating__').get_template(error_template).render()
 				except jinja2.exceptions.TemplateNotFound:
-					error_page="""
-					<!DOCTYPE HTML>
-					<html>
-						<head>		
-							<title>
-					""" \
-					+str(e.status_code)+" "+e.reason+\
-					"""
-					</title>
-							<style>	
-							.error-box{
-								height:100%;
-								width:100%;	
-							}
-							.error{
-								display:block;
-								width:100%;
-							}
-							.title{
-								color:#efefef;
-								font-size:100px;
-								height:200px;
-								line-height:200px;
-								text-align:center;
-								letter-spacing:10px;
-								font-weight:1;
-							}
-							.code{
-								color:#999;
-								font-size:48px;
-								text-align:center;
-								height:400px;
-								font-weight:100;
-								line-height:200px;
-							}
-							</style>
-						</head>
-						<body>
-							<div class="error-box">
-								<span class="error title">	
-									Pyblog 1.0
-								</span>
-								<span class="error code">
-					"""+str(e.status_code)+"  "+e.reason+"""</span></div></body></html>"""
+					error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
 				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
-			except Exception as e:				
-				error_page="""
-					<!DOCTYPE HTML>
-					<html>
-						<head>	
-							<title>500 server internal error</title>
-							<style>	
-							.error-box{
-								height:100%;
-								width:100%;	
-							}
-							.error{
-								display:block;
-								width:100%;
-							}
-							.title{
-								color:#efefef;
-								font-size:100px;
-								height:200px;
-								line-height:200px;
-								text-align:center;
-								letter-spacing:10px;
-								font-weight:1;
-							}
-							.code{
-								color:#999;
-								font-size:48px;
-								text-align:center;
-								height:400px;
-								font-weight:100;
-								line-height:200px;
-							}
-							</style>
-						</head>
-						<body>
-							<div class="error-box">
-								<span class="error title">	
-									Pyblog 1.0
-								</span>
-								<span class="error code">
-									500 Server Internal Error
-								</span>
-							</div>
-						</body>
-						</html>"""
+			except Exception as e:
+				error_page=DEFAULT_HTTP_ERROR_PAGE%(500,"Pyblog 1.0",500,"Server Internal Error")				
 				Log.error(e)
 				res=web.Response(status=500,body=error_page.encode('utf-8'))
 			else:
