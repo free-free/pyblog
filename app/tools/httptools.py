@@ -191,7 +191,6 @@ class Middleware(object):
 	def http_error_middleware(app,handler):
 		@asyncio.coroutine
 		def _handler(request):
-			print("http_error_middleware")
 			try:
 				res=yield from handler(request)
 			except web.HTTPClientError as e:	
@@ -231,7 +230,6 @@ class Middleware(object):
 			return res
 		@asyncio.coroutine
 		def _response(request):
-			print("response_middleware")
 			res=yield from handler(request)
 			res=res if res else app.get('response')
 			if app.get('redirect'):
@@ -266,33 +264,25 @@ class Middleware(object):
 	def log_middleware(app,handler):
 		@asyncio.coroutine
 		def _log(request):
-			print("log_middleware")
 			Log.info("%s:%s===>%s"%(request.host,request.method,request))
 			return (yield from handler(request))
 		return _log
 	def auth_middleware(app,handler):
 		@asyncio.coroutine
 		def _auth(request):
-			print("auth_middleware")
 			if hasattr(request.match_info.handler,'_handler'):
 				matched_handler=request.match_info.handler._handler
-				if matched_handler.__auth__:	
-					session=SessionManager(driver=Config.session.driver_name,config=Config.session.all)
+				if matched_handler.__auth__:
+					session_id=request.cookies.get('ssnid')
+					if session_id:
+						session=SessionManager(session_id,driver=Config.session.driver_name,config=Config.session.all)
+					else:
+						session=SessionManager(driver=Config.session.driver_name,config=Config.session.all)
 					user_id=session[Config.authentication.auth_id]
 					if not user_id:
 						res= aiohttp.web.HTTPFound(Config.authentication.login_url)
 						return res
-					else:
-						return (yield from handler(request))
-				else:
-					return (yield from handler(request))
-			else:
-				return (yield from handler(request))
-			#print(dir(getattr(request.match_info.handler,'_handler')))
-			#print(dir(request.match_info.route))
-			#print(type(request.match_info.handler._app))
-			#print(dir(request.match_info.expect_handler))
-			#return web.Response(body=b"auth")
+			return (yield from handler(request))
 		return _auth
 	@classmethod
 	def allmiddlewares(cls):
@@ -303,6 +293,7 @@ class Middleware(object):
 			if not asyncio.iscoroutinefunction(v):
 				v=asyncio.coroutine(v)
 			middlewares.append(v)
+		print(middlewares)
 		return middlewares
 
 
