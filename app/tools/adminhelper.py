@@ -2,32 +2,9 @@
 # -*- coding:utf-8 -*-
 import argparse
 import sys
-import subprocess
-import datetime
-import shlex
 from tools.taskqueue import TaskProcessionReceiver,QueuePayloadRouter,MailExecutor
 from tools.dbautocreate import DBBuilder
-def execute_shell_cmd(cmd):
-	assert isinstance(cmd,str)
-	cmd=shlex.split(cmd)
-	sub=subprocess.Popen(cmd,stdin=subprocess.PIPE,bufsize=4096)
-	timeout=60
-	end_time=datetime.datetime.now()+datetime.timedelta(seconds=timeout)
-	while sub.poll() is None:
-		if timeout:
-			if end_time<datetime.datetime.now():
-				raise Exception("execution shell command '%s' timeout"%cmd)
-	return (sub.returncode)
-def shell_echo(string,color):
-	color_code={
-		'red':'0;31m',
-		'green':'0;32m',
-		'blue':'0;34m',
-		'brown':'0;33m'
-	}
-	cmd='echo -e "\e[{color} {string} \e[m"'.format(color=color_code.get(color.lower(),'0;30m'),string=string)
-	execute_shell_cmd(cmd)
-
+from helper import shell_echo
 def main():
 	if len(sys.argv)==1:
 		sys.argv.append('--help')
@@ -43,7 +20,7 @@ def main():
 			TaskProcessionReceiver(args.host,int(args.port)).listen()
 	elif args.dbbuild:
 		if args.dbbuild.lower()=='start':
-			DBBuilder.build()
+			#DBBuilder.build()
 			shell_echo("build database sucessfully!",'green')
 if __name__=='__main__':
 	main()
