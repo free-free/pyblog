@@ -1,6 +1,8 @@
 #-*- coding:utf-8 -*-
 import os
 import json
+import re
+import time
 from tools.config import Config
 class LocaleProxyer(dict):
 	_locale_file_dir=None
@@ -31,19 +33,32 @@ class Locale(object):
 	_locale_file_suffix='.py'
 	def __init__(self,locale_proxyer=LocaleProxyer):
 		self._locale_proxyer=locale_proxyer(os.path.join(self._locale_dir,Config.app.locale))
-	def translate(self,key,*,default=None):
-		key=key.split(':')
-		locale_filename=key[0]+self._locale_file_suffix
-		locale_items=key[1]
-		item_content=self._locale_proxyer.get_locale_item(locale_filename,locale_items)
+	def translate(self,key,**kw):
+		self._parameters=kw or {}
+		item_content=self._locale_proxyer.get_locale_item(self._parse_locale_filename(key),self._parse_locale_items(key))
 		if not item_content:
-			return default
+			if 'default' in self._parameters:
+				return self._parameters.get('default')
+		else:
+			item_content=self._fill_parameter(item_content)
 		return item_content
+	def _fill_parameter(self,content):
+		return re.sub(r'{\s*[\w]+\s*}',self._replace_parameter,content)
+	def _replace_parameter(self,matched):
+		matched=matched.group(0)[1:-1].strip()
+		if matched in self._parameters:
+			return str(self._parameters.get(matched,''))
+		return ''
+	def _parse_locale_filename(self,key):
+		return key.split(':')[0]+self._locale_file_suffix
+	def _parse_locale_items(self,key):
+		return key.split(':')[1]
 
 if __name__=='__main__':
 	l=Locale()
-	print(l.translate('message:register.password.item',default='password wrong'))
-	print(l.translate('message:login.password'))
+	#l._fill_parameter("{  name  }d fsfesfe{  age  }")
+	print(l.translate('message:register.username',default='password wrong',username="whoami",time=time.time()))
+	#print(l.translate('message:login.password'))
 	#print(LocaleProxyer('../locale/chinese').get_locale_item('message.py','login.email'))
 
 	
