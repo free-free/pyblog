@@ -20,7 +20,7 @@ def main():
 			TaskProcessionReceiver(args.host,int(args.port)).listen()
 	elif args.dbbuild:
 		if args.dbbuild.lower()=='start':
-			#DBBuilder.build()
+			DBBuilder.build()
 			shell_echo("build database sucessfully!",'green')
 if __name__=='__main__':
 	main()
