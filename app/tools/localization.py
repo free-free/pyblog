@@ -31,15 +31,18 @@ class Locale(object):
 	_locale_file_suffix='.py'
 	def __init__(self,locale_proxyer=LocaleProxyer):
 		self._locale_proxyer=locale_proxyer(os.path.join(self._locale_dir,Config.app.locale))
-	def translate(self,key):
+	def translate(self,key,*,default=None):
 		key=key.split(':')
 		locale_filename=key[0]+self._locale_file_suffix
 		locale_items=key[1]
-		return self._locale_proxyer.get_locale_item(locale_filename,locale_items)
+		item_content=self._locale_proxyer.get_locale_item(locale_filename,locale_items)
+		if not item_content:
+			return default
+		return item_content
 
 if __name__=='__main__':
 	l=Locale()
-	print(l.translate('message:register.password'))
+	print(l.translate('message:register.password.item',default='password wrong'))
 	print(l.translate('message:login.password'))
 	#print(LocaleProxyer('../locale/chinese').get_locale_item('message.py','login.email'))
 
