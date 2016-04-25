@@ -10,9 +10,9 @@ def main():
 		sys.argv.append('--help')
 	parser=argparse.ArgumentParser()
 	parser.add_argument('--queue',help="run queue processor")
-	parser.add_argument("--port",help="queue processor listening port ",default=9999)
-	parser.add_argument("--host",help="queue processor runining host",default="localhost")
-	parser.add_argument('--dbbuild',help="build database",default="start")
+	parser.add_argument("--port",help="queue processor listening port ",default=9999,required=False)
+	parser.add_argument("--host",help="queue processor runining host",default="localhost",required=False)
+	parser.add_argument("--dbbuild",help="build database",required=False,default="start")
 	args=parser.parse_args()
 	if args.queue:
 		if args.queue.lower() =='start':
