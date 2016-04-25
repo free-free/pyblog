@@ -2,7 +2,8 @@
 app={
 	'template_path':'./templates',
 	'static_prefix':'/static',
-	'static_path':'static'
+	'static_path':'static',
+	'locale':'english'
 }
 database={
 	'default':'mysql',
@@ -11,7 +12,7 @@ database={
 			'host':'127.0.0.1',
 			'user':'root',
 			'port':3306,
-			'password':'xxx',
+			'password':'526114',
 			'database':'pyblog'
 		},
 		'mongodb':{
@@ -47,7 +48,7 @@ session={
 }
 authentication={
 	'auth_table':'users',
-	'auth_id':'id',
+	'auth_id':'email',
 	'login_url':'/login'
 }
 filesystem={
@@ -91,8 +92,8 @@ service={
 		'drivers':{
 			'mailtrap':{
 				'host':'mailtrap.io',
-				'user':'xxxxx',
-				'password':'xxxxx',
+				'user':'521521d9dc1cb1b90',
+				'password':'15029ca2bece56',
 				'port':2525
 			}
 		}
