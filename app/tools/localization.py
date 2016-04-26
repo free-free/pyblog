@@ -42,6 +42,12 @@ class Locale(object):
 		else:
 			item_content=self._fill_parameter(item_content)
 		return item_content
+	def _dict_translate(self,items):
+		translated_items={}
+		for key,item_content in items:
+			translated_items[key]=self._fill_parameter(item_content)
+		return translated_items
+	
 	def _fill_parameter(self,content):
 		return re.sub(r'{\s*[\w]+\s*}',self._replace_parameter,content)
 	def _replace_parameter(self,matched):
@@ -56,8 +62,9 @@ class Locale(object):
 
 if __name__=='__main__':
 	l=Locale()
+	print(l.translate('message:register'))
 	#l._fill_parameter("{  name  }d fsfesfe{  age  }")
-	print(l.translate('message:register.username',default='password wrong',username="whoami",time=time.time()))
+	#print(l.translate('message:register.username',default='password wrong',username="whoami",time=time.time()))
 	#print(l.translate('message:login.password'))
 	#print(LocaleProxyer('../locale/chinese').get_locale_item('message.py','login.email'))
 
