@@ -2,7 +2,7 @@
 import datetime
 import subprocess
 import shlex
-
+from tools.localization import Locale
 def execute_shell_cmd(cmd,timeout=60,bufsize=4096):
 	assert isinstance(cmd,str)
 	cmd=shlex.split(cmd)
@@ -23,4 +23,12 @@ def shell_echo(echo_string,color):
 	}
 	cmd='echo -e "\e[{color}{string}\e[m"'.format(color=COLOR_CODE.get(color.lower(),'0;30m'),string=echo_string)
 	execute_shell_cmd(cmd)
-	
+
+def locale_translate(keys,**kw):
+	if not  hasattr(trans,'__locale__'):
+		trans.__locale__=Locale()
+	return trans.__locale__.translate(keys,**kw)
+
+if __name__=='__main__':
+	pass
+	r'''print(trans("message:register.username",username="huangbiao",default="hello"))'''
