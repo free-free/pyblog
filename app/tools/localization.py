@@ -47,7 +47,11 @@ class Locale(object):
 		for key,item_content in items:
 			translated_items[key]=self._fill_parameter(item_content)
 		return translated_items
-	
+	def _list_translate(self,items):
+		translated_items=[]
+		for item_content in items:
+			translate_items.append(self._fill_parameter(item_content)
+		return 	translated_items
 	def _fill_parameter(self,content):
 		return re.sub(r'{\s*[\w]+\s*}',self._replace_parameter,content)
 	def _replace_parameter(self,matched):
