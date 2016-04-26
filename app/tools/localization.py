@@ -40,7 +40,7 @@ class Locale(object):
 			if 'default' in self._parameters:
 				return self._parameters.get('default')
 		else:
-			item_content=self._fill_parameter(item_content)
+			item_content=self._translate(item_content)
 		return item_content
 	def _translate(self,items):
 		if isinstance(items,str):
@@ -82,13 +82,14 @@ class Locale(object):
 		return key.split(':')[1]
 
 if __name__=='__main__':
-	l=Locale()
-	print(l.translate('message:register'))
+	r'''
+	#l=Locale()
+	#print(l.translate('message:register'))
 	#l._fill_parameter("{  name  }d fsfesfe{  age  }")
-	#print(l.translate('message:register.username',default='password wrong',username="whoami",time=time.time()))
+	#print(l.translate('message:register',default='password wrong',username="whoami",email="19941222hb@gmail.com",time=time.time()))
 	#print(l.translate('message:login.password'))
 	#print(LocaleProxyer('../locale/chinese').get_locale_item('message.py','login.email'))
-
+	'''
 	
 	
 
