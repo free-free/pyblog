@@ -29,7 +29,7 @@ class LocaleProxyer(dict):
 		return item_content
 	
 class Locale(object):
-	_locale_dir=os.path.abspath('../locale')
+	_locale_dir=os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)),'locale'))
 	_locale_file_suffix='.py'
 	def __init__(self,locale_proxyer=LocaleProxyer):
 		self._locale_proxyer=locale_proxyer(os.path.join(self._locale_dir,Config.app.locale))
