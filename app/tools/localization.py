@@ -42,6 +42,21 @@ class Locale(object):
 		else:
 			item_content=self._fill_parameter(item_content)
 		return item_content
+	def _translate(self,items):
+		if isinstance(items,str):
+			return self._str_translate(items)
+		elif isinstance(items,dict):
+			translated_items={}
+			for key,item_content in items.items():
+				translated_items[key]=self._translate(item_content)
+			return translated_items
+		elif isinstance(items,list):
+			translated_items=[]
+			for item_content in items:
+				translated_items.append(self._translate(item_content))
+			return translated_items
+		else:
+			return items
 	def _dict_translate(self,items):
 		translated_items={}
 		for key,item_content in items:
