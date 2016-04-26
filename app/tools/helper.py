@@ -25,9 +25,9 @@ def shell_echo(echo_string,color):
 	execute_shell_cmd(cmd)
 
 def locale_translate(keys,**kw):
-	if not  hasattr(trans,'__locale__'):
-		trans.__locale__=Locale()
-	return trans.__locale__.translate(keys,**kw)
+	if not  hasattr(locale_translate,'__locale__'):
+		locale_translate.__locale__=Locale()
+	return locale_translate.__locale__.translate(keys,**kw)
 
 if __name__=='__main__':
 	pass
