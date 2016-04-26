@@ -36,7 +36,9 @@ Locale().translate("message:register.password",password="password is not correct
 #
 ```
 2.helper function  for locale
-there is a localization helper function 'locale_translate(keys,**kw) in helper.py,you can use to access all your localization file
+#there is a localization helper function locale_translate(keys,**kw) in helper.py,
+#you can use to access all your localization file
+
 ```python
 from tools.helper import locale_translate
 locale_tranlate("message:register.email")
