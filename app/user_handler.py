@@ -89,17 +89,16 @@ def get_user_profile_handler(app,username):
 	m=User()
 	data=yield from m.where('user_name','=',username).findone()
 	if len(data)==0:
-		return {'404':"page not found"}
+		app.set_status(404)
 	else:
 		app.render("me.html")
-	app.render("me.html")
 
 @Route.get('/{username}/activity')
 def get_user_activity_handler(app,username):
 	m=User()
 	data=yield from m.where('user_name','=',username).findone()
 	if len(data)==0:
-		return {'404':'page not found'}
+		app.set_status(404)
 	else:
 		app.render('list.html')
 
