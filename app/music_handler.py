@@ -12,7 +12,7 @@ try:
 except ImportError:
 	logging.error("can't import 'qiniu' module")
 
-@Route.get("/music")
+@Route.get("/api/music")
 def get_music_handler(app):
 	max_id_arr=(yield from Music().max('id'))
 	if len(max_id_arr)==0:
@@ -29,7 +29,7 @@ def get_music_handler(app):
 	ret['type']=3
 	ret['data']=data
 	return ret
-@Route.get("/music/token",auth=True)
+@Route.get("/api/music/token",auth=True)
 def post_music_token_handler(app):
 	auth=Auth(Config.filesystem.access_key,Config.filesystem.secret_key)
 	policy={
@@ -38,7 +38,7 @@ def post_music_token_handler(app):
 	}
 	token=auth.upload_token(Config.filesystem.bucket_name,'',0,policy)
 	return {"_token":token}
-@Route.get("/music/callback")
+@Route.get("/api/music/callback")
 def post_music_callback_handler(app):
 	m=Music()
 	m.uid=1
