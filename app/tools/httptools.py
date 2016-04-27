@@ -247,7 +247,7 @@ class Middleware(object):
 		@asyncio.coroutine
 		def _response(request):
 			res=yield from handler(request)
-			res=res if res else app.get('response')
+			res=app.get('response') if app.get('response') else res
 			if app.get('redirect'):
 				redirect_url=app.get('redirect')
 				app['redirect']=''
