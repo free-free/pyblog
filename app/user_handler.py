@@ -1,5 +1,6 @@
 #-*- coding:utf-8 -*-
 from tools.httptools import Route
+from tools.helper import locale_translate
 from models import User
 import time
 import hashlib
@@ -24,13 +25,13 @@ def post_login_handler(app):
 	password=app.get_argument("password","").strip()
 	data=yield from m.where('email','=',email).fields(['id','user_name','password','email','last_login']).findone()
 	if len(data)==0:
-		app.render("signin.html",email_error="邮箱未注册",email=email,password=password)
+		app.render("signin.html",email_error=locale_translate("message:login.email"),email=email,password=password)
 		return ''
 	sha1=hashlib.sha1()
 	sha1.update(password.encode('utf-8'))
 	password=sha1.hexdigest()
 	if data['password']!=password:
-		app.render("signin.html",password_error="密码错误",email=email,password="")
+		app.render("signin.html",password_error=locale_translate("message:login.password"),email=email,password="")
 		return ''
 	app.session['id']=data['id']
 	app.session['user_name']=data['user_name']
@@ -59,11 +60,11 @@ def post_register_handler(app):
 	password=app.get_argument('password','').strip()
 	data=yield from m.where("email",'=',email).findone()
 	if len(data)>=1:
-		app.render("register.html",email_error='邮箱已注册',user_name=username,email=email,password=password)
+		app.render("register.html",email_error=locale_translate("message:register.email"),user_name=username,email=email,password=password)
 		return ''
 	data=yield from m.where("user_name",'=',username).findone()
 	if len(data)>=1:
-		app.render("register.html",user_name_error='用户名已存在',user_name=username,email=email,password=password)
+		app.render("register.html",user_name_error=locale_translate("message:register.username"),user_name=username,email=email,password=password)
 		return ''
 	m.user_name=username
 	m.email=email
