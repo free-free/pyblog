@@ -142,8 +142,6 @@ class AppContainer(dict):
 	def session_end(self,expire=None):
 		if hasattr(self,'_session_instance'):
 			self.set_cookie('ssnid',self._session_instance.session_id)
-			m=hmac.new(str(self._session_instance[Config.authentication.auth_id]).encode("utf-8"),str(self._session_instance.session_id).encode("utf-8"),hashlib.sha1)
-			self.set_cookie('unss',m.hexdigest())
 			self._session_instance.save(expire)
 		return self._session_instance.session_id
 	def session_destroy(self,session_id=None):
