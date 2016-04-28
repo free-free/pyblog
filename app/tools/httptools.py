@@ -139,14 +139,15 @@ class AppContainer(dict):
 			else:
 				self._session_instance=SessionManager(session_id,driver=self._config.session.driver_name,config=self._config.session.all)
 		return self._session_instance
-	def session_end(self,expire=None):
+	def session_end(self,expire=None,*,auth=False):
 		if hasattr(self,'_session_instance'):
-			m=hmac.new(str(self._session_instance[Config.authentication.auth_id]).encode("utf-8"),self._session_instance.session_id.encode("utf-8"),hashlib.sha1)
-			auth_unss=m.hexdigest()
-			self._session_instance['auth_unss']=auth_unss
+			if auth:
+				m=hmac.new(str(self._session_instance[Config.authentication.auth_id]).encode("utf-8"),self._session_instance.session_id.encode("utf-8"),hashlib.sha1)
+				auth_unss=m.hexdigest()
+				self._session_instance['auth_unss']=auth_unss
+				self.set_cookie('unss',auth_unss)
 			self._session_instance.save(expire)
 			self.set_cookie('ssnid',self._session_instance.session_id)
-			self.set_cookie('unss',auth_unss)
 			return self._session_instance.session_id
 		return None
 	def session_destroy(self,session_id=None):
