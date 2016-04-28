@@ -141,9 +141,14 @@ class AppContainer(dict):
 		return self._session_instance
 	def session_end(self,expire=None):
 		if hasattr(self,'_session_instance'):
-			self.set_cookie('ssnid',self._session_instance.session_id)
+			m=hmac.new(str(self._session_instance[Config.authentication.auth_id]).encode("utf-8"),self._session_instance.session_id.encode("utf-8"),hashlib.sha1)
+			auth_unss=m.hexdigest()
+			self._session_instance['auth_unss']=auth_unss
 			self._session_instance.save(expire)
-		return self._session_instance.session_id
+			self.set_cookie('ssnid',self._session_instance.session_id)
+			self.set_cookie('unss',auth_unss)
+			return self._session_instance.session_id
+		return None
 	def session_destroy(self,session_id=None):
 		if session_id:
 			if not hasattr(self,'_session_instance'):
@@ -153,6 +158,7 @@ class AppContainer(dict):
 			session_id=self.get_cookie("ssnid")
 			if  session_id:
 				self.clear_cookie('ssnid')
+				self.clear_cookie('unss')
 				if not hasattr(self,'_session_instance'):
 					self._session_instance=SessionManager(driver=self._config.session.driver_name,config=self._config.session.all)
 				self._session_instance.delete(session_id)
@@ -298,22 +304,21 @@ class Middleware(object):
 						session=SessionManager(driver=Config.session.driver_name,config=Config.session.all)
 					user_id=session[Config.authentication.auth_id]
 					if not user_id :
-						res=aiohttp.web.HTTPFound(Config.authentication.log_url)
+						res=aiohttp.web.HTTPFound(Config.authentication.login_url)
 						return res
 					else:
 						unss=request.cookies.get('unss') or request.GET.get('unss')
 						if not unss:
 							yield from request.post()
 							unss=request.POST.get('unss')
-						if not unss:
-							res=aiohttp.web.HTTPFound(Config.authentication.login_url)
-							return res 
-						m=hmac.new(str(user_id).encode("utf-8"),str(session_id).encode("utf-8"),hashlib.sha1)
-						auth_unss=m.hexdigest()
-						if auth_unss!=unss:
+							if not unss:
+								res=aiohttp.web.HTTPFound(Config.authentication.login_url)
+								return res 
+						if session['auth_unss']!=unss:
 							res= aiohttp.web.HTTPFound(Config.authentication.login_url)
 							return res
 			return (yield from handler(request))
+			
 		return _auth
 	@classmethod
 	def allmiddlewares(cls):
