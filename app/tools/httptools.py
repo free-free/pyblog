@@ -306,8 +306,11 @@ class Middleware(object):
 						unss=request.cookies.get('unss') or request.GET.get('unss')
 						if not unss:
 							yield from request.post()
-							unss=request.POST.get('unss') 
-						m=hmac.new(user_id.encode("utf-8"),session_id.encode("utf-8"),hashlib.sha1)
+							unss=request.POST.get('unss')
+						if not unss:
+							res=aiohttp.web.HTTPFound(Config.authentication.login_url)
+							return res 
+						m=hmac.new(str(user_id).encode("utf-8"),str(session_id).encode("utf-8"),hashlib.sha1)
 						auth_unss=m.hexdigest()
 						if auth_unss!=unss:
 							res= aiohttp.web.HTTPFound(Config.authentication.login_url)
