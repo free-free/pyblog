@@ -143,6 +143,7 @@ class AppContainer(dict):
 		if hasattr(self,'_session_instance'):
 			self.set_cookie('ssnid',self._session_instance.session_id)
 			self._session_instance.save(expire)
+		return self._session_instance.session_id
 	def session_destroy(self,session_id=None):
 		if session_id:
 			if not hasattr(self,'_session_instance'):
@@ -155,6 +156,7 @@ class AppContainer(dict):
 				if not hasattr(self,'_session_instance'):
 					self._session_instance=SessionManager(driver=self._config.session.driver_name,config=self._config.session.all)
 				self._session_instance.delete(session_id)
+		return session_id
 	def redirect(self,url):
 		self._app['redirect']=url
 	def set_status(self,code,*,message=None):
