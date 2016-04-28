@@ -200,7 +200,7 @@ class BaseHandler(object):
 		self._app['post']=post if post else {}
 		self._app_container=AppContainer(app=self._app)
 		args=self._handler.__args__
-		if len(args)==1:
+		if len(args)<=1:
 			response=yield from self._handler(self._app_container)
 		elif len(args)>1:
 			param={}
@@ -210,8 +210,6 @@ class BaseHandler(object):
 				param[k]=request.match_info[k]
 			param[self._handler.__args__[0]]=self._app_container
 			response=yield from self._handler(**param)
-		else:
-			response=None
 		return response
 
 class Middleware(object):
@@ -465,11 +463,6 @@ class Route(object):
 		cls.process_routes(app,Route._complete_variable_routes)	
 		app.router.add_static(Config.app.static_prefix,os.path.join(os.path.dirname(os.path.dirname(__file__)),Config.app.static_path))
 if __name__=='__main__':
-	@Route.get('/uer/profile')
-	def user_profile(name):
-		print(name)
-	@Route.post('/usr/gallery')
-	def user_gallery(name):
-		print(name)
-	#Route.register_route()
-	#Route.register_route()
+	pass
+
+
