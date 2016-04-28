@@ -4,6 +4,8 @@
 import functools
 import inspect
 import re
+import hashlib
+import hmac
 import logging
 import json
 logging.basicConfig(level=logging.INFO)
@@ -290,18 +292,24 @@ class Middleware(object):
 				matched_handler=request.match_info.handler._handler
 				if matched_handler.__auth__:
 					session_id=request.cookies.get('ssnid')
-					unss=request.cookies.get('unss') or request.GET.get('unss')
-					if not unss:
-						yield from request.post()
-						unss=request.POST.get('unss') 
 					if session_id:
 						session=SessionManager(session_id,driver=Config.session.driver_name,config=Config.session.all)
 					else:
 						session=SessionManager(driver=Config.session.driver_name,config=Config.session.all)
 					user_id=session[Config.authentication.auth_id]
-					if not user_id:
-						res= aiohttp.web.HTTPFound(Config.authentication.login_url)
+					if not user_id :
+						res=aiohttp.web.HTTPFound(Config.authentication.log_url)
 						return res
+					else:
+						unss=request.cookies.get('unss') or request.GET.get('unss')
+						if not unss:
+							yield from request.post()
+							unss=request.POST.get('unss') 
+						m=hmac.new(user_id.encode("utf-8"),session_id.encode("utf-8"),hashlib.sha1)
+						auth_unss=m.hexdigest()
+						if auth_unss!=unss:
+							res= aiohttp.web.HTTPFound(Config.authentication.login_url)
+							return res
 			return (yield from handler(request))
 		return _auth
 	@classmethod
