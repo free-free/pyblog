@@ -290,6 +290,10 @@ class Middleware(object):
 				matched_handler=request.match_info.handler._handler
 				if matched_handler.__auth__:
 					session_id=request.cookies.get('ssnid')
+					unss=request.cookies.get('unss') or request.GET.get('unss')
+					if not unss:
+						yield from request.post()
+						unss=request.POST.get('unss') 
 					if session_id:
 						session=SessionManager(session_id,driver=Config.session.driver_name,config=Config.session.all)
 					else:
