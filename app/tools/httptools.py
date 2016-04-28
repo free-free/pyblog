@@ -235,17 +235,19 @@ class Middleware(object):
 					return res
 			return res
 		return _handler
-	def response_middleware(app,handler):
-		def check_set_cookie(res):
+	def cookie_middleware(app,handler):
+		@asyncio.coroutine
+		def _cookie(request):
+			res=yield from handler(request)
 			if app.get('set_cookie') and len(app['set_cookie'])>0:
 				for k in app['set_cookie']:
-					res.set_cookie(k['cookie_name'],k['cookie_value'],path=k['path'],expires=k['expire'],domain=k['domain'],httponly=k['httponly'])
-			return res
-		def check_del_cookie(res):
+					res.set_cookie(k['cookie_name'],k['cookie_value'],path=k['path'],expires=k['expire'],domain=k['domain'],httponly=k['httponly'])		
 			if app.get('del_cookie') and len(app['del_cookie'])>0:
 				for k in app['del_cookie']:
 					res.del_cookie(k['cookie_name'],path=k['path'],domain=k['domain'])
 			return res
+		return _cookie
+	def response_middleware(app,handler):
 		@asyncio.coroutine
 		def _response(request):
 			res=yield from handler(request)
@@ -254,8 +256,6 @@ class Middleware(object):
 				redirect_url=app.get('redirect')
 				app['redirect']=''
 				res= aiohttp.web.HTTPFound(redirect_url)
-				check_set_cookie(res)
-				check_del_cookie(res)
 				return res
 			if isinstance(res,web.StreamResponse):
 				res=res
@@ -275,8 +275,6 @@ class Middleware(object):
 					res.content_type='text/html;charset=utf-8'
 			else:
 				res=res
-			res=check_set_cookie(res)
-			res=check_del_cookie(res)
 			return res
 		return _response
 	def log_middleware(app,handler):
