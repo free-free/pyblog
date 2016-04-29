@@ -38,7 +38,7 @@ def post_login_handler(app):
 	app.session['password']=data['password']
 	app.session['email']=data['email']
 	app.session['last_login']=data['last_login']
-	app.session_end()
+	app.session_end(auth=True)
 	is_ok=yield from m.where('id','=',data['id']).update({'last_login':int(time.time())})
 	app.redirect('/%s/home'%data['user_name'])
 
@@ -101,10 +101,10 @@ def get_user_activity_handler(app,username):
 		app.set_status(404)
 	else:
 		app.render('list.html')
-
 @Route.get('/{username}/home',auth=True)
 def get_user_home_page_handler(app,username):
-	if username==app.session['user_name']:
-		app.render('admin.html')
-	else:
-		app.redirect('/login')
+	app.render('admin.html')
+@Route.get('/{username}/home/music/add',auth=True)
+def get_adding_music_page_handler(app,username):
+	app.render("admin.html")
+
