@@ -7,6 +7,7 @@ import re
 import hashlib
 import hmac
 import logging
+import traceback
 import json
 logging.basicConfig(level=logging.INFO)
 from   tools.log import Log
@@ -216,33 +217,41 @@ class Middleware(object):
 	def http_error_middleware(app,handler):
 		@asyncio.coroutine
 		def _handler(request):
-			if Config.app.debug:
+			try:
 				res=yield from handler(request)
-			else:
-				try:
-					res=yield from handler(request)
-				except web.HTTPClientError as e:	
-					try:
-						error_template='errors/'+str(e.status_code)+'.html'
-						error_page=app.get('__templating__').get_template(error_template).render()
-					except jinja2.exceptions.TemplateNotFound:
-						error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
-					res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
-				except web.HTTPServerError as e:
-					try:
-						error_template='errors/'+str(e.status_code)+'.html'
-						error_page=app.get('__templating__').get_template(error_template).render()
-					except jinja2.exceptions.TemplateNotFound:
-						error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
-					res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
-				except Exception as e:
-						error_page=DEFAULT_HTTP_ERROR_PAGE%(500,"Pyblog 1.0",500,"Server Internal Error")
-						Log.error(e)
-						res=web.Response(status=500,body=error_page.encode('utf-8'))
+			except web.HTTPClientError as e:	
+				if Config.app.debug:
+					error_page=traceback.format_exc()
+					logging.error(error_page)
 				else:
-					if app.get('status'):
-						res=web.Response(status=app.get('status').get('code'),body=app.get('status').get('message').encode('utf-8'))
-						return res
+					try:
+						error_template='errors/'+str(e.status_code)+'.html'
+						error_page=app.get('__templating__').get_template(error_template).render()
+					except jinja2.exceptions.TemplateNotFound:
+						error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
+				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
+			except web.HTTPServerError as e:
+				if Config.app.debug:
+					error_page=traceback.format_exc()
+					logging.error(error_page)
+				else:
+					try:
+						error_template='errors/'+str(e.status_code)+'.html'
+						error_page=app.get('__templating__').get_template(error_template).render()
+					except jinja2.exceptions.TemplateNotFound:
+						error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
+				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
+			except Exception as e:
+				if Config.app.debug:
+					error_page=traceback.format_exc()
+					logging.error(error_page)
+				else:
+					error_page=DEFAULT_HTTP_ERROR_PAGE%(500,"Pyblog 1.0",500,"Server Internal Error")
+				res=web.Response(status=500,body=error_page.encode('utf-8'))
+			else:
+				if app.get('status'):
+					res=web.Response(status=app.get('status').get('code'),body=app.get('status').get('message').encode('utf-8'))
+					return res
 			return res
 		return _handler
 	def cookie_middleware(app,handler):
