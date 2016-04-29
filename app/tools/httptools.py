@@ -88,6 +88,45 @@ DEFAULT_HTTP_ERROR_PAGE="""
 								</span>
 								<span class="error code">%s %s</span>
 						</div></body></html>"""
+DEFAULT_ERROR_PRINT_PAGE="""
+			<!DOCTYPE HTML>
+			<html>
+			<head>	
+				<meta charset="utf-8">
+				<style>
+					.header{
+						height:100px;
+						width:inherit;
+						text-align:center;
+						line-height:100px;
+						letter-spacing:10px;
+						font-weight:1;
+						color:#efefef;
+						font-size:48px;
+					}
+					.error-info{
+						color:#333;
+						width:inherit;
+						font-weight:100;
+						line-height:30px;
+						font-size:18px;
+						margin:10px 100px 10px 100px;
+						padding:10px 20px 10px 20px;
+						border:1px solid #999;
+						border-radius:20px;
+					}
+				</style>
+			</head>
+			<body>
+				<div class="header">
+					Pyblog1.0
+				</div>
+				<div class="error-info">
+					%s
+				</div>
+			</body>
+			</html>
+			"""
 class AppContainer(dict):
 	def __init__(self,app,**kw):
 		self._post=app['post']
@@ -221,8 +260,9 @@ class Middleware(object):
 				res=yield from handler(request)
 			except web.HTTPClientError as e:	
 				if Config.app.debug:
-					error_page=traceback.format_exc()
-					logging.error(error_page)
+					error=traceback.format_exc()
+					error_page=DEFAULT_ERROR_PRINT_PAGE%error
+					logging.error(error)
 				else:
 					try:
 						error_template='errors/'+str(e.status_code)+'.html'
@@ -232,8 +272,9 @@ class Middleware(object):
 				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
 			except web.HTTPServerError as e:
 				if Config.app.debug:
-					error_page=traceback.format_exc()
-					logging.error(error_page)
+					error=traceback.format_exc()
+					error_page=DEFAULT_ERROR_PRINT_PAGE%error
+					logging.error(error)
 				else:
 					try:
 						error_template='errors/'+str(e.status_code)+'.html'
@@ -243,8 +284,9 @@ class Middleware(object):
 				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
 			except Exception as e:
 				if Config.app.debug:
-					error_page=traceback.format_exc()
-					logging.error(error_page)
+					error=traceback.format_exc()
+					error_page=DEFAULT_ERROR_PRINT_PAGE%error
+					logging.error(error)
 				else:
 					error_page=DEFAULT_HTTP_ERROR_PAGE%(500,"Pyblog 1.0",500,"Server Internal Error")
 				res=web.Response(status=500,body=error_page.encode('utf-8'))
