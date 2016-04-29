@@ -94,6 +94,9 @@ DEFAULT_ERROR_PRINT_PAGE="""
 			<head>	
 				<meta charset="utf-8">
 				<style>
+					body{
+						background:#fbfbfb;
+					}
 					.header{
 						height:100px;
 						width:inherit;
@@ -101,7 +104,7 @@ DEFAULT_ERROR_PRINT_PAGE="""
 						line-height:100px;
 						letter-spacing:10px;
 						font-weight:1;
-						color:#efefef;
+						color:#bbb;
 						font-size:48px;
 					}
 					.error-info{
@@ -119,7 +122,7 @@ DEFAULT_ERROR_PRINT_PAGE="""
 			</head>
 			<body>
 				<div class="header">
-					Pyblog1.0
+					Pyblog 1.0
 				</div>
 				<div class="error-info">
 					%s
@@ -261,7 +264,7 @@ class Middleware(object):
 			except web.HTTPClientError as e:	
 				if Config.app.debug:
 					error=traceback.format_exc()
-					error_page=DEFAULT_ERROR_PRINT_PAGE%error
+					error_page=DEFAULT_ERROR_PRINT_PAGE%(error.replace('\n','<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'))
 					logging.error(error)
 				else:
 					try:
@@ -273,7 +276,7 @@ class Middleware(object):
 			except web.HTTPServerError as e:
 				if Config.app.debug:
 					error=traceback.format_exc()
-					error_page=DEFAULT_ERROR_PRINT_PAGE%error
+					error_page=DEFAULT_ERROR_PRINT_PAGE%(error.replace('\n','<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'))
 					logging.error(error)
 				else:
 					try:
@@ -285,7 +288,7 @@ class Middleware(object):
 			except Exception as e:
 				if Config.app.debug:
 					error=traceback.format_exc()
-					error_page=DEFAULT_ERROR_PRINT_PAGE%error
+					error_page=DEFAULT_ERROR_PRINT_PAGE%(error.replace('\n','<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'))
 					logging.error(error)
 				else:
 					error_page=DEFAULT_HTTP_ERROR_PAGE%(500,"Pyblog 1.0",500,"Server Internal Error")
