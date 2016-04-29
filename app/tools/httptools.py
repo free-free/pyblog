@@ -295,7 +295,8 @@ class Middleware(object):
 		def _log(request):
 			print('log middleware')
 			Log.info("%s:%s===>%s"%(request.host,request.method,request))
-			return (yield from handler(request))
+			res=yield from handler(request)
+			return res
 		return _log
 	def auth_middleware(app,handler):
 		@asyncio.coroutine
@@ -324,13 +325,13 @@ class Middleware(object):
 						if session['auth_unss']!=unss:
 							res= aiohttp.web.HTTPFound(Config.authentication.login_url)
 							return res
-			return (yield from handler(request))
-			
+			res=yield from handler(request)
+			return res
 		return _auth
 	@classmethod
 	def allmiddlewares(cls):
 		middlewares=list()
-		raw_middlewares=[cls.auth_middleware,cls.log_middleware,cls.http_error_middleware,cls.response_middleware,cls.cookie_middleware]
+		raw_middlewares=[cls.auth_middleware,cls.log_middleware,cls.http_error_middleware,cls.cookie_middleware,cls.response_middleware]
 		for v in raw_middlewares:
 			if not asyncio.iscoroutinefunction(v):
 				v=asyncio.coroutine(v)
