@@ -216,35 +216,40 @@ class Middleware(object):
 	def http_error_middleware(app,handler):
 		@asyncio.coroutine
 		def _handler(request):
-			try:
+			print("http error middleware")
+			if Config.app.debug:
 				res=yield from handler(request)
-			except web.HTTPClientError as e:	
-				try:
-					error_template='errors/'+str(e.status_code)+'.html'
-					error_page=app.get('__templating__').get_template(error_template).render()
-				except jinja2.exceptions.TemplateNotFound:
-					error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
-				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
-			except web.HTTPServerError as e:
-				try:
-					error_template='errors/'+str(e.status_code)+'.html'
-					error_page=app.get('__templating__').get_template(error_template).render()
-				except jinja2.exceptions.TemplateNotFound:
-					error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
-				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
-			except Exception as e:
-				error_page=DEFAULT_HTTP_ERROR_PAGE%(500,"Pyblog 1.0",500,"Server Internal Error")				
-				Log.error(e)
-				res=web.Response(status=500,body=error_page.encode('utf-8'))
 			else:
-				if app.get('status'):
-					res=web.Response(status=app.get('status').get('code'),body=app.get('status').get('message').encode('utf-8'))
-					return res
+				try:
+					res=yield from handler(request)
+				except web.HTTPClientError as e:	
+					try:
+						error_template='errors/'+str(e.status_code)+'.html'
+						error_page=app.get('__templating__').get_template(error_template).render()
+					except jinja2.exceptions.TemplateNotFound:
+						error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
+					res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
+				except web.HTTPServerError as e:
+					try:
+						error_template='errors/'+str(e.status_code)+'.html'
+						error_page=app.get('__templating__').get_template(error_template).render()
+					except jinja2.exceptions.TemplateNotFound:
+						error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
+					res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
+				except Exception as e:
+						error_page=DEFAULT_HTTP_ERROR_PAGE%(500,"Pyblog 1.0",500,"Server Internal Error")
+						Log.error(e)
+						res=web.Response(status=500,body=error_page.encode('utf-8'))
+				else:
+					if app.get('status'):
+						res=web.Response(status=app.get('status').get('code'),body=app.get('status').get('message').encode('utf-8'))
+						return res
 			return res
 		return _handler
 	def cookie_middleware(app,handler):
 		@asyncio.coroutine
 		def _cookie(request):
+			print("cookie middleware")
 			res=yield from handler(request)
 			if app.get('set_cookie') and len(app['set_cookie'])>0:
 				for k in app['set_cookie']:
@@ -257,6 +262,7 @@ class Middleware(object):
 	def response_middleware(app,handler):
 		@asyncio.coroutine
 		def _response(request):
+			print("response middleware")
 			res=yield from handler(request)
 			res=app.get('response') if app.get('response') else res
 			if app.get('redirect'):
@@ -287,12 +293,14 @@ class Middleware(object):
 	def log_middleware(app,handler):
 		@asyncio.coroutine
 		def _log(request):
+			print('log middleware')
 			Log.info("%s:%s===>%s"%(request.host,request.method,request))
 			return (yield from handler(request))
 		return _log
 	def auth_middleware(app,handler):
 		@asyncio.coroutine
 		def _auth(request):
+			print("auth middleware")
 			if hasattr(request.match_info.handler,'_handler'):
 				matched_handler=request.match_info.handler._handler
 				if matched_handler.__auth__:
@@ -322,12 +330,12 @@ class Middleware(object):
 	@classmethod
 	def allmiddlewares(cls):
 		middlewares=list()
-		for k,v in cls.__dict__.items():
-			if k.startswith('__') and k.endswith('__') or k=='allmiddlewares':
-				continue
+		raw_middlewares=[cls.auth_middleware,cls.log_middleware,cls.http_error_middleware,cls.response_middleware,cls.cookie_middleware]
+		for v in raw_middlewares:
 			if not asyncio.iscoroutinefunction(v):
 				v=asyncio.coroutine(v)
 			middlewares.append(v)
+		print(middlewares)
 		return middlewares
 
 
