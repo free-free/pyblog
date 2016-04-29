@@ -216,7 +216,6 @@ class Middleware(object):
 	def http_error_middleware(app,handler):
 		@asyncio.coroutine
 		def _handler(request):
-			print("http error middleware")
 			if Config.app.debug:
 				res=yield from handler(request)
 			else:
@@ -249,7 +248,6 @@ class Middleware(object):
 	def cookie_middleware(app,handler):
 		@asyncio.coroutine
 		def _cookie(request):
-			print("cookie middleware")
 			res=yield from handler(request)
 			if app.get('set_cookie') and len(app['set_cookie'])>0:
 				for k in app['set_cookie']:
@@ -262,7 +260,6 @@ class Middleware(object):
 	def response_middleware(app,handler):
 		@asyncio.coroutine
 		def _response(request):
-			print("response middleware")
 			res=yield from handler(request)
 			res=app.get('response') if app.get('response') else res
 			if app.get('redirect'):
@@ -293,7 +290,6 @@ class Middleware(object):
 	def log_middleware(app,handler):
 		@asyncio.coroutine
 		def _log(request):
-			print('log middleware')
 			Log.info("%s:%s===>%s"%(request.host,request.method,request))
 			res=yield from handler(request)
 			return res
@@ -301,7 +297,6 @@ class Middleware(object):
 	def auth_middleware(app,handler):
 		@asyncio.coroutine
 		def _auth(request):
-			print("auth middleware")
 			if hasattr(request.match_info.handler,'_handler'):
 				matched_handler=request.match_info.handler._handler
 				if matched_handler.__auth__:
