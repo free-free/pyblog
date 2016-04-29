@@ -3,7 +3,8 @@ app={
 	'template_path':'./templates',
 	'static_prefix':'/static',
 	'static_path':'static',
-	'locale':'english'
+	'locale':'chinese',
+	'debug':False
 }
 database={
 	'default':'mysql',
