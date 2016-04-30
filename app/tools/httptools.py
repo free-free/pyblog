@@ -272,6 +272,7 @@ class Middleware(object):
 						error_page=app.get('__templating__').render(error_template)
 					except jinja2.exceptions.TemplateNotFound:
 						error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
+				print(e.status_code,'====>',e.reason)
 				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
 			except web.HTTPServerError as e:
 				if Config.app.debug:
@@ -285,7 +286,10 @@ class Middleware(object):
 					except jinja2.exceptions.TemplateNotFound:
 						error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
 				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
-			except Exception as e:
+				print(e.status_code,'====>',e.reason)
+			except web.HTTPException as e:
+				if int(e.status_code)==304:
+					return web.HTTPNotModified()
 				if Config.app.debug:
 					error=traceback.format_exc()
 					error_page=DEFAULT_ERROR_PRINT_PAGE%(error.replace('\n','<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'))
@@ -293,6 +297,7 @@ class Middleware(object):
 				else:
 					error_page=DEFAULT_HTTP_ERROR_PAGE%(500,"Pyblog 1.0",500,"Server Internal Error")
 				res=web.Response(status=500,body=error_page.encode('utf-8'))
+				print("server error")
 			else:
 				if app.get('status'):
 					res=web.Response(status=app.get('status').get('code'),body=app.get('status').get('message').encode('utf-8'))
