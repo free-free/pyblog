@@ -9,10 +9,8 @@ except ImportError:
 
 
 
-class Jinja2Template(object):
-	def __init__(self,**kw):
-		assert isinstance(driver_name,(str,unicode))
-		super(Jinja2Template,self).__init__()
+class Jinja2Template(Environment):
+	def __init__(self,path,**kw):
 		options={}
 		assert isinstance(kw.get("autoescape",True),bool)
 		assert isinstance(kw.get("block_start_string","{%"))
@@ -20,6 +18,7 @@ class Jinja2Template(object):
 		assert isinstance(kw.get("variable_start_string","{{"))
 		assert isinstance(kw.get("variable_end_string","}}"))
 		assert isinstance(kw.get("auto_reload",True),bool)
+		assert isinstance(path,str)
 		options=dict(
 			autoescape=kw.get("autoescape",True),
 			block_start_string=kw.get("block_start_string",'{%'),
@@ -29,31 +28,26 @@ class Jinja2Template(object):
 			auto_reload=kw.get("auto_reload",True)
 		)
 		self._options=options
-	def get_template_driver(self,template_path):
-		env=Environment(loader=FileSystemLoader(template_path),**self._options)
-		return env
+		super(Jinja2Template).__init__(loader=FileSystemLoader(path),**self._options)
+	def render(self,template,**kw):
+		assert isinstance(template,str)
+		return self.get_template(template).render(**kw)
 				
 class Template(object):
-	def __init__(self,template):
-		self._template=template
-	def render(self,**kw):
-		res={'__template__':self._template}
-		for k,v in kw.items():
-			res[k]=v
-		return res
-	@classmethod
-	def init(cls,app,**kw):
-		options=dict(
-			autoescape=kw.get("autoescape",True),
-			block_start_string=kw.get("block_start_string",'{%'),
-			block_end_string=kw.get("block_end_string",'%}'),
-			variable_start_string=kw.get("variable_start_string",'{{'),
-			variable_end_string=kw.get("varibale_end_string",'}}'),
-			auto_reload=kw.get("auto_reload",True)
-		)
-		template_path=Config.app.template_path
+	_template_drivers={"jinja2":Jinja2Template}
+	def __init__(self,template_driver="jinja2",template_path=Config.app.template_path,**kw):
+		assert isinstance(template_driver_name,str)
+		assert isinstance(template_path,str)
+		assert template_driver in self._template_drivers,"not support template %s"%template_driver
 		if template_path.find('.')==0:
 			template_path=os.path.join(os.path.dirname(os.path.dirname(__file__)),template_path)
-		env=Environment(loader=FileSystemLoader(template_path),**options)
-		app['__templating__']=env
+		self._template_driver_instance=self._template_drivers[template_driver](template_path,**kw)
+	#def render(self,template,**kw):
+	#	assert isinstance(template,str)
+	#	res={'__template__':template}
+	#	for k,v in kw.items():
+	#		res[k]=v
+	#	return res
+	def render(self,template,**kw):
+		return self._template_driver_instance.render(tempalte,**kw)
 	
