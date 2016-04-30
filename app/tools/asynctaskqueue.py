@@ -91,7 +91,10 @@ class AsyncMysqlConnection(object):
 		finally:
 			yield from self._conn.commit()
 			yield from cursor.close()
-		
+	@asyncio.coroutine
+	def close(self):
+		if self._conn:
+			self._conn.close()	
 class AsyncQueue(object):
 	def __init__(self,config):
 		self._config=config
@@ -136,10 +139,10 @@ class AsyncMysqlQueue(AsyncQueue):
 	_queue_list=tuple()
 	def __init__(self,config,loop,connection=AsyncMysqlConnection):
 		assert isinstance(config,dict)
-		self._connection_class=connection
+		super(AsyncMysqlQueue,self).__init__(config)
 		self._loop=loop
 		self._queue_conn=None
-		super(AsyncMysqlQueue,self).__init__(config)
+		self._connection_instance=connection(self._host,self._port,self._user,self._password,self._db)
 	def _check_queue(self,queue_name):
 		if queue_name in self._queue_list:
 			return True
@@ -168,7 +171,7 @@ class AsyncMysqlQueue(AsyncQueue):
 	@asyncio.coroutine
 	def _check_connection(self):
 		if not self._queue_conn:
-			self._queue_conn=yield from self._connection_class(self._host,self._port,self._user,self._password,self._db).get_connection(self._loop)
+			self._queue_conn=yield from self._connection_instance.get_connection(self._loop)
 			yield from self._queue_conn.select_db(self._db)
 			yield from self._get_queue_list()	
 		return self._queue_conn
@@ -210,6 +213,10 @@ class AsyncMysqlQueue(AsyncQueue):
 				yield from cursor.close()
 			return ret[1]
 		return []
+	@asyncio.coroutine
+	def close_queue(self):
+		if self._connection_instance:
+			yield from self._connection_instance.close()
 class AsyncQueueOperator(object):
 	_queue_driver_class={'mysql':AsyncMysqlQueue,'redis':AsyncRedisQueue}
 	def __init__(self):
@@ -280,17 +287,16 @@ if __name__=='__main__':
 		#asyncreader=AsyncQueueReader(loop,config)
 		#data=yield from asyncreader.read_from_queue("msg")
 		#print(data)
-		asynctask=AsyncTask('mail',3,'send mail to 18281573692@163.com',loop,{"host":"localhost","port":6379},'redis')
+		asynctask=AsyncTask('mail',3,'send mail to 18281573692@163.com',loop,config,'mysql')
 		yield from asynctask.start()
 
 	loop=asyncio.get_event_loop()
-	r'''
 	config={
 		'host':'127.0.0.1',
 		'port':3306,
 		'user':'root',
 		'password':'526114',
 		'db':'queue'
-	}'''
-	loop.run_until_complete(go(loop))
+	}
+	loop.run_until_complete(go(loop,config))
 	loop.close()
