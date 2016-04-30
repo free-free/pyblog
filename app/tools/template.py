@@ -49,5 +49,5 @@ class Template(object):
 	#		res[k]=v
 	#	return res
 	def render(self,template,**kw):
-		return self._template_driver_instance.render(tempalte,**kw)
+		return self._template_driver_instance.render(template,**kw)
 	
