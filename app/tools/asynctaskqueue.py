@@ -131,7 +131,7 @@ class AsyncRedisQueue(AsyncQueue):
 		return payload
 class AsyncMysqlQueue(AsyncQueue):
 	_queue_list=tuple()
-	def __init__(self,loop,config,connection=AsyncMysqlConnection):
+	def __init__(self,config,loop,connection=AsyncMysqlConnection):
 		assert isinstance(config,dict)
 		self._connection_class=connection
 		self._loop=loop
@@ -212,25 +212,23 @@ class AsyncQueueOperator(object):
 	def __init__(self):
 		pass
 	def _get_mysql_queue_driver(self,config):
-		return self._queue_driver_class.get('mysql')(self._loop,config)
+		return self._queue_driver_class.get('mysql')(config,self._loop)
 	def _get_redis_queue_driver(self,config):
-		return self._queue_driver_class.get("reids")(config,self._loop)
+		return self._queue_driver_class.get("redis")(config,self._loop)
 class AsyncQueueReader(AsyncQueueOperator):
-	def __init__(self,loop,config,driver_name='mysql'):
-		self._config=config
-		self._driver_name=driver_name
-		self._loop=loop
-		self._reader_instance=eval("self._get_%s_queue_driver(%s)"%(self._driver_name,self._config))
+	def __init__(self,config,loop,driver_name='mysql'):
+		assert isinstance(config,dict)
+		assert isinstance(driver_name,str)
+		self._reader_instance=eval("self._get_%s_queue_driver(%s)"%(driver_name,config))
 	@asyncio.coroutine
 	def read_from_queue(self,queue_name):
 		ret=yield from self._reader_instance.dequeue(queue_name)
 		return ret
 class AsyncQueueWriter(AsyncQueueOperator):
-	def __init__(self,loop,config,driver_name='mysql'):
-		self._config=config
-		self._driver_name=driver_name
-		self._loop=loop
-		self._writer_instance=eval("self._get_%s_queue_driver(%s)"%(self._driver_name,self._config))
+	def __init__(self,config,loop,driver_name='mysql'):
+		assert isinstance(config,dict)
+		assert isinstance(driver_name,str)
+		self._writer_instance=eval("self._get_%s_queue_driver(%s)"%(driver_name,config))
 	@asyncio.coroutine
 	def write_to_queue(self,queue_name,payload):
 		yield from self._writer_instance.enqueue(queue_name,payload)
