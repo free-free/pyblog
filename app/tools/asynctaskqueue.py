@@ -36,7 +36,7 @@ class AsyncRedisConnection(object):
 			self._connection=yield from aioredis.create_reids((self._host,self._port))
 		return self._connection
 	@asyncio.coroutine
-	def close(self,):
+	def close(self):
 		if self._connection:
 			self._connection.close()
 			yield from self._connection.wait_closed()
@@ -107,7 +107,28 @@ class AsyncQueue(object):
 			return self._config.get(key.split('_',1)[1])
 		else:
 			raise ConfigError("no '%s' config item"%key.split('_',1)[1])
-	
+class AsyncRedisQueue(AsyncQueue):
+	def __init__(self,config,loop=None,connection=AsyncRedisConnection):
+		assert isinstance(config,dict)
+		super(AsyncRedisQueue,self).__init__(config)
+		self._connection_instance=connection(self._host,self._port,loop)
+		self._connection=None
+	@asycnio.coroutine
+	def enqueue(self,queue_name,payload):
+		if not self._connection:
+			self._connection=yield from self._connection_instance.get_connection()
+		yield from self._connection.lpush(queue_name,payload)
+		return payload
+	@asyncio.coroutine
+	def dequeue(self,queue_name):
+		if not self._connection:
+			self._connection=yield from self._connection_instance.get_connection()
+		payload=yield from self._connection.rpop(queue_name)
+		if payload and isinstance(payload,bytes):
+			payload=payload.encode("utf-8")
+		elif not payload:
+			payload=[]
+		return payload
 class AsyncMysqlQueue(AsyncQueue):
 	_queue_list=tuple()
 	def __init__(self,loop,config,connection=AsyncMysqlConnection):
