@@ -216,7 +216,7 @@ class AppContainer(dict):
 		else:
 			error_template='errors/'+str(code)+'.html'
 			try:
-				error_page=self._app['__templating__'].get_template(error_template).render()
+				error_page=self._app['__templating__'].render(error_template)
 			except jinja2.exceptions.TemplateNotFound:
 				error_page=(DEFAULT_HTTP_ERROR_PAGE%(code,"Pyblog 1.0",code,HTTP_ERROR_REASON_EN.get(code)))
 			self._app['status']={'code':code,'message':error_page}
@@ -269,7 +269,7 @@ class Middleware(object):
 				else:
 					try:
 						error_template='errors/'+str(e.status_code)+'.html'
-						error_page=app.get('__templating__').get_template(error_template).render()
+						error_page=app.get('__templating__').render(error_template)
 					except jinja2.exceptions.TemplateNotFound:
 						error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
 				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
@@ -281,7 +281,7 @@ class Middleware(object):
 				else:
 					try:
 						error_template='errors/'+str(e.status_code)+'.html'
-						error_page=app.get('__templating__').get_template(error_template).render()
+						error_page=app.get('__templating__').render(error_template)
 					except jinja2.exceptions.TemplateNotFound:
 						error_page=DEFAULT_HTTP_ERROR_PAGE%(e.status_code,"Pyblog 1.0",e.status_code,e.reason)
 				res=web.Response(status=e.status_code,body=error_page.encode("utf-8"))
@@ -335,7 +335,7 @@ class Middleware(object):
 					res=web.Response(body=json.dumps(res,ensure_ascii=False,default=lambda x:x.__dict__).encode("utf-8"))
 					res.content_type='application/json;charset=utf-8'
 				else:
-					res=web.Response(body=app['__templating__'].get_template(template).render(**res['parameter']).encode("utf-8"))
+					res=web.Response(body=app['__templating__'].render(template,**res['parameter']).encode("utf-8"))
 					res.content_type='text/html;charset=utf-8'
 			else:
 				res=res
