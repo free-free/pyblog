@@ -4,3 +4,5 @@ jinja2
 aiomysql
 pymongo
 mysqlclient
+aioredis
+
