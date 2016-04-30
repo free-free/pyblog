@@ -460,6 +460,13 @@ class Task(object):
 			self._writer(driver_name=Config.queue.driver_name,config=Config.queue.all).write_to_queue(queue_name,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
 		else:
 			self._writer(driver_name=Config.queue.driver_name,config=Config.queue.all).write_to_queue(self._task_type,(self._encapsulator(self._task_type,self._tries,self._content).encapsulate()))
+	def refresh_task(task_type,tries,content,*,on_queue=None):
+		assert isinstance(task_type,str)
+		assert isinstance(tries,int)
+		assert isinstance(content,str)
+		self._task_type=task_type
+		self._content=content
+		self._tries=tries
 
 class TaskProcessor(object):				
 	def __init__(self,payload_router=QueuePayloadRouter,queue_reader=QueueReader):
