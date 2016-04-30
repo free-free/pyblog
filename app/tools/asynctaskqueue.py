@@ -208,11 +208,13 @@ class AsyncMysqlQueue(AsyncQueue):
 			return ret[1]
 		return []
 class AsyncQueueOperator(object):
-	_queue_driver_class={'mysql':AsyncMysqlQueue}
+	_queue_driver_class={'mysql':AsyncMysqlQueue,'redis':AsyncRedisQueue}
 	def __init__(self):
 		pass
 	def _get_mysql_queue_driver(self,config):
 		return self._queue_driver_class.get('mysql')(self._loop,config)
+	def _get_redis_queue_driver(self,config):
+		return self._queue_driver_class.get("reids")(config,self._loop)
 class AsyncQueueReader(AsyncQueueOperator):
 	def __init__(self,loop,config,driver_name='mysql'):
 		self._config=config
