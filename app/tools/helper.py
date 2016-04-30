@@ -3,6 +3,7 @@ import datetime
 import subprocess
 import shlex
 from tools.localization import Locale
+from tools.taskqueue import Task
 def execute_shell_cmd(cmd,timeout=60,bufsize=4096):
 	assert isinstance(cmd,str)
 	cmd=shlex.split(cmd)
@@ -29,6 +30,12 @@ def locale_translate(keys,**kw):
 		locale_translate.__locale__=Locale()
 	return locale_translate.__locale__.translate(keys,**kw)
 
+def task(task_type,tries,content):
+	if not hasattr(task,'__task_instance__'):
+		task.__task_instance=Task(task_type,tries,content)
+	else:
+		task.__task_instance.refresh_task(task_type,tries,content)
+	task.__task_instance.start()
 if __name__=='__main__':
 	pass
 	r'''print(trans("message:register.username",username="huangbiao",default="hello"))'''
