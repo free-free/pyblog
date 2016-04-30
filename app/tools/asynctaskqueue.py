@@ -4,14 +4,42 @@ logging.basicConfig(level=logging.ERROR)
 import asyncio
 from tools.taskqueue import QueuePayloadJsonEncapsulator
 from tools.config import Config
+from types import NoneType
 try:
 	import aiomysql
 except ImportError:
 	logging.error("can't import 'aiomysql' module")
+	exit(-1)
+try:
+	import aioredis
+except ImportError:
+	logging.error("can't import 'aioredis' module")
+	exit(-1)
 
 class ConfigError(Exception):
 	pass
-
+class AsyncRedisConnection(object):
+	def __init__(self,host,port,loop=None):
+		super(AsyncRedisConnection,self).__init__()
+		assert isinstance(host,(str,unicode))
+		assert isinstance(port,int)
+		self._host=host
+		self._port=port
+		self._loop=loop
+		self._connection=None
+	@asyncio.coroutine
+	def get_connection(self,loop=None):
+		self._loop=loop
+		if self._loop:
+			self._connection=yield from aioredis.create_redis((self._host,self._port),loop=self._loop)
+		else:
+			self._connection=yield from aioredis.create_reids((self._host,self._port))
+		return self._connection
+	@asyncio.coroutine
+	def close(self,):
+		if self._connection:
+			self._connection.close()
+			yield from self._connection.wait_closed()
 class AsyncMysqlConnection(object):
 	_db_list=tuple()
 	_table_list=tuple()
