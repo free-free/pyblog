@@ -7,6 +7,32 @@ try:
 except ImportError:
     raise ImportError("Can't import jinja2 module")
 
+
+
+class Jinja2Template(object):
+	def __init__(self,**kw):
+		assert isinstance(driver_name,(str,unicode))
+		super(Jinja2Template,self).__init__()
+		options={}
+		assert isinstance(kw.get("autoescape",True),bool)
+		assert isinstance(kw.get("block_start_string","{%"))
+		assert isinstance(kw.get("block_end_string","%}"))
+		assert isinstance(kw.get("variable_start_string","{{"))
+		assert isinstance(kw.get("variable_end_string","}}"))
+		assert isinstance(kw.get("auto_reload",True),bool)
+		options=dict(
+			autoescape=kw.get("autoescape",True),
+			block_start_string=kw.get("block_start_string",'{%'),
+			block_end_string=kw.get("block_end_string","%}"),
+			variable_start_string=kw.get("variable_start_string","{{"),
+			variable_end_string=kw.get("variable_end_string","}}"),
+			auto_reload=kw.get("auto_reload",True)
+		)
+		self._options=options
+	def get_template_driver(self,template_path):
+		env=Environment(loader=FileSystemLoader(template_path),**self._options)
+		return env
+				
 class Template(object):
 	def __init__(self,template):
 		self._template=template
