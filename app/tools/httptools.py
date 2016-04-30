@@ -395,7 +395,6 @@ class Middleware(object):
 			if not asyncio.iscoroutinefunction(v):
 				v=asyncio.coroutine(v)
 			middlewares.append(v)
-		print(middlewares)
 		return middlewares
 
 
