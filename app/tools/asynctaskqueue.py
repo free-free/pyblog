@@ -128,6 +128,10 @@ class AsyncRedisQueue(AsyncQueue):
 		elif not payload:
 			payload=[]
 		return payload
+	@asyncio.coroutine
+	def close_queue(self):
+		if self._connection_instance:
+			yield from self._connection_instance.close()
 class AsyncMysqlQueue(AsyncQueue):
 	_queue_list=tuple()
 	def __init__(self,config,loop,connection=AsyncMysqlConnection):
@@ -224,6 +228,9 @@ class AsyncQueueReader(AsyncQueueOperator):
 	def read_from_queue(self,queue_name):
 		ret=yield from self._reader_instance.dequeue(queue_name)
 		return ret
+	@asyncio.coroutine
+	def close_reader(self):
+		yield from self._reader_instance.close_queue()
 class AsyncQueueWriter(AsyncQueueOperator):
 	def __init__(self,config,loop,driver_name='mysql'):
 		assert isinstance(config,dict)
@@ -234,6 +241,10 @@ class AsyncQueueWriter(AsyncQueueOperator):
 	def write_to_queue(self,queue_name,payload):
 		yield from self._writer_instance.enqueue(queue_name,payload)
 		return payload
+	@asyncio.coroutine
+	def close_writer(self):
+		yield from self._writer_instance.close_queue()
+
 class AsyncTask(object):
 	def __init__(self,task_type,tries,content,loop,config=None,driver_name=None,encapsulator=QueuePayloadJsonEncapsulator,writer=AsyncQueueWriter):
 		assert isinstance(content,(str,bytes))
@@ -249,6 +260,7 @@ class AsyncTask(object):
 		if not queue_name:
 			queue_name=self._task_type
 		data=yield from self._writer.write_to_queue(queue_name,self._encapsulator.encapsulate())
+		yield from self._writer.close_writer()
 	def refresh_task(self,task_type,tries,content):
 		assert isinstance(task_type,str)
 		assert isinstance(tries,int)
