@@ -34,7 +34,7 @@ class Application(web.Application):
 		self._loop.close()
 	@asyncio.coroutine
 	def get_server(self,addr,port):	
-		Template.init(self)
+		self['__templating__']=Template()
 		Route.register_route(self)
 		self._db_pool=yield from DB.createpool(self._loop)
 		#pool=yield from create_pool(self._loop)
