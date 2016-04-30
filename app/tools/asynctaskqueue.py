@@ -4,7 +4,6 @@ logging.basicConfig(level=logging.ERROR)
 import asyncio
 from tools.taskqueue import QueuePayloadJsonEncapsulator
 from tools.config import Config
-from types import NoneType
 try:
 	import aiomysql
 except ImportError:
@@ -21,7 +20,7 @@ class ConfigError(Exception):
 class AsyncRedisConnection(object):
 	def __init__(self,host,port,loop=None):
 		super(AsyncRedisConnection,self).__init__()
-		assert isinstance(host,(str,unicode))
+		assert isinstance(host,str)
 		assert isinstance(port,int)
 		self._host=host
 		self._port=port
@@ -33,7 +32,7 @@ class AsyncRedisConnection(object):
 		if self._loop:
 			self._connection=yield from aioredis.create_redis((self._host,self._port),loop=self._loop)
 		else:
-			self._connection=yield from aioredis.create_reids((self._host,self._port))
+			self._connection=yield from aioredis.create_redis((self._host,self._port))
 		return self._connection
 	@asyncio.coroutine
 	def close(self):
@@ -113,7 +112,7 @@ class AsyncRedisQueue(AsyncQueue):
 		super(AsyncRedisQueue,self).__init__(config)
 		self._connection_instance=connection(self._host,self._port,loop)
 		self._connection=None
-	@asycnio.coroutine
+	@asyncio.coroutine
 	def enqueue(self,queue_name,payload):
 		if not self._connection:
 			self._connection=yield from self._connection_instance.get_connection()
@@ -219,6 +218,7 @@ class AsyncQueueReader(AsyncQueueOperator):
 	def __init__(self,config,loop,driver_name='mysql'):
 		assert isinstance(config,dict)
 		assert isinstance(driver_name,str)
+		self._loop=loop
 		self._reader_instance=eval("self._get_%s_queue_driver(%s)"%(driver_name,config))
 	@asyncio.coroutine
 	def read_from_queue(self,queue_name):
@@ -228,28 +228,38 @@ class AsyncQueueWriter(AsyncQueueOperator):
 	def __init__(self,config,loop,driver_name='mysql'):
 		assert isinstance(config,dict)
 		assert isinstance(driver_name,str)
+		self._loop=loop
 		self._writer_instance=eval("self._get_%s_queue_driver(%s)"%(driver_name,config))
 	@asyncio.coroutine
 	def write_to_queue(self,queue_name,payload):
 		yield from self._writer_instance.enqueue(queue_name,payload)
 		return payload
 class AsyncTask(object):
-	def __init__(self,task_type,tries,content,loop,config={},driver_name=None,encapsulator=QueuePayloadJsonEncapsulator,writer=AsyncQueueWriter):
+	def __init__(self,task_type,tries,content,loop,config=None,driver_name=None,encapsulator=QueuePayloadJsonEncapsulator,writer=AsyncQueueWriter):
+		assert isinstance(content,(str,bytes))
+		assert isinstance(task_type,str)
+		assert isinstance(tries,int)
 		self._content=content
 		self._task_type=task_type
 		self._tries=tries
-		self._config=config or Config.queue.all
-		self._driver_name=driver_name or Config.queue.driver_name
 		self._encapsulator=encapsulator(self._task_type,self._tries,self._content)
-		self._writer=AsyncQueueWriter(loop,self._config,self._driver_name)
+		self._writer=AsyncQueueWriter(config or Config.queue.all,loop,driver_name or Config.queue.driver_name)
 	@asyncio.coroutine
 	def start(self,queue_name=None):
 		if not queue_name:
 			queue_name=self._task_type
 		data=yield from self._writer.write_to_queue(queue_name,self._encapsulator.encapsulate())
+	def refresh_task(self,task_type,tries,content):
+		assert isinstance(task_type,str)
+		assert isinstance(tries,int)
+		assert isinstance(content,(str,bytes))
+		self._tries=tries
+		self._task_type=task_type
+		self._content=content
+	
 if __name__=='__main__':
 	@asyncio.coroutine
-	def go(loop,config):
+	def go(loop,config=None):
 		#asyncqueue=AsyncMysqlQueue(loop,config)
 		#data=yield from asyncqueue.enqueue("msg",'shabi')
 		#print(data)
@@ -258,16 +268,17 @@ if __name__=='__main__':
 		#asyncreader=AsyncQueueReader(loop,config)
 		#data=yield from asyncreader.read_from_queue("msg")
 		#print(data)
-		asynctask=AsyncTask('mail',3,'send mail to 18281573692@163.com',loop,config,'mysql')
+		asynctask=AsyncTask('mail',3,'send mail to 18281573692@163.com',loop,{"host":"localhost","port":6379},'redis')
 		yield from asynctask.start()
 
 	loop=asyncio.get_event_loop()
+	r'''
 	config={
 		'host':'127.0.0.1',
 		'port':3306,
 		'user':'root',
 		'password':'526114',
 		'db':'queue'
-	}
-	loop.run_until_complete(go(loop,config))
+	}'''
+	loop.run_until_complete(go(loop))
 	loop.close()
