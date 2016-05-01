@@ -254,7 +254,7 @@ class AsyncQueueWriter(AsyncQueueOperator):
 
 class AsyncTask(object):
 	def __init__(self,task_type,tries,content,loop,config=None,driver_name=None,encapsulator=QueuePayloadJsonEncapsulator,writer=AsyncQueueWriter):
-		assert isinstance(content,(str,bytes))
+		assert isinstance(content,(str,dict))
 		assert isinstance(task_type,str)
 		assert isinstance(tries,int)
 		self._content=content
@@ -271,7 +271,7 @@ class AsyncTask(object):
 	def refresh_task(self,task_type,tries,content):
 		assert isinstance(task_type,str)
 		assert isinstance(tries,int)
-		assert isinstance(content,(str,bytes))
+		assert isinstance(content,(str,dict))
 		self._tries=tries
 		self._task_type=task_type
 		self._content=content
