@@ -42,6 +42,36 @@ class Session(object):
 		pass
 	def __delitem__(self,key):
 		pass
+class AsyncSession(object):
+	def __init__(self,session_id,*args,**kw):
+		self._session_id=session_id
+		super(AsyncSession,self).__init__(*args,**kw)
+	def _generate_session_id(self,generate_func=None,*args)
+		if not generate_func:
+			return str(uuid.uuid1().hex)
+		else:
+			return str(generate_func(*args))
+	@property
+	def session_id(self):
+		return self._session_id
+	@asyncio.coroutine
+	def set(self,sname,svalue):
+		pass
+	@asyncio.coruotine
+	def get(self,sname):
+		pass
+	@asyncio.coroutine
+	def save(self,expire=None):
+		pass
+	@asyncio.coroutine
+	def all(self):
+		pass
+	def __getitem__(self,key):
+		pass
+	def __getitem__(self,key,value):
+		pass
+	def __delitem__(self,key):
+		pass		
 class FileSession(Session):
 	r'''	
 		session store in file
