@@ -277,6 +277,7 @@ class AsyncTask(object):
 		self._content=content
 	
 if __name__=='__main__':
+	r'''
 	@asyncio.coroutine
 	def go(loop,config=None):
 		#asyncqueue=AsyncMysqlQueue(loop,config)
@@ -300,3 +301,4 @@ if __name__=='__main__':
 	}
 	loop.run_until_complete(go(loop,config))
 	loop.close()
+	'''
