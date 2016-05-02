@@ -12,10 +12,17 @@ try:
 	import redis
 except ImportError:
 	logging.error("Can't import 'redis' module")
+	exit(-1)
 try:
 	import pymongo
 except ImportError:
 	logging.error("Can't import 'pymongo' module")
+	exit(-1)
+try:
+	import aioredis
+except ImportError:
+	logging.error("Can't import 'aioredis' module")
+	exit(-1)
 from pymongo import MongoClient
 class AbstractSession(object):
 	def __init__(self,session_id,*args,**kw):
@@ -37,7 +44,7 @@ class AbstractSession(object):
 	def get(self,sname):
 		r''' get session item'''
 		pass
-	def save(self,expire=None)
+	def save(self,expire=None):
 		r''' save all session items to database or file'''
 		pass
 	def renew(self,session_id):
@@ -55,9 +62,17 @@ class AbstractSession(object):
 	def __delitem__(self,key):
 		r''' delete session item by name'''
 		pass
-class AsyncAbstractSession(AbstractSession):
+class AsyncAbstractSession(dict):
 	def __init__(self,session_id,*args,**kw):
-		super(AsyncAbstractSession,self).__init__(session_id,*args,**kw)
+		if not session_id:
+			session_id=self._generate_session_id()
+		self._session_id=session_id
+		super(AsyncAbstractSession,self).__init__(*args,**kw)
+	def _generate_session_id(self,generate_session_id_func=None,*args):
+		if not generate_session_id_func:
+			return str(uuid.uuid1().hex)
+		else:
+			return str(generate_session_id_func(*args))
 	@asyncio.coroutine
 	def save(self,expire=None):
 		r''' save session to database'''
@@ -65,8 +80,77 @@ class AsyncAbstractSession(AbstractSession):
 	def session(self):
 		r''' get database connection and read session from database'''
 		pass
+	def get(self,sname):
+		pass	
+	def set(self,sname,value):
+		pass
+	def all(self):
+		pass
 
-
+class AsyncRedisSession(AsyncAbstractSession):
+	def __init__(self,session_id=None,config=None,loop=None):
+		super(AsyncRedisSession,self).__init__(session_id)
+		if not config:
+			self._host='localhost'
+			self._port=6379
+			self._db=0
+			self._expire=0
+		else:
+			assert isinstance(config,dict),"redis connection config must dict type"
+			self._host=config.get("host")
+			self._port=config.get("port")
+			self._db=config.get("db",0)
+			self._expire=config.get('expire',0)
+		self._connection=None
+		self._loop=loop
+	@asyncio.coroutine
+	def session(self,loop=None):
+		if loop:
+			self._loop=loop
+		if not self._connection:
+			self._connection=yield from aioredis.create_redis((self._host,self._port),loop=self._loop)
+		self[self._session_id]=yield from self._connection.hgetall(self._session_id)
+		if not self[self._session_id]:
+			self[self._session_id]={}
+		else:
+			expire_delta_time=self[self._session_id].get(b"__expire_delta_time",b'').decode("utf-8")
+			if expire_delta_time:
+				yield from self._connection.expire(self._session_id,int(expire_delta_time))
+		return self
+	def set(self,sname,svalue):
+		self[self._session_id][sname]=svalue
+		return self
+	def get(self,sname):
+		return self[self._session_id].get(sname.encode("utf-8"),b'').decode("utf-8")
+	@asyncio.coroutine
+	def save(self,expire=None):	
+		if expire:
+			self[self._session_id]['__expire_delta_time']=int(expire)
+			pipe=self._connection.pipeline()	
+			for key,value in self[self._session_id].items():
+				pipe.hset(self._session_id,key,value)
+			yield from pipe.execute()
+			yield from self._connection.expire(self._session_id,int(expire))
+		else:	
+			if int(self._expire)!=0:
+				self[self._session_id]['__expire_delta_time']=self._expire	
+				pipe=self._connection.pipeline()
+				for key,value in self[self._session_id].items():
+					pipe.hset(self._session_id,key,value)
+				yield from pipe.execute()
+				yield from self._connection.expire(self._session_id,self._expire)
+			else:
+				pipe=self._connection.pipeline()
+				for key,value in self[self._session_id].items():
+					pipe.hset(self._session_id,key,value)
+				yield from pipe.execute()	
+	@asyncio.coroutine
+	def end(self):
+		if self._connection:
+			self._connection.close()
+			yield from self._connection.wait_closed()
+	def all(self):
+		return self[self._session_id]
 class FileSession(AbstractSession):
 	r'''	
 		session store in file
@@ -401,6 +485,20 @@ class SessionManager(object):
 		else:
 			return self._specfic_driver.all()
 if __name__=='__main__':
+	pass
+
+	r'''
+	@asyncio.coroutine
+	def go():
+		asyncsession=yield from AsyncRedisSession().session()
+		asyncsession.set("name","huangbiao").set("age",22)
+		print(asyncsession.get("age"))
+		yield from asyncsession.save(40)
+		yield from asyncsession.end()
+	loop=asyncio.get_event_loop()
+	loop.run_until_complete(go())
+	loop.close()
+	'''
 	r'''
 	#file=SessionManager()
 	#file.set('name','Jell')
