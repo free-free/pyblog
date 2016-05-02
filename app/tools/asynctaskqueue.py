@@ -28,7 +28,8 @@ class AsyncRedisConnection(object):
 		self._connection=None
 	@asyncio.coroutine
 	def get_connection(self,loop=None):
-		self._loop=loop
+		if loop:
+			self._loop=loop
 		if self._loop:
 			self._connection=yield from aioredis.create_redis((self._host,self._port),loop=self._loop)
 		else:
