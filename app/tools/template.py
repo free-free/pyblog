@@ -42,12 +42,6 @@ class Template(object):
 		if template_path.find('.')==0:
 			template_path=os.path.join(os.path.dirname(os.path.dirname(__file__)),template_path)
 		self._template_driver_instance=self._template_drivers[template_driver](template_path,**kw)
-	#def render(self,template,**kw):
-	#	assert isinstance(template,str)
-	#	res={'__template__':template}
-	#	for k,v in kw.items():
-	#		res[k]=v
-	#	return res
 	def render(self,template,**kw):
 		return self._template_driver_instance.render(template,**kw)
 	
