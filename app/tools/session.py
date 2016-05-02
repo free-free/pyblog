@@ -21,8 +21,11 @@ class AbstractSession(object):
 	def __init__(self,session_id,*args,**kw):
 		self._session_id=session_id
 		super(AbstractSession,self).__init__(*args,**kw)
-	def _generate_session_id(self):
-		return str(uuid.uuid1().hex)	
+	def _generate_session_id(self,generate_session_id_func=None,*args):
+		if not generate_session_id_func:
+			return str(uuid.uuid1().hex)
+		else:
+			return str(generate_session_id_func(*args))
 	@property
 	def session_id(self):
 		return self._session_id
@@ -42,36 +45,13 @@ class AbstractSession(object):
 		pass
 	def __delitem__(self,key):
 		pass
-class AsyncAbstractSession(object):
+class AsyncAbstractSession(AbstractSession):
 	def __init__(self,session_id,*args,**kw):
-		self._session_id=session_id
-		super(AsyncSession,self).__init__(*args,**kw)
-	def _generate_session_id(self,generate_func=None,*args):
-		if not generate_func:
-			return str(uuid.uuid1().hex)
-		else:
-			return str(generate_func(*args))
-	@property
-	def session_id(self):
-		return self._session_id
-	@asyncio.coroutine
-	def set(self,sname,svalue):
-		pass
-	@asyncio.coroutine
-	def get(self,sname):
-		pass
+		super(AsyncAbstractSession,self).__init__(session_id,*args,**kw)
 	@asyncio.coroutine
 	def save(self,expire=None):
 		pass
-	@asyncio.coroutine
-	def all(self):
-		pass
-	def __getitem__(self,key):
-		pass
-	def __getitem__(self,key,value):
-		pass
-	def __delitem__(self,key):
-		pass		
+
 class FileSession(AbstractSession):
 	r'''	
 		session store in file
@@ -410,8 +390,7 @@ if __name__=='__main__':
 	#file=SessionManager()
 	#file.set('name','Jell')
 	#file.set('email','dejiejfioe@gmail.com')
-	#file.save(20)
-	
+	#file.save(20)	
 	#file=SessionManager("c56fbc34fee411e5afc6080027116c59")
 	#print(file['name'])
 	#print(file['email'])
