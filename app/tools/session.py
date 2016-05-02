@@ -5,7 +5,7 @@ import time
 import os
 import json
 import logging
-
+import asyncio
 logging.basicConfig(level=logging.ERROR)
 
 try:
@@ -20,7 +20,7 @@ from pymongo import MongoClient
 class AbstractSession(object):
 	def __init__(self,session_id,*args,**kw):
 		self._session_id=session_id
-		super(Session,self).__init__(*args,**kw)
+		super(AbstractSession,self).__init__(*args,**kw)
 	def _generate_session_id(self):
 		return str(uuid.uuid1().hex)	
 	@property
@@ -46,7 +46,7 @@ class AsyncAbstractSession(object):
 	def __init__(self,session_id,*args,**kw):
 		self._session_id=session_id
 		super(AsyncSession,self).__init__(*args,**kw)
-	def _generate_session_id(self,generate_func=None,*args)
+	def _generate_session_id(self,generate_func=None,*args):
 		if not generate_func:
 			return str(uuid.uuid1().hex)
 		else:
@@ -57,7 +57,7 @@ class AsyncAbstractSession(object):
 	@asyncio.coroutine
 	def set(self,sname,svalue):
 		pass
-	@asyncio.coruotine
+	@asyncio.coroutine
 	def get(self,sname):
 		pass
 	@asyncio.coroutine
@@ -85,7 +85,7 @@ class FileSession(AbstractSession):
 	_data={}
 	def __new__(cls,*args,**kw):
 		if not hasattr(cls,'_instance'):
-			cls._instance=super(Session,cls).__new__(cls)
+			cls._instance=super(AbstractSession,cls).__new__(cls)
 		return cls._instance
 	def __init__(self,session_id=None,config=None):
 		if not config:
@@ -415,7 +415,6 @@ if __name__=='__main__':
 	#file=SessionManager("c56fbc34fee411e5afc6080027116c59")
 	#print(file['name'])
 	#print(file['email'])
-
 	#redis=SessionManager(driver='redis')
 	#redis.set('name','huangbiao')
 	#redis.set('email','18281573692@163.com')
