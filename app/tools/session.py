@@ -22,35 +22,50 @@ class AbstractSession(object):
 		self._session_id=session_id
 		super(AbstractSession,self).__init__(*args,**kw)
 	def _generate_session_id(self,generate_session_id_func=None,*args):
+		r''' generate session id'''
 		if not generate_session_id_func:
 			return str(uuid.uuid1().hex)
 		else:
 			return str(generate_session_id_func(*args))
 	@property
 	def session_id(self):
+		r''' return session id'''
 		return self._session_id
 	def set(self,sname,svalue):
+		r''' set session item'''
 		pass
 	def get(self,sname):
+		r''' get session item'''
 		pass
-	def save(self,expire=None):
+	def save(self,expire=None)
+		r''' save all session items to database or file'''
 		pass
 	def renew(self,session_id):
+		r''' refresh session id and reread session from database'''
 		pass
 	def all(self):
+		r''' get all session '''
 		return self._data[self._session_id]
 	def __getitem__(self,key):
+		r''' get session item by name'''
 		pass
 	def __setitem__(self,key,value):
+		r''' set session item by name'''
 		pass
 	def __delitem__(self,key):
+		r''' delete session item by name'''
 		pass
 class AsyncAbstractSession(AbstractSession):
 	def __init__(self,session_id,*args,**kw):
 		super(AsyncAbstractSession,self).__init__(session_id,*args,**kw)
 	@asyncio.coroutine
 	def save(self,expire=None):
+		r''' save session to database'''
+	@asyncio.coroutine
+	def session(self):
+		r''' get database connection and read session from database'''
 		pass
+
 
 class FileSession(AbstractSession):
 	r'''	
