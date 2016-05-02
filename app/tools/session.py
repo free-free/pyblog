@@ -86,6 +86,9 @@ class AsyncAbstractSession(dict):
 		pass
 	def all(self):
 		pass
+	@property
+	def session_id(self):
+		return self._session_id
 
 class AsyncRedisSession(AsyncAbstractSession):
 	def __init__(self,session_id=None,config=None,loop=None):
@@ -102,6 +105,7 @@ class AsyncRedisSession(AsyncAbstractSession):
 			self._db=config.get("db",0)
 			self._expire=config.get('expire',0)
 		self._connection=None
+		self._active=False
 		self._loop=loop
 	@asyncio.coroutine
 	def session(self,loop=None):
@@ -109,6 +113,7 @@ class AsyncRedisSession(AsyncAbstractSession):
 			self._loop=loop
 		if not self._connection:
 			self._connection=yield from aioredis.create_redis((self._host,self._port),loop=self._loop)
+			self._active=True
 		self[self._session_id]=yield from self._connection.hgetall(self._session_id)
 		if not self[self._session_id]:
 			self[self._session_id]={}
@@ -410,6 +415,11 @@ class RedisSession(AbstractSession):
 		return self.get(key)
 	def __setitem__(self,key,value):
 		self.set(key,value)
+class AsyncSessionManager(object):
+	def __init__(self,session_id=None,*,config=None,driver=None):
+		pass
+	def _get_redis_session_driver(self,config=None):
+		pass
 class SessionManager(object):
 	_drivers={}
 	_default_driver=None
