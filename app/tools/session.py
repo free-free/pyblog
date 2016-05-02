@@ -17,7 +17,7 @@ try:
 except ImportError:
 	logging.error("Can't import 'pymongo' module")
 from pymongo import MongoClient
-class Session(object):
+class AbstractSession(object):
 	def __init__(self,session_id,*args,**kw):
 		self._session_id=session_id
 		super(Session,self).__init__(*args,**kw)
@@ -42,7 +42,7 @@ class Session(object):
 		pass
 	def __delitem__(self,key):
 		pass
-class AsyncSession(object):
+class AsyncAbstractSession(object):
 	def __init__(self,session_id,*args,**kw):
 		self._session_id=session_id
 		super(AsyncSession,self).__init__(*args,**kw)
@@ -72,7 +72,7 @@ class AsyncSession(object):
 		pass
 	def __delitem__(self,key):
 		pass		
-class FileSession(Session):
+class FileSession(AbstractSession):
 	r'''	
 		session store in file
 		file session driver
@@ -169,7 +169,7 @@ class FileSession(Session):
 		return self._data[self._session_id].get(key)
 	def __setitem__(self,key,value):
 		self._data[self._session_id][key]=value
-class MongoSession(Session):
+class MongoSession(AbstractSession):
 	r'''
 		mongodb driver for session
 	'''
@@ -246,7 +246,7 @@ class MongoSession(Session):
 		return self._data[self._session_id].get(key)
 	def __setitem__(self,key,value):
 		self._data[self._session_id][key]=value
-class RedisSession(Session):
+class RedisSession(AbstractSession):
 	r'''
 		redis driver for session
 	'''
