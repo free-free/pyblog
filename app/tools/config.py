@@ -151,7 +151,7 @@ class AppConfigLoader(object):
 		if key not in self._config:
 			raise AttributeError("app config has no such item '%s'"%key)
 		return self._config.get(key)
-class FileSystemConfigLoader(object):
+class StorageConfigLoader(object):
 	def __new__(cls,*args,**kw):
 		if not hasattr(cls,'_config_instance'):
 			cls._config_instance=object.__new__(cls,*args,**kw)
@@ -272,7 +272,7 @@ class Config(dict):
 	>>> Config.database.connection('mongodb').port
 	27017
 	'''
-	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader(),'app':AppConfigLoader(),'filesystem':FileSystemConfigLoader(),'queue':QueueConfigLoader(),'mail':MailConfigLoader()}
+	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader(),'app':AppConfigLoader(),'storage':FileSystemConfigLoader(),'queue':QueueConfigLoader(),'mail':MailConfigLoader()}
 	def __init__(self):
 		print("__init__ start")
 	def __call__(self,*args,**kw):
@@ -291,7 +291,7 @@ class Config(dict):
 		return cls._config_loader.get('app')
 	@classproperty
 	def filesystem(cls):
-		return cls._config_loader.get('filesystem')
+		return cls._config_loader.get('storage')
 	@classproperty
 	def queue(cls):
 		return cls._config_loader.get('queue')
