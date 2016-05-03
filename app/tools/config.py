@@ -157,7 +157,7 @@ class StorageConfigLoader(object):
 			cls._config_instance=object.__new__(cls,*args,**kw)
 		return cls._config_instance
 	def __init__(self):
-		self._config=__import__("conf",locals(),globals()).filesystem
+		self._config=__import__("conf",locals(),globals()).storage
 		self._default_driver=self._config.get('default')
 		self._specific_driver=None
 		self._all_drivers=self._config['drivers'].keys()
@@ -272,7 +272,7 @@ class Config(dict):
 	>>> Config.database.connection('mongodb').port
 	27017
 	'''
-	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader(),'app':AppConfigLoader(),'storage':FileSystemConfigLoader(),'queue':QueueConfigLoader(),'mail':MailConfigLoader()}
+	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader(),'app':AppConfigLoader(),'storage':StorageConfigLoader(),'queue':QueueConfigLoader(),'mail':MailConfigLoader()}
 	def __init__(self):
 		print("__init__ start")
 	def __call__(self,*args,**kw):
@@ -290,7 +290,7 @@ class Config(dict):
 	def app(cls):
 		return cls._config_loader.get('app')
 	@classproperty
-	def filesystem(cls):
+	def storage(cls):
 		return cls._config_loader.get('storage')
 	@classproperty
 	def queue(cls):
