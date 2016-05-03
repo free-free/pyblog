@@ -9,7 +9,7 @@ except ImportError:
 	logging.error("can't import 'qiniu' module")
 	exit(-1)
 
-class QiniuFileSystemAdapter(object):
+class QiniuStorageAdapter(object):
 	__slots__=('__access_key','__secret_key','__auth','__bucket','__file_info_cache')
 	def __init__(self,access_key,secret_key,*args,**kw):
 		self.__access_key=access_key
@@ -111,7 +111,7 @@ class QiniuFileSystemAdapter(object):
 
 if __name__=='__main__':
 	r'''
-	qn=QiniuFileSystemAdapter(Config.filesystem.access_key,Config.filesystem.secret_key)
+	qn=QiniuStorageAdapter(Config.filesystem.access_key,Config.filesystem.secret_key)
 	print(qn.file_info("static-pyblog-com","image/java.jpg"))
 	print(qn.file_size("static-pyblog-com","image/java.jpg"))
 	print(qn.file_mime("static-pyblog-com","image/java.jpg"))
