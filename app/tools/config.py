@@ -152,48 +152,57 @@ class AppConfigLoader(object):
 			raise AttributeError("app config has no such item '%s'"%key)
 		return self._config.get(key)
 class StorageConfigLoader(object):
+	#__slots__=('__config','__default_disk','__default_disk_name','__specific_disk','__specific_disk_name','__all_disks')
 	def __new__(cls,*args,**kw):
 		if not hasattr(cls,'_config_instance'):
 			cls._config_instance=object.__new__(cls,*args,**kw)
 		return cls._config_instance
 	def __init__(self):
-		self._config=__import__("conf",locals(),globals()).storage
-		self._default_driver=self._config.get('default')
-		self._specific_driver=None
-		self._all_drivers=self._config['drivers'].keys()
-	def _get_specific_driver_config_item(self,item,driver_name):
-		if driver_name.lower() not in  self._all_drivers:
-			raise AttributeError("file system config has no such driver '%s'"%drive_rname.lower())
-		if item.lower() not in self._config['drivers'][driver_name.lower()]:
-			raise AttributeError("file system config driver '%s' has no such config item '%s'"%(driver_name.lower(),item.lower()))
-		return self._config['drivers'][driver_name.lower()].get(item.lower())
-	def _get_specific_driver_all_config_item(self,driver_name):
-		if driver_name.lower() not in self._all_drivers:
-			raise AttributeError("file system config has no such driver '%s'"%driver_name.lower())
-		return self._config['drivers'].get(driver_name.lower())
-	def _driver(self,driver_name,all_return=False):
-		if all_return:
-			return self._get_specific_driver_all_config_item(driver_name)
-		self._specific_driver=driver_name.lower()
+		super(StorageConfigLoader,self).__init__()
+		self.__config=__import__("conf",locals(),globals()).storage
+		self.__default_disk=self.__config['disks'].get(self.__config.get('default'))
+		self.__default_disk_name=self.__config.get("default")
+		self.__specific_disk=None
+		self.__specific_disk_name=None
+		self.__all_disks=self.__config['disks']
+	def _get_disk_config(self,item,disk):
+		if disk.lower() not in  self.__all_disks:
+			raise AttributeError("storage config has no such driver '%s'"%disk.lower())
+		if item.lower() not in self.__all_disks[disk.lower()]:
+			raise AttributeError("storage config driver '%s' has no such config item '%s'"%(disk.lower(),item.lower()))
+		return self.__all_disks[disk.lower()].get(item.lower())
+	def _get_disk_all_config(self,disk):
+		if disk.lower() not in self.__all_disks:
+			raise AttributeError("storage config has no such driver '%s'"%disk.lower())
+		return self.__all_disks.get(disk.lower())
+	def _disk(self,disk):
+		self.__specific_disk=self._get_disk_all_config(disk)
+		self.__specific_disk_name=disk
 		return self
 	def __getattr__(self,key):
-		if key.lower()=='driver':
-			self._driver
-		if not self._specific_driver:
+		if key.lower()=='disk':
+			return self._disk
+		if not self.__specific_disk:
 			if key.lower()=='all':
-				return self._get_specific_driver_all_config_item(self._default_driver)
-			if key.lower()=='driver_name':
-				return self._default_driver
-			return self._get_specific_driver_config_item(key,self._default_driver)
+				return self.__default_disk
+			if key.lower()=='disk_name':
+				return self.__default_disk_name
+			return self._get_disk_config(key,self.__default_disk_name)
 		else:
-			if key.lower()=='driver_name':
-				driver_name=self._specific_driver
-				self._specific_driver=None
-				return driver_name
-			item=self._get_specific_driver_config_item(key,self._specific_driver)	
-			self._specific_driver=None
+			if key.lower()=='all':
+				all_config=self.__specific_disk
+				self.__specific_disk=None
+				self.__specific_disk_name=None
+				return all_config
+			if key.lower()=='disk_name':
+				disk_name=self.__specific_disk_name
+				self.__specific_disk=None
+				self.__specific_disk_name=None
+				return disk_name
+			item=self._get_disk_config(key,self.__specific_disk_name)	
+			self.__specific_disk=None
+			self.__specific_disk_name=None
 			return item
-
 class QueueConfigLoader(object):
 	def __new__(cls,*args,**kw):
 		if not hasattr(cls,'_config_instance'):
@@ -221,6 +230,8 @@ class QueueConfigLoader(object):
 	def __getattr__(self,key):
 		if key.lower()=='driver':
 			return self._driver
+		if key.lower() in self.__config:
+			return self.__config[key.lower()]
 		if not self._specific_driver_name:
 			if key.lower()=='all':
 				return self._get_specific_driver_all_config_item(self._default_driver_name)
@@ -272,32 +283,45 @@ class Config(dict):
 	>>> Config.database.connection('mongodb').port
 	27017
 	'''
-	_config_loader={'database':DBConfigLoader(),'session':SessionConfigLoader(),'authentication':AuthConfigLoader(),'app':AppConfigLoader(),'storage':StorageConfigLoader(),'queue':QueueConfigLoader(),'mail':MailConfigLoader()}
 	def __init__(self):
-		print("__init__ start")
+		pass
 	def __call__(self,*args,**kw):
 		pass
 	@classproperty
 	def database(cls):
-		return cls._config_loader.get('database')
+		if not hasattr(cls,'__database'):
+			cls.__database=DBConfigLoader()
+		return cls.__database
 	@classproperty
 	def session(cls):
-		return cls._config_loader.get('session')
+		if not hasattr(cls,'__session'):
+			cls.__session=SessionConfigLoader()
+		return cls.__session
 	@classproperty
 	def authentication(cls):
-		return cls._config_loader.get('authentication')
+		if not hasattr(cls,'__auth'):
+			cls.__auth=AuthConfigLoader()
+		return cls.__auth
 	@classproperty
 	def app(cls):
-		return cls._config_loader.get('app')
+		if not hasattr(cls,'__app'):
+			cls.__app=AppConfigLoader()
+		return cls.__app
 	@classproperty
 	def storage(cls):
-		return cls._config_loader.get('storage')
+		if not hasattr(cls,'__storage'):
+			cls.__storage=StorageConfigLoader()
+		return cls.__storage
 	@classproperty
 	def queue(cls):
-		return cls._config_loader.get('queue')
+		if not hasattr(cls,'__queue'):
+			cls.__queue=QueueConfigLoader()
+		return cls.__queue
 	@classproperty
 	def mail(cls):
-		return cls._config_loader.get('mail')
+		if not hasattr(cls,'__mail'):
+			cls.__mail=MailConfigLoader()
+		return cls.__mail
 	def __getattr__(cls,key):
 		return 'not attribute found'
 if __name__=='__main__':
