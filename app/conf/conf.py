@@ -52,7 +52,7 @@ authentication={
 	'auth_id':'email',
 	'login_url':'/login'
 }
-filesystem={
+storage={
 	'default':'qiniu',
 	'drivers':{
 		'file':{
@@ -66,7 +66,7 @@ filesystem={
 	}
 }
 queue={
-	'default':'mysql',#mysql,mongo,redis
+	'default':'redis',#mysql,mongo,redis
 	'drivers':{
 		'redis':{
 			'port':6379,
