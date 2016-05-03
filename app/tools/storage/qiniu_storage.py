@@ -2,6 +2,7 @@
 import logging
 logging.basicConfig(level=logging.ERROR)
 from tools.config import Config
+from tools.storage.storage_adapter import StorageAdapter
 try:
 	from qiniu import Auth,put_file,etag,urlsafe_base64_encode,BucketManager
 	import qiniu.config
@@ -9,114 +10,119 @@ except ImportError:
 	logging.error("can't import 'qiniu' module")
 	exit(-1)
 
-class QiniuStorageAdapter(object):
-	__slots__=('__access_key','__secret_key','__auth','__bucket','__file_info_cache')
-	def __init__(self,access_key,secret_key,*args,**kw):
+class QiniuStorageAdapter(StorageAdapter):
+	__slots__=('__access_key','__secret_key','__auth','__bucket','__file_info_cache','__bucket_manager')
+	def __init__(self,bucket,access_key,secret_key,*args,**kw):
+		assert isinstance(bucket,str)
+		assert isinstance(access_key,str)
+		assert isinstance(secret_key,str)
 		self.__access_key=access_key
 		self.__secret_key=secret_key
+		self.__bucket=bucket
 		self.__auth=Auth(self.__access_key,self.__secret_key)
-		self.__bucket=BucketManager(self.__auth)
+		self.__bucket_manager=BucketManager(self.__auth)
 		self.__file_info_cache={}
-	def __gen_upload_token(self,bucket,key,expire=3600,policy=None):
-		assert isinstance(bucket,str)
-		assert isinstance(key,str)
+	def __gen_upload_token(self,file_name,expire=3600,policy=None):
+		assert isinstance(file_name,str)
 		assert isinstance(expire,int)
 		assert isinstance(policy,(str,dict,type(None)))
 		if policy:
-			token=self.__auth.upload_token(bucket,key,expire,policy)
+			token=self.__auth.upload_token(self.__bucket,file_name,expire,policy)
 		else:
-			token=self.__auth.upload_token(bucket,key,expire)
+			token=self.__auth.upload_token(self.__bucket,file_name,expire)
 		return token
-	def upload_token(self,bucket,key,expire=3600,policy=None):
-		return self.__gen_upload_token(bucket,key,expire,policy)
-	def upload(self,token,key,local_file):
-		ret,info=put_file(token,key,local_file)
-		assert ret['key']==key
+	def upload_token(self,file_name,expire=3600,policy=None):
+		return self.__gen_upload_token(file_name,expire,policy)
+	def upload(self,token,file_name,local_file):
+		ret,info=put_file(token,file_name,local_file)
+		assert ret['key']==file_name
 		assert ret['hash']==etag(local_file)
-	def __gen_download_url(self,bucket_domain,key,expire=3600):
+	def __gen_download_url(self,bucket_domain,file_name,expire=3600):
 		assert isinstance(bucket_domain,str)
-		assert isinstance(key,str)
+		assert isinstance(file_name,str)
 		assert isinstance(expire,int)
-		base_url='http://%s/%s'%(bucket_domain,key)
+		base_url='http://%s/%s'%(bucket_domain,file_name)
 		private_url=self.__auth.private_download_url(base_url,expires=expire)
 		return private_url
-	def download_url(self,bucket_domain,key,expire=3600):
-		return self.__gen_download_url(bucket_domain,key,expire)
-	def move(self,src_bucket,src_key,dest_bucket,dest_key):
-		ret,info=self.__bucket.move(src_bucket,src_key,dest_bucket,dest_key)
+	def download_url(self,bucket_domain,file_name,expire=3600):
+		return self.__gen_download_url(bucket_domain,file_name,expire)
+	def move(self,src,dest):
+		src_bucket,src_key=src.split("<:>")
+		dest_bucket,dest_key=dest.split("<:>")
+		ret,info=self.__bucket_manager.move(src_bucket,src_key,dest_bucket,dest_key)
 		if ret!={}:
 			return False
 		return True
-	def copy(self,src_bucket,src_key,dest_bucket,dest_key):
-		ret,info=self.__bucket.copy(src_bucket,src_key,dest_bucket,dest_key)
+	def copy(self,src,dest):
+		src_bucket,src_key=src.split("<:>")
+		dest_bucket,dest_key=dest.split("<:>")
+		ret,info=self.__bucket_manager.copy(src_bucket,src_key,dest_bucket,dest_key)
 		if ret !={}:
 			return False
 		return True
-	def delete(self,bucket,key):
-		ret,info=self.__bucket.delete(bucket,key)
+	def delete(self,file_name):
+		ret,info=self.__bucket_manager.delete(self.__bucket,file_name)
 		if ret!={}:
 			return False
 		return True
-	def __cache_file_info(self,bucket,key,content):
-		self.__file_info_cache[bucket+':'+key]=content
-	def __get_file_info_from_cache(self,bucket,key,item=None):
+	def __cache_file_info(self,file_name,content):
+		self.__file_info_cache[self.__bucket+':'+file_name]=content
+	def __get_file_info_from_cache(self,file_name,item=None):
 		if item:
-			return self.__file_info_cache[bucket+':'+key].get(item)
+			return self.__file_info_cache[self.__bucket+':'+file_name].get(item)
 		else:
-			return self.__file_info_cache[bucket+':'+key]
-	def __check_file_info_cache(self,bucket,key):
-		if bucket+':'+key in self.__file_info_cache:
+			return self.__file_info_cache[self.__bucket+':'+file_name]
+	def __check_file_info_cache(self,file_name):
+		if self.__bucket+':'+file_name in self.__file_info_cache:
 			return True
 		return False
-	def file_info(self,bucket,key):
-		if self.__check_file_info_cache(bucket,key):
-			return self.__get_file_info_from_cache(bucket,key)
-		ret,info=self.__bucket.stat(bucket,key)
+	def file_info(self,file_name):
+		if self.__check_file_info_cache(file_name):
+			return self.__get_file_info_from_cache(file_name)
+		ret,info=self.__bucket_manager.stat(self.__bucket,file_name)
 		if ret:
-			self.__cache_file_info(bucket,key,ret)
+			self.__cache_file_info(file_name,ret)
 			return ret
 		return None
-	def file_size(self,bucket,key):
-		if self.__check_file_info_cache(bucket,key):
-			return self.__get_file_info_from_cache(bucket,key,'fsize')
-		ret,info=self.__bucket.stat(bucket,key)
+	def file_size(self,file_name):
+		if self.__check_file_info_cache(file_name):
+			return self.__get_file_info_from_cache(file_name,'fsize')
+		ret,info=self.__bucket_manager.stat(self.__bucket,file_name)
 		if ret:
-			self.__cache_file_info(bucket,key,ret)
+			self.__cache_file_info(file_name,ret)
 			return ret.get('fsize')
 		return None
-	def file_hash(self,bucket,key):
-		if self.__check_file_info_cache(bucket,key):
-			return self.__get_file_info_from_cache(bucket,key,'hash')
-		ret,info=self.__bucket.stat(bucket,key)
+	def file_hash(self,file_name):
+		if self.__check_file_info_cache(file_name):
+			return self.__get_file_info_from_cache(file_name,'hash')
+		ret,info=self.__bucket_manager.stat(self.__bucket,file_name)
 		if ret:
-			self.__cache_file_info(bucket,key,ret)
+			self.__cache_file_info(file_name,ret)
 			return ret.get("hash")
 		return None
-	def file_mime(self,bucket,key):
-		if self.__check_file_info_cache(bucket,key):
-			return self.__get_file_info_from_cache(bucket,key,'mimeType')
-		ret,info=self.__bucket.stat(bucket,key)
+	def file_mime(self,file_name):
+		if self.__check_file_info_cache(file_name):
+			return self.__get_file_info_from_cache(file_name,'mimeType')
+		ret,info=self.__bucket_manager.stat(self.__bucket,file_name)
 		if ret:
-			self.__cache_file_info(bucket,key,ret)
+			self.__cache_file_info(file_name,ret)
 			return ret.get("mimeType")
 		return None
-	def file_create_time(self,bucket,key):
-		if self.__check_file_info_cache(bucket,key):
-			return self.__get_file_info_from_cache(bucket,key,'putTime')
-		ret,info=self.__bucket.stat(bucket,key)
+	def file_create_time(self,file_name):
+		if self.__check_file_info_cache(file_name):
+			return self.__get_file_info_from_cache(file_name,'putTime')
+		ret,info=self.__bucket_manager.stat(file_name)
 		if ret:
-			self.__cache_file_info(bucket,key,ret)
+			self.__cache_file_info(file_name,ret)
 			return ret.get("putTime")/1000000
 		return None	
 
 if __name__=='__main__':
-	r'''
-	qn=QiniuStorageAdapter(Config.filesystem.access_key,Config.filesystem.secret_key)
-	print(qn.file_info("static-pyblog-com","image/java.jpg"))
-	print(qn.file_size("static-pyblog-com","image/java.jpg"))
-	print(qn.file_mime("static-pyblog-com","image/java.jpg"))
-	print(qn.file_create_time("static-pyblog-com","image/java.jpg"))
-	print(qn.file_hash("static-pyblog-com","image/java.jpg"))
-	print(qn.upload_token("static-pyblog-com","shabi"))
+	qn=QiniuStorageAdapter("static-pyblog-com",Config.filesystem.access_key,Config.filesystem.secret_key)
+	print(qn.file_info("image/java.jpg"))
+	print(qn.file_size("image/java.jpg"))
+	print(qn.file_mime("image/java.jpg"))
+	print(qn.file_create_time("image/java.jpg"))
+	print(qn.file_hash("image/java.jpg"))
+	print(qn.upload_token("shabi"))
 	print(qn.download_url("7xs7oc.com1.z0.glb.clouddn.com","image/git.png"))
-	'''
