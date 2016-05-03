@@ -76,46 +76,24 @@ class QiniuStorageAdapter(StorageAdapter):
 		if self.__bucket+':'+file_name in self.__file_info_cache:
 			return True
 		return False
-	def file_info(self,file_name):
+	def __get_file_info_item(self,file_name,item):
 		if self.__check_file_info_cache(file_name):
-			return self.__get_file_info_from_cache(file_name)
+			return self.__get_file_info_from_cache(file_name,item)
 		ret,info=self.__bucket_manager.stat(self.__bucket,file_name)
 		if ret:
 			self.__cache_file_info(file_name,ret)
-			return ret
-		return None
-	def file_size(self,file_name):
-		if self.__check_file_info_cache(file_name):
-			return self.__get_file_info_from_cache(file_name,'fsize')
-		ret,info=self.__bucket_manager.stat(self.__bucket,file_name)
-		if ret:
-			self.__cache_file_info(file_name,ret)
-			return ret.get('fsize')
-		return None
-	def file_hash(self,file_name):
-		if self.__check_file_info_cache(file_name):
-			return self.__get_file_info_from_cache(file_name,'hash')
-		ret,info=self.__bucket_manager.stat(self.__bucket,file_name)
-		if ret:
-			self.__cache_file_info(file_name,ret)
-			return ret.get("hash")
-		return None
-	def file_mime(self,file_name):
-		if self.__check_file_info_cache(file_name):
-			return self.__get_file_info_from_cache(file_name,'mimeType')
-		ret,info=self.__bucket_manager.stat(self.__bucket,file_name)
-		if ret:
-			self.__cache_file_info(file_name,ret)
-			return ret.get("mimeType")
-		return None
-	def file_create_time(self,file_name):
-		if self.__check_file_info_cache(file_name):
-			return self.__get_file_info_from_cache(file_name,'putTime')
-		ret,info=self.__bucket_manager.stat(file_name)
-		if ret:
-			self.__cache_file_info(file_name,ret)
-			return ret.get("putTime")/1000000
+			return self.__get_file_info_from_cache(file_name,item)
 		return None	
+	def file_info(self,file_name):
+		return self.__get_file_info_item(file_name,None)
+	def file_size(self,file_name):
+		return self.__get_file_info_item(file_name,'fsize')
+	def file_hash(self,file_name):
+		return self.__get_file_info_item(file_name,'hash')
+	def file_mime(self,file_name):
+		return self.__get_file_info_item(file_name,'mimeType')
+	def file_create_time(self,file_name):
+		return self.__get_file_info_item(file_name,'putTime')
 
 if __name__=='__main__':
 	pass
