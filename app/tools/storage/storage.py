@@ -3,7 +3,7 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 
 
-class StorageAdataper(object):
+class StorageAdatper(object):
 	def __init__(self,*args,**kw):
 		pass
 	def move(self,src,dest):
@@ -18,5 +18,16 @@ class StorageAdataper(object):
 		pass
 	def file_info(self,file_name):
 		pass
+	def file_mime(self,file_name):
+		pass
+	def file_create_time(self,file_name):
+		pass
+	def upload(self,token,file_name,local_file):
+		pass
+	def upload_token(self,file_name,expire=3600,policy=None):
+		pass
+	def download_url(self,domain,file_name,expire=3600):
+		pass
+	
 	
 
