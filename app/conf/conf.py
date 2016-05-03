@@ -53,12 +53,13 @@ authentication={
 	'login_url':'/login'
 }
 storage={
-	'default':'qiniu',
-	'drivers':{
+	'default':'qiniu',#qiniu,s3,file
+	'disks':{
 		'file':{
-
+			'driver':'file',
 		},
 		'qiniu':{
+			'driver':'qiniu',
 			'access_key':'CKQNXugLAXFueA5UlBKQnkWxslYC8rIErwn2ch4I',
 			'secret_key':'4lnKaSKUk1SVmbB4alt6PtkL2O1Sm-jP6e-T7EER',
 			'bucket_name':'static-pyblog-com',
