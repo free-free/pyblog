@@ -12,7 +12,11 @@ class FileSystemAdataper(object):
 		pass
 	def delete(self,src):
 		pass
-	def mkdir(self,dir_name):
+	def file_size(self,file_name):
 		pass
-	def rmdir(self,dir_name):
+	def file_hash(self,file_name):
 		pass
+	def file_info(self,file_name):
+		pass
+	
+
