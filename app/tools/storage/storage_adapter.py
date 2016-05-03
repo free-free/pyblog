@@ -3,7 +3,7 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 
 
-class StorageAdatper(object):
+class StorageAdapter(object):
 	def __init__(self,*args,**kw):
 		pass
 	def move(self,src,dest):
