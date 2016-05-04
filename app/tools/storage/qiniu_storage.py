@@ -31,7 +31,7 @@ class QiniuStorageAdapter(StorageAbstractAdapter):
 		else:
 			token=self.__auth.upload_token(self.__bucket,file_name,expire)
 		return token
-	def upload_token(self,file_name,expire=3600,policy=None):
+	def token(self,file_name,expire=3600,policy=None):
 		return self.__gen_upload_token(file_name,expire,policy)
 	def upload(self,token,file_name,local_file):
 		ret,info=put_file(token,file_name,local_file)
