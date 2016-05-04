@@ -1,49 +1,66 @@
 #-*- coding:utf-8 -*-
 
 from tools.config import Config
-from tools.storage.qiniu_storage import QiniuStorageAdapter
+from tools.storage.storage_factory import StorageDriverFactory
 class Storage(object):
 	def __init__(self,config=None):
 		self.__config=config
 		self.__disk={}
-		self.__specific_disk=None
-		self.__default_disk=self.disk(Config.storage.disk_name)
-	def _get_qiniu_storage_driver(self,config):
-		return QiniuStorageAdapter(config.get("bucket"),config.get("access_key"),config.get("secret_key"))
-	def _get_file_storage_driver(self,config):
-		pass
+		self.__default_disk=self._get_storage_driver(Config.storage.disk_name,Config.storage.all)
+		self.__current_disk=self.__default_disk
+	def _get_storage_driver(self,driver,config):
+		return StorageDriverFactory(driver,config)
 	def disk(self,disk_name):
 		if disk_name not in self.__disk:
 			driver=Config.storage.disk(disk_name).driver
 			all_config=Config.storage.disk(disk_name).all
-			self.__disk[disk_name]=eval("self._get_%s_storage_driver(%s)"%(driver,all_config))
-		self.__specific_disk=self.__disk[disk_name]
+			self.__disk[disk_name]=self._get_storage_driver(driver,all_config)
+		self.__current_disk=self.__disk[disk_name]
 		return self
 	def move(self,src,dest):
-		if self.__specific_disk:
-			ret=self.__specific_disk.move(src,dest)
-			self.__specific_disk=None
-			return ret
-		return self.__default_disk.move(src,dest)
+		ret=self.__current_disk.move(src,dest)
+		self.__current_disk=self.__default_disk
+		return ret
 	def copy(self,src,dest):
-		if self.__specific_disk:
-			ret=self.__specific_disk.copy(src,dest)
-			self.__specific_disk=None
-			return ret
-		return self.__default_disk.copy(src,dest)
+		ret=self.__current_disk.copy(src,dest)
+		self.__current_disk=self.__default_disk
+		return ret
 	def delete(self,file_name):
-		if self.__specific_disk:
-			ret=self.__specific_disk.delete(file_name)
-			self.__specific_disk=None
-			return ret
-		return self.__default_disk.delete(file_name)
-	
-			
-		
-		
+		ret=self.__current_disk.delete(file_name)
+		self.__current_disk=self.__default_disk
+		return ret
+	def file_size(self,file_name):
+		ret=self.__current_disk.file_size(file_name)
+		self.__current_disk=self.__default_disk
+		return ret
+	def file_hash(self,file_name):
+		ret=self.__current__disk.file_hash(file_name)
+		self.__current_disk=self.__default_disk
+		return ret
+	def file_ctime(self,file_name):
+		ret=self.__current_disk.file_create_time(file_name)
+		self.__current_disk=self.__default_disk
+		return ret
+	def file_mime(self,file_name):
+		ret=self.__current_disk.file_mime(file_name)
+		self.__current_disk=self.__default_disk
+		return ret
+	def token(self,file_name,**kw):
+		ret=self.__current_disk.token(file_name,**kw)
+		self.__current_disk=self.__default_disk
+		return ret
+	def put(self,file_name,local_file,**kw):
+		ret=self.__current_disk.put(file_name,local_file,**kw)
+		self.__current_disk=self.__default_disk
+		return ret
+	def get(self,file_name,**kw):
+		pass
+	def get_url(self,file_name,**kw):
+		ret=self.__current_disk.get_url(file_name,**kw)
+		self.__current_disk=self.__default_disk
+		return ret
 if __name__=='__main__':
-	print(Storage())
+	pass
 
 
 
-	
