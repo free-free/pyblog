@@ -22,11 +22,13 @@ class StorageAbstractAdapter(object):
 		pass
 	def file_create_time(self,file_name):
 		pass
-	def upload(self,token,file_name,local_file):
+	def put(self,token,file_name,**kw):
 		pass
-	def token(self,file_name,expire=3600,policy=None):
+	def token(self,file_name,**kw):
 		pass
-	def download_url(self,domain,file_name,expire=3600):
+	def get(self,file_name,**kw):
+		pass
+	def get_url(self,file_name,**kw):
 		pass
 	
 
