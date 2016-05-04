@@ -3,8 +3,8 @@
 import os
 
 from tools.log import *
-from tools.field import *
-from tools.column import *
+from tools.orm.field import *
+from tools.orm.column import *
 from tools.database import *
 from collections import OrderedDict
 import hashlib
