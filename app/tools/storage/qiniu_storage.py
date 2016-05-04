@@ -2,7 +2,7 @@
 import logging
 logging.basicConfig(level=logging.ERROR)
 from tools.config import Config
-from tools.storage.storage_adapter import StorageAbstractAdapter
+from tools.storage.storage_abstract import StorageAbstractAdapter
 try:
 	from qiniu import Auth,put_file,etag,urlsafe_base64_encode,BucketManager
 	import qiniu.config
