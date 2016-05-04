@@ -13,13 +13,10 @@ class StorageDriverFactory(object):
 		return eval("cls._get_%s_storage_driver(%s)"%(cls.__driver,cls.__config))
 	@classmethod
 	def _get_qiniu_storage_driver(cls,config):
-		return QiniuStorageAdapter(config.get("bucket"),config.get("access_key"),config.get("secret_key"))
+		return QiniuStorageAdapter(config.get("bucket"),config.get("access_key"),config.get("secret_key"),config.get("domain"))
 
 
 
 
 if __name__=='__main__':
 	pass
-	r'''
-	print(type(StorageDriverFactory('qiniu',dict(bucket="static-pyblog-com",access_key="HUHIUHEDIUHIDUEHIUH",secret_key="hduiehiudei"))))
-	'''
