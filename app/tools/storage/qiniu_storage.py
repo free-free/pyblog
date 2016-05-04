@@ -2,7 +2,7 @@
 import logging
 logging.basicConfig(level=logging.ERROR)
 from tools.config import Config
-from tools.storage.storage_adapter import StorageAdapter
+from tools.storage.storage_adapter import StorageAbstractAdapter
 try:
 	from qiniu import Auth,put_file,etag,urlsafe_base64_encode,BucketManager
 	import qiniu.config
@@ -10,7 +10,7 @@ except ImportError:
 	logging.error("can't import 'qiniu' module")
 	exit(-1)
 
-class QiniuStorageAdapter(StorageAdapter):
+class QiniuStorageAdapter(StorageAbstractAdapter):
 	__slots__=('__access_key','__secret_key','__auth','__bucket','__file_info_cache','__bucket_manager')
 	def __init__(self,bucket,access_key,secret_key,*args,**kw):
 		assert isinstance(bucket,str)
