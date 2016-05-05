@@ -11,14 +11,14 @@ class StorageDriverFactory(object):
 		assert isinstance(args[1],dict)
 		cls.__driver=args[0]
 		cls.__config=args[1]
-		return cls._get_storage_driver(cls.__driver,cls.__config)
+		return cls._resolve_storage_driver(cls.__driver,cls.__config)
 	@classmethod
 	def register(self,driver_name,driver_class):
 		assert isinstance(driver_name,str)
 		assert isinstance(driver_class,StorageAbstractAdapter),"driver class extends StorageAbstractAdapter"
 		cls.__drivers[driver_name]=driver_class
 	@classmethod
-	def _get_storage_driver(cls,driver_name,config):
+	def _resolve_storage_driver(cls,driver_name,config):
 		if driver_name in cls.__drivers:
 			return cls.__drivers[driver_name](config)
 		return None
