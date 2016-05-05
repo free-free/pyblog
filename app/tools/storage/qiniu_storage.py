@@ -107,13 +107,3 @@ class QiniuStorageAdapter(StorageAbstractAdapter):
 
 if __name__=='__main__':
 	pass
-	r'''
-	qn=QiniuStorageAdapter("static-pyblog-com",Config.storage.access_key,Config.storage.secret_key,"7xs7oc.com1.z0.glb.clouddn.com")
-	print(qn.file_info("image/java.jpg"))
-	print(qn.file_size("image/java.jpg"))
-	print(qn.file_mime("image/java.jpg"))
-	print(qn.file_create_time("image/java.jpg"))
-	print(qn.file_hash("image/java.jpg"))
-	print(qn.token("shabi"))
-	print(qn.get_url("image/git.png"))
-	'''
