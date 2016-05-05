@@ -2,21 +2,25 @@
 import logging
 logging.basicConfig(level=logging.ERROR)
 from tools.storage.qiniu_storage import QiniuStorageAdapter
-
+from tools.storage.storage_abstract import StorageAbstractAdapter
 
 class StorageDriverFactory(object):
+	__drivers={'qiniu':QiniuStorageAdapter}
 	def __new__(cls,*args,**kw):
 		assert isinstance(args[0],str)
 		assert isinstance(args[1],dict)
 		cls.__driver=args[0]
 		cls.__config=args[1]
-		return eval("cls._get_%s_storage_driver(%s)"%(cls.__driver,cls.__config))
+		return cls._get_storage_driver(cls.__driver,cls.__config)
 	@classmethod
-	def _get_qiniu_storage_driver(cls,config):
-		return QiniuStorageAdapter(config.get("bucket"),config.get("access_key"),config.get("secret_key"),config.get("domain"))
-
-
-
-
+	def register(self,driver_name,driver_class):
+		assert isinstance(driver_name,str)
+		assert isinstance(driver_class,StorageAbstractAdapter),"driver class extends StorageAbstractAdapter"
+		cls.__drivers[driver_name]=driver_class
+	@classmethod
+	def _get_storage_driver(cls,driver_name,config):
+		if driver_name in cls.__drivers:
+			return cls.__drivers[driver_name](config)
+		return None
 if __name__=='__main__':
 	pass
