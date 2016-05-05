@@ -12,15 +12,16 @@ except ImportError:
 
 class QiniuStorageAdapter(StorageAbstractAdapter):
 	__slots__=('__access_key','__secret_key','__auth','__bucket','__file_info_cache','__bucket_manager','__domain')
-	def __init__(self,bucket,access_key,secret_key,domain,*args,**kw):
-		assert isinstance(bucket,str)
-		assert isinstance(access_key,str)
-		assert isinstance(secret_key,str)
-		assert isinstance(domain,str)
-		self.__access_key=access_key
-		self.__secret_key=secret_key
-		self.__bucket=bucket
-		self.__domain=domain
+	def __init__(self,config,*args,**kw):
+		assert isinstance(config,dict)
+		assert isinstance(config.get("bucket"),str)
+		assert isinstance(config.get("access_key"),str)
+		assert isinstance(config.get("secret_key"),str)
+		assert isinstance(config.get("domain"),str)
+		self.__access_key=config.get("access_key")
+		self.__secret_key=config.get("secret_key")
+		self.__bucket=config.get("bucket")
+		self.__domain=config.get("domain")
 		self.__auth=Auth(self.__access_key,self.__secret_key)
 		self.__bucket_manager=BucketManager(self.__auth)
 		self.__file_info_cache={}
