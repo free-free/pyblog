@@ -21,6 +21,8 @@ class Storage(object):
 		ret=self.__current_disk.move(src,dest)
 		self.__current_disk=self.__default_disk
 		return ret
+	def rename(self,src_old,src_new):
+		return self.move(src_old,src_new)
 	def copy(self,src,dest):
 		ret=self.__current_disk.copy(src,dest)
 		self.__current_disk=self.__default_disk
