@@ -44,30 +44,16 @@ class Application(web.Application):
 		Log.info("server start at http://%s:%s"%(addr,port))
 		print("server start at http://%s:%s"%(addr,port))
 		return server
-class AppRegister(object):
+class AppAbstractRegister(object):
 	r'''
-			AppRegister is a place where you can register your own's things that you need to use in your app procession,
+			AppAbstractRegister is a place where you can register your own's things that you need to use in your app procession,
 			those things mostly likes your task queue executor and so on
 	'''
-	__service=[]
 	def __init__(self,*args,**kwargs):
 		pass
-	@classmethod
-	def register(cls,call_func,*args,**kw):
-		r"""	
-			main register method
-			paramters:
-				call_func:when application starts,it will be called by system to load your things,
-				*args:pass into call_func
-				**kw:pass into call_func
-		"""
-		cls.__sercice.append({'call':call_func,'args':args,'kw':kw})
 	def process(self):
-		r""	"
-			when application starts,it will be called by app to register things
+		r"""
+			logic code ,you want to use register
 		"""
-		 if len(self.__sercice)>0:
-			for s in self.__service:
-				s['call'](*s['args'],**s['kw'])
-
+		pass
 				
