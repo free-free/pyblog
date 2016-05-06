@@ -410,6 +410,9 @@ class QueuePayloadRouter(object):
 		return True
 	@classmethod
 	def register_executor(cls,**executor):
+		r'''
+			executor_name is related to queue's payload type,in other words ,executor_name must be same with queue's payload_type
+		'''
 		for executor_name,executor_class in executor.items():
 			cls._executor[executor_name]=executor_class
 	@classmethod
