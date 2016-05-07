@@ -126,7 +126,7 @@ class RedisCache(CacheAbstractDriver):
 if __name__=='__main__':
 	pass
 	#re=RedisCache(1,host='localhost',port=6379)
-	#re.put("user:1",list([12,32,3,23,23,2,32]))
+	#re.put("user:1","hello")
 	#re.delete("user:1")
 	#print(re.get("user:1"))
 	
