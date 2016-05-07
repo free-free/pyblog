@@ -14,3 +14,7 @@ class CacheAbstractDriver(object):
 		pass
 	def exists(self,key):
 		pass
+	def increment(self,key,num=None):
+		pass
+	def decrement(self,key,num=None):
+		pass
