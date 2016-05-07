@@ -26,20 +26,26 @@ class RedisCacheClient(object):
 		self.__key_type_hash="_key_type"
 	def add(self,key,content,expires):
 		if isinstance(content,str):
-			self._connection.hset(self.__key_type_hash,key,1)
-			self._connection.set(key,content)
+			pipe=self._connection.pipeline()
+			pipe.hset(self.__key_type_hash,key,1)
+			pipe.set(key,content)
 			if expires:
-				self._connection.expire(key,expires)
-		if isinstance(content,dict):
-			self._connection.hset(self.__key_type_hash,key,2)
-			self._connection.hmset(key,content)
+				pipe.expire(key,expires)
+			pipe.execute()
+		elif isinstance(content,dict):
+			pipe=self._connection.pipeline()
+			pipe.hset(self.__key_type_hash,key,2)
+			pipe.hmset(key,content)
 			if expires:
-				self._connection.expire(key,expires)
-		if isinstance(content,(list,tuple)):
-			self._connection.hset(self.__key_type_hash,key,3)
-			self._connection.lpush(key,*content)
+				pipe.expire(key,expires)
+			pipe.execute()
+		elif isinstance(content,(list,tuple)):
+			pipe=self._connection.pipeline()
+			pipe.hset(self.__key_type_hash,key,3)
+			pipe.lpush(key,*content)
 			if expires:
-				self._connection.expire(key,expires)
+				pipe.expire(key,expires)
+			pipe.execute()
 	def get(self,key):
 		key_type=self.exists(key)
 		if key_type=="string":
@@ -54,8 +60,7 @@ class RedisCacheClient(object):
 		key_type=self.exists(key)
 		result=""
 		if key_type=="string":
-			#return self._connection.del(key)
-			result=""
+			result=self._connection.delete(key)
 		elif key_type=="hash":
 			result=self._connection.hdel(key,*self._connection.hkeys(key))
 		elif key_type=="list":
