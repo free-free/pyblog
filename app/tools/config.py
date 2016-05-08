@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 import doctest
-
+import sys
+class ConfigError(Exception):
+	pass
 class ConfigLoader(object):
 	def __init__(self,config):
 		self._config=config
@@ -258,6 +260,59 @@ class MailConfigLoader(ConfigLoader):
 		config=__import__('conf',locals(),globals()).service['mail']
 		self._config_name='mail'
 		super(MailConfigLoader,self).__init__(config)
+class CacheConfigLoader(object):
+	def __new__(cls,*args,**kw):
+		if not hasattr(cls,'_config_instance'):
+			cls._config_instance=object.__new__(cls,*args,**kw)
+		return cls._config_instance
+	def __init__(self):
+		__import__('conf',locals(),globals())
+		mod=sys.modules['conf']
+		self._config=mod.cache
+		self._default_driver_name=self._config.get("default")
+		self._default_driver=self._config.get("drivers").get(self._default_driver_name)
+		self._all_drivers=self._config.get("drivers")
+		self._specific_driver=None
+		self._specific_driver_name=None
+	def _get_driver_all_config(self,driver_name):
+		if driver_name not in self._all_drivers:
+			raise ConfigError("no cache driver '%s' config"%(driver_name))
+		return self._all_drivers[driver_name]
+	def _get_driver_config(self,item,driver_name):
+		config=self._get_driver_all_config(driver_name)
+		if item not in config:
+			raise ConfigError("cache driver '%s' has no config item '%s'"%(driver_name,item))
+		return config.get(item)
+	def _driver(self,driver_name):
+		self._specific_driver_name=driver_name
+		self._specific_driver=self._get_driver_all_config(driver_name)
+		return self
+	def __getattr__(self,key):
+		if key=='driver':
+			return self._driver
+		elif not  self._specific_driver:
+			if key=='all':
+				return self._default_driver
+			elif key=='driver_name':
+				return self._default_driver_name
+			else:
+				return self._get_driver_config(key,self._default_driver_name)
+		else:
+			if key=='all':
+				ret=self._specific_driver
+				self._specific_driver=None
+				self._specific_drivr_name=None
+				return ret
+			elif key=='driver_name':
+				ret=self._specific_driver_name	
+				self._specific_driver_name=None
+				self._specific_driver=None
+				ret
+			else:
+				ret=self._get_driver_config(key,self._specific_driver_name)
+				self._specific_driver_name=None
+				self._specific_driver=None
+				return ret
 class classproperty(object):
 	def __init__(self,func):
 		self._func=func
@@ -322,7 +377,13 @@ class Config(dict):
 		if not hasattr(cls,'__mail'):
 			cls.__mail=MailConfigLoader()
 		return cls.__mail
+	@classproperty
+	def cache(cls):
+		if not hasattr(cls,'__cache'):
+			cls.__cache=CacheConfigLoader()
+		return cls.__cache
 	def __getattr__(cls,key):
 		return 'not attribute found'
 if __name__=='__main__':
 	pass
+
