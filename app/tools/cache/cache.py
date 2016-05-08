@@ -2,8 +2,12 @@
 from cache_factory import CacheFactory
 from tools.config import Config
 class Cache(object):
-	def __init__(self)
-		self.__default_cache_driver=self._driver(Config.cache.driver_name,Config.cache.all)
+	def __init__(self,driver=None,config=None)
+		driver=driver or Config.cache.driver_name
+		config=config or Config.cache.all
+		assert isinstance(driver,str)
+		assert isinstance(config,dict)
+		self.__default_cache_driver=self._driver(driver,config)
 		self.__current_cache_driver=self.__default_cache_driver
 	def driver(self,driver,config):
 		self.__current_cache_driver=self._driver(driver,config)
