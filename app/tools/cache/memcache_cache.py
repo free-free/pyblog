@@ -29,7 +29,9 @@ class MemcacheCacheClient(object):
 	def get(self,key,key_prefix=""):
 		if isinstance(key,six.string_types):
 			values=self.__connection.get(key)
-			new_values=values
+			if not values:
+				return None
+			new_values=""
 			try:
 				new_values=json.loads(values)
 			except Exception:
@@ -115,7 +117,7 @@ if __name__=='__main__':
 	#print(mc.get(['name','age']))
 	#print(mc.get_delete(['name','age']))	
 	
-	#mc.put("user:1",[323,23,43,43,24])
+	mc.put("user:1",[323,23,43,43,24])
 	print(mc.get_delete("user:1"))
 	print(mc.get("user:1"))
 	#mc.put("name",'huangbia')
