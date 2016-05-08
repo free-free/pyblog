@@ -40,7 +40,7 @@ class MemcacheCacheClient(object):
 				new_values=new_values.split("]")
 				if len(new_values)==1:
 					return new_values[0]
-				return new_values
+			return new_values
 		elif isinstance(key,(tuple,list)):
 			return self.__connection.get_multi(list(key),key_prefix)
 		else:
@@ -113,10 +113,10 @@ class MemcacheCache(CacheAbstractDriver):
 	
 	
 if __name__=='__main__':
-	pass
 	r'''
 	#mc=MemcacheCache('127.0.0.1',11211)
-	#mc.put({"name":"huangbiao","age":21})
+	#mc.put("user:1",{"name":"huangbiao","age":21})
+	#print(mc.get("user:1"))
 	#print(mc.get(['name','age']))
 	#print(mc.get(['name','age']))
 	#print(mc.get_delete(['name','age']))	
@@ -134,5 +134,5 @@ if __name__=='__main__':
 	#print(mc.decrement(["age","year"]))
 	#print(mc.increment({"age":21,"year":20}))
 	#print(mc.decrement({"age":21,"year":20}))
-	#print(mc.get(["age","year"]))
+	#print(mc.get(["age","year"]))	
 	'''
