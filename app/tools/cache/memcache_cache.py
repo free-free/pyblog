@@ -9,8 +9,8 @@ try:
 except ImportError:
 	logging.error("Can't import 'memcache' module")
 	exit(-1)
-class MemCacheCacheClient(object):
-	def __init__(self,servers,args*,**kw):
+class MemcacheCacheClient(object):
+	def __init__(self,servers,*args,**kw):
 		self.__connection=memcache.Client(servers,*args,**kw)
 	def set(self,key,val=None,expires=0,key_prefix="",min_compress_len=0):
 		if not val:
@@ -33,7 +33,7 @@ class MemCacheCacheClient(object):
 			pass
 	def delete(self,key,key_prefix=""):
 		if isinstance(key,six.string_types):
-			return self.__connection.delete(key)
+			self.__connection.delete(key)
 		elif isinstance(key,(tuple,list)):
 			return self.__connection.delete_multi(list(key),key_prefix)
 		else:
@@ -73,7 +73,38 @@ class MemCacheCacheClient(object):
 			pass
 		
 class MemcacheCache(CacheAbstractDriver):
-	def __init__(self,servers):
-		assert isinstance(servers,list)
-		self.__client=memcache.Client(servers)
+	def __init__(self,host,port):
+		self.__client=MemcacheCacheClient([str(host)+':'+str(port)])
+	def put(self,key,value=None,expires=0,key_prefix="",min_compress_len=0):
+		return self.__client.set(key,value,expires,key_prefix,min_compress_len)
+	def get(self,key,key_prefix=""):
+		return self.__client.get(key,key_prefix)
+	def get_delete(self,key,key_prefix=""):
+		values=self.__client.get(key,key_prefix)
+		self.delete(key,key_prefix)
+		return values
+	def increment(self,key,delta=1):
+		return self.__client.inc(key,delta)
+	def decrement(self,key,delta=1):
+		return self.__client.dec(key,delta)
+	def delete(self,key,key_prefix=""):
+		return self.__client.delete(key,key_prefix)
+	def update(self,key,value=None,expires=0,key_prefix="",min_compress_len=0):
+		return self.put(key,value,expires,key_prefix,min_compress_len)
+	def exists(self,key,key_prefix):
+		return self.get(key,key_prefix) or False
+	
+	
+	
+if __name__=='__main__':
+	mc=MemcacheCache('127.0.0.1',11211)
+	#mc.put({"name":"huangbiao","age":21})
+	#print(mc.get(['name','age']))
+	
+	mc.put("user:1",{"name":"huangbiao","age":21})
+	print(mc.get("user:1"))
+	#mc.put("name",'huangbia')
+	#print(mc.get("name"))
+	#print(mc.get_delete("name"))
+	#print(mc.get("name"))
 	
