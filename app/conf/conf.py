@@ -65,6 +65,23 @@ storage={
 			'bucket':'static-pyblog-com',
 			'domain':'7xs7oc.com1.z0.glb.clouddn.com'
 		}
+		's3':{
+
+		}
+	}
+}
+cache={
+	'default':'redis',#redis,memcache
+	'drivers':{
+		'redis':{
+		 	'host':"127.0.0.1",
+			'port':6379,
+			'db':0
+		},
+		'memcache':{
+			'host':'127.0.0.1',
+			'port':11211
+		}
 	}
 }
 queue={
