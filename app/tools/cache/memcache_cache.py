@@ -87,24 +87,24 @@ class MemcacheCacheClient(object):
 class MemcacheCache(CacheAbstractDriver):
 	def __init__(self,host,port):
 		self.__client=MemcacheCacheClient([str(host)+':'+str(port)])
-	def put(self,key,value=None,expires=0,key_prefix="",min_compress_len=0):
-		return self.__client.set(key,value,expires,key_prefix,min_compress_len)
-	def get(self,key,key_prefix=""):
-		return self.__client.get(key,key_prefix)
-	def get_delete(self,key,key_prefix=""):
-		values=self.__client.get(key,key_prefix)
-		self.delete(key,key_prefix)
+	def put(self,key,value=None,expires=0):
+		return self.__client.set(key,value,expires)
+	def get(self,key):
+		return self.__client.get(key)
+	def get_delete(self,key):
+		values=self.__client.get(key)
+		self.delete(key)
 		return values
 	def increment(self,key,delta=1):
 		return self.__client.inc(key,delta)
 	def decrement(self,key,delta=1):
 		return self.__client.dec(key,delta)
-	def delete(self,key,key_prefix=""):
-		return self.__client.delete(key,key_prefix)
-	def update(self,key,value=None,expires=0,key_prefix="",min_compress_len=0):
-		return self.put(key,value,expires,key_prefix,min_compress_len)
-	def exists(self,key,key_prefix):
-		return self.get(key,key_prefix) or False
+	def delete(self,key):
+		return self.__client.delete(key)
+	def update(self,key,value=None,expires=0):
+		return self.put(key,value,expires)
+	def exists(self,key):
+		return self.get(key) or False
 	
 	
 	
@@ -112,8 +112,11 @@ if __name__=='__main__':
 	mc=MemcacheCache('127.0.0.1',11211)
 	#mc.put({"name":"huangbiao","age":21})
 	#print(mc.get(['name','age']))
+	#print(mc.get(['name','age']))
+	#print(mc.get_delete(['name','age']))	
 	
-	mc.put("user:1",[323,23,43,43,24])
+	#mc.put("user:1",[323,23,43,43,24])
+	print(mc.get_delete("user:1"))
 	print(mc.get("user:1"))
 	#mc.put("name",'huangbia')
 	#print(mc.get("name"))
