@@ -24,7 +24,7 @@ class RedisCacheClient(object):
 			"3":"list"
 		}
 		self.__key_type_hash="_key_type"
-	def add(self,key,content,expires):
+	def set(self,key,content,expires):
 		if isinstance(content,str):
 			pipe=self._connection.pipeline()
 			pipe.hset(self.__key_type_hash,key,1)
@@ -101,7 +101,7 @@ class RedisCache(CacheAbstractDriver):
 	def __repr__(self):
 		return str(self.__client)
 	def put(self,key,content,expires=None):
-		self.__client.add(key,content,expires)
+		self.__client.set(key,content,expires)
 	def delete(self,key):
 		return self.__client.delete(key)
 	def get(self,key):
@@ -127,8 +127,10 @@ if __name__=='__main__':
 	pass
 	#re=RedisCache(1,host='localhost',port=6379)
 	#re.put("user:1","hello")
-	#re.delete("user:1")
-	#print(re.get("user:1"))
+	#re.put("user:2",[21,32,32,121,42])
+	#re.put("user:3",{"name":"huangbiao","age":22,"email":"19941222hb@gmail.com"})
+	#re.delete("user:3")
+	#print(re.get("user:3"))
 	
 
 
