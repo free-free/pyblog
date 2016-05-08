@@ -10,10 +10,13 @@ except ImportError:
 
 
 class RedisCacheClient(object):
-	def __init__(self,**kwargs):
-		self.__host=kwargs.get('host')
-		self.__port=kwargs.get('port')
-		self.__db=kwargs.get("db")
+	def __init__(self,host,port,db,*args,**kwargs):
+		isinstance(host,str)
+		isinstance(port,int)
+		isinstance(db,int)
+		self.__host=host
+		self.__port=port
+		self.__db=db 
 		assert isinstance(self.__host,str)
 		assert isinstance(self.__port,int)
 		assert isinstance(self.__db,int) and 0<=self.__db<16
@@ -93,9 +96,8 @@ class RedisCacheClient(object):
 	def delete_key(self,key):
 		return self._connection.hdel(self.__key_type_hash,key)
 class RedisCache(CacheAbstractDriver):
-	def __init__(self,cache_db,**kwargs):
-		kwargs['db']=cache_db
-		self.__client=RedisCacheClient(**kwargs)
+	def __init__(self,host,port,cache_db,*args,**kwargs):
+		self.__client=RedisCacheClient(host,port,cache_db,*args,**kwargs)
 	def __str__(self):
 		return str(self.__client)
 	def __repr__(self):
