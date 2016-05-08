@@ -111,6 +111,7 @@ class MemcacheCache(CacheAbstractDriver):
 	
 	
 if __name__=='__main__':
+	pass
 	r'''
 	#mc=MemcacheCache('127.0.0.1',11211)
 	#mc.put({"name":"huangbiao","age":21})
@@ -126,7 +127,6 @@ if __name__=='__main__':
 	#print(mc.get("name"))
 	#print(mc.get_delete("name"))
 	#print(mc.get("name"))
-	
 	#mc.put({"age":21,"year":2016})
 	#print(mc.increment(["age","year"]))
 	#print(mc.decrement(["age","year"]))
