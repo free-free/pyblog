@@ -54,11 +54,11 @@ class MemcacheCacheClient(object):
 			pass
 	def inc(self,key,delta=1):
 		if isinstance(key,six.string_types):
-			return self.__connection.incr(key,delta)
+			return self.__connection.incr(key,int(delta))
 		elif isinstance(key,(tuple,list)):
 			returns=[]
 			for k in key:
-				returns.append(self.__connection.incr(k,delta))
+				returns.append(self.__connection.incr(k,int(delta)))
 			return returns
 		elif isinstance(key,dict):
 			r'''
@@ -66,7 +66,7 @@ class MemcacheCacheClient(object):
 			'''
 			returns=[]
 			for k,de in key.items():
-				returns.append(self.__connection.incr(k,de))
+				returns.append(self.__connection.incr(k,int(de)))
 			return returns
 		else:
 			pass
@@ -76,12 +76,12 @@ class MemcacheCacheClient(object):
 		elif isinstance(key,(list,tuple)):
 			returns=[]
 			for k in key:
-				returns.append(self.__connection.decr(k,delta))
+				returns.append(self.__connection.decr(k,int(delta)))
 			return returns
 		elif isinstance(key,dict):
 			returns=[]	
 			for k,de in key.items():
-				returns.append(self.__connection.decr(k,de))
+				returns.append(self.__connection.decr(k,int(de)))
 			return returns
 		else:
 			pass
@@ -111,17 +111,26 @@ class MemcacheCache(CacheAbstractDriver):
 	
 	
 if __name__=='__main__':
-	mc=MemcacheCache('127.0.0.1',11211)
+	r'''
+	#mc=MemcacheCache('127.0.0.1',11211)
 	#mc.put({"name":"huangbiao","age":21})
 	#print(mc.get(['name','age']))
 	#print(mc.get(['name','age']))
 	#print(mc.get_delete(['name','age']))	
 	
-	mc.put("user:1",[323,23,43,43,24])
-	print(mc.get_delete("user:1"))
-	print(mc.get("user:1"))
+	#mc.put("user:1",[323,23,43,43,24])
+	#print(mc.get_delete("user:1"))
+	#print(mc.get("user:1"))
+	
 	#mc.put("name",'huangbia')
 	#print(mc.get("name"))
 	#print(mc.get_delete("name"))
 	#print(mc.get("name"))
 	
+	#mc.put({"age":21,"year":2016})
+	#print(mc.increment(["age","year"]))
+	#print(mc.decrement(["age","year"]))
+	#print(mc.increment({"age":21,"year":20}))
+	#print(mc.decrement({"age":21,"year":20}))
+	#print(mc.get(["age","year"]))
+	'''
