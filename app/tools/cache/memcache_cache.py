@@ -22,16 +22,20 @@ class MemcacheCacheClient(object):
 			elif isinstance(val,(tuple,list,set)):
 				val=list(val)
 				val=map(lambda x:str(x),val)
-				val=':'.join(val)
+				val=']'.join(val)
 			else:
 				val=val
 			return self.__connection.set(key,val,expires,min_compress_len)
 	def get(self,key,key_prefix=""):
 		if isinstance(key,six.string_types):
 			values=self.__connection.get(key)
-			new_values=json.loads(values)
+			new_values=values
+			try:
+				new_values=json.loads(values)
+			except Exception:
+				new_values=values
 			if not isinstance(new_values,dict):
-				new_values=new_values.split(":")
+				new_values=new_values.split("]")
 				if len(new_values)==1:
 					return new_values[0]
 				return new_values
