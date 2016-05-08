@@ -26,7 +26,13 @@ class MemcacheCacheClient(object):
 			return self.__connection.set(key,val,expires,min_compress_len)
 	def get(self,key,key_prefix=""):
 		if isinstance(key,six.string_types):
-			return self.__connection.get(key)
+			values=self.__connection.get(key)
+			new_values=json.loads(values)
+			if not isinstance(new_values,dict):
+				new_values=new_values.split(":")
+				if len(new_values)==1:
+					return new_values[0]
+				return new_values
 		elif isinstance(key,(tuple,list)):
 			return self.__connection.get_multi(list(key),key_prefix)
 		else:
@@ -101,7 +107,7 @@ if __name__=='__main__':
 	#mc.put({"name":"huangbiao","age":21})
 	#print(mc.get(['name','age']))
 	
-	mc.put("user:1",{"name":"huangbiao","age":21})
+	mc.put("user:1",[323,23,43,43,24])
 	print(mc.get("user:1"))
 	#mc.put("name",'huangbia')
 	#print(mc.get("name"))
