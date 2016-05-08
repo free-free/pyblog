@@ -20,7 +20,9 @@ class MemcacheCacheClient(object):
 			if isinstance(val,dict):
 				val=json.dumps(val)
 			elif isinstance(val,(tuple,list,set)):
-				val=val.join(":")
+				val=list(val)
+				val=map(lambda x:str(x),val)
+				val=':'.join(val)
 			else:
 				val=val
 			return self.__connection.set(key,val,expires,min_compress_len)
