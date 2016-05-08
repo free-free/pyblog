@@ -64,7 +64,7 @@ storage={
 			'secret_key':'4lnKaSKUk1SVmbB4alt6PtkL2O1Sm-jP6e-T7EER',
 			'bucket':'static-pyblog-com',
 			'domain':'7xs7oc.com1.z0.glb.clouddn.com'
-		}
+		},
 		's3':{
 
 		}
