@@ -87,8 +87,10 @@ class MemcacheCacheClient(object):
 			pass
 		
 class MemcacheCache(CacheAbstractDriver):
-	def __init__(self,host,port):
-		self.__client=MemcacheCacheClient([str(host)+':'+str(port)])
+	def __init__(self,host,port,*args,**kw):
+		isinstance(host,str)
+		isinstance(port,(str,int))
+		self.__client=MemcacheCacheClient([str(host)+':'+str(port)],*args,**kw)
 	def put(self,key,value=None,expires=0):
 		return self.__client.set(key,value,expires)
 	def get(self,key):
