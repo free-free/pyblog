@@ -10,7 +10,7 @@ class CacheAbstractDriver(object):
 		pass
 	def delete(self,key,key_prefix=""):
 		pass
-	def update(self,key,content,expires=None,key_prefix=""):
+	def update(self,key,value,expires=None,key_prefix=""):
 		pass
 	def exists(self,key,key_prefix=""):
 		pass
