@@ -27,29 +27,31 @@ class RedisCacheClient(object):
 			"3":"list"
 		}
 		self.__key_type_hash="_key_type"
-	def set(self,key,content,expires):
-		if isinstance(content,str):
+	def set(self,key,value,expires,key_prefix):
+		key=key_prefix+key
+		if isinstance(value,str):
 			pipe=self._connection.pipeline()
 			pipe.hset(self.__key_type_hash,key,1)
-			pipe.set(key,content)
+			pipe.set(key,value)
 			if expires:
 				pipe.expire(key,expires)
 			pipe.execute()
-		elif isinstance(content,dict):
+		elif isinstance(value,dict):
 			pipe=self._connection.pipeline()
 			pipe.hset(self.__key_type_hash,key,2)
-			pipe.hmset(key,content)
+			pipe.hmset(key,value)
 			if expires:
 				pipe.expire(key,expires)
 			pipe.execute()
-		elif isinstance(content,(list,tuple)):
+		elif isinstance(value,(list,tuple)):
 			pipe=self._connection.pipeline()
 			pipe.hset(self.__key_type_hash,key,3)
-			pipe.lpush(key,*content)
+			pipe.lpush(key,*value)
 			if expires:
 				pipe.expire(key,expires)
 			pipe.execute()
-	def get(self,key):
+	def get(self,key,key_prefix):
+		key=key_prefix+key
 		key_type=self.exists(key)
 		if key_type=="string":
 			return self._connection.get(key) or ""
@@ -59,7 +61,8 @@ class RedisCacheClient(object):
 			return self._connection.lrange(key,0,-1) or []
 		else:
 			return None
-	def delete(self,key):
+	def delete(self,key,key_prefix):
+		key=key_prefix+key
 		key_type=self.exists(key)
 		result=""
 		if key_type=="string":
@@ -74,27 +77,28 @@ class RedisCacheClient(object):
 			result=None
 		self.delete_key(key)
 		return result
-	def inc(self,key,num=None):
-		num=num or 1
+	def inc(self,key,delta,key_prefix):
+		key=key_prefix+key
 		key_type=self.exists(key)
 		if key_type=="string":
-			return self._connection.incrby(key,num)
+			return self._connection.incrby(key,delta)
 		else:
 			raise TypeError("can't  increment  '%s'"%key)
-	def dec(self,key,num=None):
-		num=num or 1
+	def dec(self,key,delta,key_prefix):
+		key=key_prefix+key
 		key_type=self.exists(key)
 		if key_type=="string":
-			return self._connection.incrby(key,num)
+			return self._connection.incrby(key,delta)
 		else:
 			raise TypeError("can't decrement '%s'"%key)
-	def exists(self,key):	
+	def exists(self,key,key_prefix):	
+		key=key_prefix+key
 		key_type=self._connection.hget(self.__key_type_hash,key)
 		if key_type:
 			return self.__key_type_map.get(key_type.decode("utf-8"))
 		return None
-	def delete_key(self,key):
-		return self._connection.hdel(self.__key_type_hash,key)
+	def delete_key(self,key,key_prefix):
+		return self._connection.hdel(self.__key_type_hash,key_prefix+key)
 class RedisCache(CacheAbstractDriver):
 	def __init__(self,host,port,cache_db,*args,**kwargs):
 		self.__client=RedisCacheClient(host,port,cache_db,*args,**kwargs)
