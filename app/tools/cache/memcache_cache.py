@@ -25,10 +25,10 @@ class MemcacheCacheClient(object):
 				val=']'.join(val)
 			else:
 				val=val
-			return self.__connection.set(key,val,expires,min_compress_len)
+			return self.__connection.set(key_prefix+key,val,expires,min_compress_len)
 	def get(self,key,key_prefix=""):
 		if isinstance(key,six.string_types):
-			values=self.__connection.get(key)
+			values=self.__connection.get(key_prefix+key)
 			if not values:
 				return None
 			new_values=""
@@ -47,18 +47,19 @@ class MemcacheCacheClient(object):
 			pass
 	def delete(self,key,key_prefix=""):
 		if isinstance(key,six.string_types):
-			self.__connection.delete(key)
+			self.__connection.delete(key_prefix+key)
 		elif isinstance(key,(tuple,list)):
 			return self.__connection.delete_multi(list(key),key_prefix)
 		else:
 			pass
-	def inc(self,key,delta=1):
+	def inc(self,key,delta=1,key_prefix=""):
 		if isinstance(key,six.string_types):
+			key=key_prefix+key
 			return self.__connection.incr(key,int(delta))
 		elif isinstance(key,(tuple,list)):
 			returns=[]
 			for k in key:
-				returns.append(self.__connection.incr(k,int(delta)))
+				returns.append(self.__connection.incr(key_prefix+k,int(delta)))
 			return returns
 		elif isinstance(key,dict):
 			r'''
@@ -66,22 +67,22 @@ class MemcacheCacheClient(object):
 			'''
 			returns=[]
 			for k,de in key.items():
-				returns.append(self.__connection.incr(k,int(de)))
+				returns.append(self.__connection.incr(key_prefix+k,int(de)))
 			return returns
 		else:
 			pass
-	def dec(self,key,delta=1):
+	def dec(self,key,delta=1,key_prefix=""):
 		if isinstance(key,six.string_types):
-			return self.__connection.decr(key,delta)
+			return self.__connection.decr(key_prefix+key,delta)
 		elif isinstance(key,(list,tuple)):
 			returns=[]
 			for k in key:
-				returns.append(self.__connection.decr(k,int(delta)))
+				returns.append(self.__connection.decr(key_prefix+k,int(delta)))
 			return returns
 		elif isinstance(key,dict):
 			returns=[]	
 			for k,de in key.items():
-				returns.append(self.__connection.decr(k,int(de)))
+				returns.append(self.__connection.decr(key_prefix+k,int(de)))
 			return returns
 		else:
 			pass
@@ -91,33 +92,36 @@ class MemcacheCache(CacheAbstractDriver):
 		isinstance(host,str)
 		isinstance(port,(str,int))
 		self.__client=MemcacheCacheClient([str(host)+':'+str(port)],*args,**kw)
-	def put(self,key,value=None,expires=0):
-		return self.__client.set(key,value,expires)
-	def get(self,key):
-		return self.__client.get(key)
-	def get_delete(self,key):
-		values=self.__client.get(key)
-		self.delete(key)
+	def put(self,key,value=None,expires=0,key_prefix=""):
+		return self.__client.set(key,value,expires,key_prefix)
+	def get(self,key,key_prefix=""):
+		return self.__client.get(key,key_prefix)
+	def get_delete(self,key,key_prefix=""):
+		values=self.__client.get(key,key_prefix)
+		self.delete(key,key_prefix)
 		return values
-	def increment(self,key,delta=1):
-		return self.__client.inc(key,delta)
-	def decrement(self,key,delta=1):
-		return self.__client.dec(key,delta)
-	def delete(self,key):
-		return self.__client.delete(key)
-	def update(self,key,value=None,expires=0):
-		return self.put(key,value,expires)
-	def exists(self,key):
-		return self.get(key) or False
+	def increment(self,key,delta=1,key_prefix=""):
+		return self.__client.inc(key,delta,key_prefix)
+	def decrement(self,key,delta=1,key_prefix=""):
+		return self.__client.dec(key,delta,key_prefix)
+	def delete(self,key,key_prefix=""):
+		return self.__client.delete(key,key_prefix)
+	def update(self,key,value=None,expires=0,key_prefix=""):
+		return self.put(key,value,expires,key_prefix)
+	def exists(self,key,key_prefix):
+		return self.get(key,key_prefix) or False
 	
 	
 	
 if __name__=='__main__':
+	pass
 	r'''
 	#mc=MemcacheCache('127.0.0.1',11211)
 	#mc.put("user:1",{"name":"huangbiao","age":21})
 	#print(mc.get("user:1"))
-	#print(mc.get(['name','age']))
+	#print(mc.get_delete("user:1"))
+
+	#mc.put({"name":"john","age":21})
 	#print(mc.get(['name','age']))
 	#print(mc.get_delete(['name','age']))	
 	
@@ -125,10 +129,10 @@ if __name__=='__main__':
 	#print(mc.get_delete("user:1"))
 	#print(mc.get("user:1"))
 	
-	#mc.put("name",'huangbia')
-	#print(mc.get("name"))
-	#print(mc.get_delete("name"))
-	#print(mc.get("name"))
+	#mc.put("name",'huangbia',key_prefix="student:")
+	#print(mc.get("name",key_prefix="student:"))
+	#print(mc.get_delete("name",key_prefix="student:"))
+	#print(mc.get("name",key_prefix="student:"))
 	#mc.put({"age":21,"year":2016})
 	#print(mc.increment(["age","year"]))
 	#print(mc.decrement(["age","year"]))
