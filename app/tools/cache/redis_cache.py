@@ -50,29 +50,38 @@ class RedisCacheClient(object):
 			"3":"list"
 		}
 		self.__key_type_hash="_key_type"
-	def set(self,key,value,expires,key_prefix):
-		key=key_prefix+key
-		if isinstance(value,str):
+	def set(self,key,value=None,expires,key_prefix):
+		if not value and isinstance(key,dict):
 			pipe=self._connection.pipeline()
-			pipe.hset(self.__key_type_hash,key,1)
-			pipe.set(key,value)
-			if expires>0:
-				pipe.expire(key,expires)
-			pipe.execute()
-		elif isinstance(value,dict):
-			pipe=self._connection.pipeline()
-			pipe.hset(self.__key_type_hash,key,2)
-			pipe.hmset(key,value)
-			if expires>0:
-				pipe.expire(key,expires)
-			pipe.execute()
-		elif isinstance(value,(list,tuple)):
-			pipe=self._connection.pipeline()
-			pipe.hset(self.__key_type_hash,key,3)
-			pipe.lpush(key,*value)
-			if expires>0:
-				pipe.expire(key,expires)
-			pipe.execute()
+			for k,item in key:
+				pipe.hset(self.__key_type_hash,k,1)
+				pipe.set(k,item)
+				if expires>0:
+					pipe.expire(k,expires)
+			return pipe.execute()
+		else:	
+			key=key_prefix+key
+			if isinstance(value,str):
+				pipe=self._connection.pipeline()
+				pipe.hset(self.__key_type_hash,key,1)
+				pipe.set(key,value)
+				if expires>0:
+					pipe.expire(key,expires)
+				return pipe.execute()
+			elif isinstance(value,dict):
+				pipe=self._connection.pipeline()
+				pipe.hset(self.__key_type_hash,key,2)
+				pipe.hmset(key,value)
+				if expires>0:
+					pipe.expire(key,expires)
+				return pipe.execute()
+			elif isinstance(value,(list,tuple)):
+				pipe=self._connection.pipeline()
+				pipe.hset(self.__key_type_hash,key,3)
+				pipe.lpush(key,*value)
+				if expires>0:
+					pipe.expire(key,expires)
+				return pipe.execute()
 	def get(self,key,key_prefix):
 		key_type=self.exists(key,key_prefix)
 		key=key_prefix+key
