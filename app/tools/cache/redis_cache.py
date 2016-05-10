@@ -12,7 +12,28 @@ try:
 except ImportError:
 	logging.error("Can't import 'aioredis' module")
 	exit(-1)
-
+class AsyncRedisCacheClient(object):
+	def __init__(self,host,port,db,*args,*kwargs):
+		assert isinstance(host,str)
+		assert isinstance(port,int)
+		assert isinstance(db,int) and 0<=self.__db<16
+		self.__host=host
+		self.__port=port
+		self.__db=db
+		self.__connection=None
+		self.__key_type_map={
+				"1":"string",
+				"2":"hash",
+				"3":"list"
+		}
+		self.__key_type_hash="_key_type"
+	@asyncio.coroutine
+	def get_connection(self,loop=None):
+		self.__connection=yield from aioredis.create_redis((self.__host,self.__port),db=self.__db,loop=loop)
+		return self.__connection
+	@asyncio.coroutine
+	def set(self,key,val=None,expires,key_prefix):
+		pass
 	
 class RedisCacheClient(object):
 	def __init__(self,host,port,db,*args,**kwargs):
