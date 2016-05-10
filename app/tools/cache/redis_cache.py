@@ -7,13 +7,18 @@ try:
 except ImportError:
 	logging.error("Can't import 'redis' module")
 	exit(-1)
+try:
+	import aioredis
+except ImportError:
+	logging.error("Can't import 'aioredis' module")
+	exit(-1)
 
 
 class RedisCacheClient(object):
 	def __init__(self,host,port,db,*args,**kwargs):
-		isinstance(host,str)
-		isinstance(port,int)
-		isinstance(db,int)
+		assert isinstance(host,str)
+		assert isinstance(port,int)
+		assert isinstance(db,int)
 		self.__host=host
 		self.__port=port
 		self.__db=db 
