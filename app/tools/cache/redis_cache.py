@@ -90,7 +90,12 @@ class AsyncRedisCacheClient(object):
 		if key_type:
 			return self.__key_type_map.get(key_type.decode("utf-8"))
 		return None
-			
+	@asyncio.coroutine
+	def delete_key(self,key_prefix):
+		if not self.__connection:
+			yield from self.get_connection()
+		key=key_prefix+key
+		return (yield from self.__connection.hdel(self.__key_type_hash,key))			
 class RedisCacheClient(object):
 	def __init__(self,host,port,db,*args,**kwargs):
 		assert isinstance(host,str)
