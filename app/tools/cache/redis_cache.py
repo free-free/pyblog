@@ -32,8 +32,42 @@ class AsyncRedisCacheClient(object):
 		self.__connection=yield from aioredis.create_redis((self.__host,self.__port),db=self.__db,loop=loop)
 		return self.__connection
 	@asyncio.coroutine
-	def set(self,key,val=None,expires,key_prefix):
-		pass
+	def set(self,key,value=None,expires,key_prefix):
+		if not self.__connection:
+			yield from self.get_connection()
+		if not value and isinstance(key,dict):
+			pipe=self.__connection.pipeline()
+			for k,item in keys.items():
+				pipe.hset(self.__key_type_hash,key_prefix+k,1)
+				pipe.set(key_prefix+k,item)
+				if expires>0:
+					pipe.expire(key_prefix+k,expires)
+			return (yield from pipe.execute())
+		else:
+			key=key_prefix+key
+			if isinstance(value,str):
+				pipe=self.__connection.pipeline()
+				pipe.hset(self.__key_type_hash,key,1)
+				pipe.set(key,value)
+				if expires>0:
+					pipe.expire(key,expires)
+				return (yield from pipe.execute())
+			elif isinstance(value,dict):
+				pipe=self.__connection.pipeline()
+				pipe.hset(self.__key_type_hash,key,2)
+				pipe.hmset(key,value)
+				if expires>0:
+					pipe.expire(key,expires)
+				return (yield from pipe.execute())
+			elif isinstance(value,(list,tuple)):
+				pipe=self.__connection.pipeline()
+				pipe.hset(self.__key_type_hash,key,3)
+				value=list(value)
+				pipe.lpush(key,*value)
+				if expires>0:
+					pipe.expire(key,expires)		
+				return (yield from pipe.execute())
+			
 	
 class RedisCacheClient(object):
 	def __init__(self,host,port,db,*args,**kwargs):
@@ -53,11 +87,11 @@ class RedisCacheClient(object):
 	def set(self,key,value=None,expires,key_prefix):
 		if not value and isinstance(key,dict):
 			pipe=self._connection.pipeline()
-			for k,item in key:
-				pipe.hset(self.__key_type_hash,k,1)
-				pipe.set(k,item)
+			for k,item in key.items():
+				pipe.hset(self.__key_type_hash,key_prefix+k,1)
+				pipe.set(key_prefix+k,item)
 				if expires>0:
-					pipe.expire(k,expires)
+					pipe.expire(key_prefix+k,expires)
 			return pipe.execute()
 		else:	
 			key=key_prefix+key
