@@ -69,7 +69,7 @@ class AsyncRedisCacheClient(object):
 				return (yield from pipe.execute())
 	@asyncio.coroutine		
 	def get(self,key,key_prefix):
-		if not self.__connection()
+		if not self.__connection
 			yield from self.get_connection()
 		key_type=yield from self.exists(key,key_prefix)
 		key=key_prefix+key
@@ -81,6 +81,16 @@ class AsyncRedisCacheClient(object):
 			return (yield from self.__connection.lrange(key,0,-1)) or []
 		else:
 			return None
+	@asyncio.coroutine
+	def exists(self,key,key_prefix):
+		key=key_prefix+key
+		if not self.__connection:
+			yield from self.get_connection()	
+		key_type=self.__connection.hget(self.__key_type_hash,key)
+		if key_type:
+			return self.__key_type_map.get(key_type.decode("utf-8"))
+		return None
+			
 class RedisCacheClient(object):
 	def __init__(self,host,port,db,*args,**kwargs):
 		assert isinstance(host,str)
