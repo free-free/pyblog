@@ -13,18 +13,15 @@ except ImportError:
 	logging.error("Can't import 'aioredis' module")
 	exit(-1)
 
-
+	
 class RedisCacheClient(object):
 	def __init__(self,host,port,db,*args,**kwargs):
 		assert isinstance(host,str)
 		assert isinstance(port,int)
-		assert isinstance(db,int)
+		assert isinstance(db,int) and 0<=self.__db<16
 		self.__host=host
 		self.__port=port
 		self.__db=db 
-		assert isinstance(self.__host,str)
-		assert isinstance(self.__port,int)
-		assert isinstance(self.__db,int) and 0<=self.__db<16
 		self._connection=redis.StrictRedis(self.__host,self.__port,self.__db)
 		self.__key_type_map={
 			"1":"string",
