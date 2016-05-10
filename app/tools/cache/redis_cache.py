@@ -67,8 +67,20 @@ class AsyncRedisCacheClient(object):
 				if expires>0:
 					pipe.expire(key,expires)		
 				return (yield from pipe.execute())
-			
-	
+	@asyncio.coroutine		
+	def get(self,key,key_prefix):
+		if not self.__connection()
+			yield from self.get_connection()
+		key_type=yield from self.exists(key,key_prefix)
+		key=key_prefix+key
+		if key_type=="string":
+			return (yield from self.__connection.get(key)) or ""
+		elif key_type=="hash":
+			return (yield from self.__connection.hgetall(key)) or {}
+		elif key_type=="list":
+			return (yield from self.__connection.lrange(key,0,-1)) or []
+		else:
+			return None
 class RedisCacheClient(object):
 	def __init__(self,host,port,db,*args,**kwargs):
 		assert isinstance(host,str)
