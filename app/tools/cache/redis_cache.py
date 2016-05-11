@@ -91,11 +91,28 @@ class AsyncRedisCacheClient(object):
 			return self.__key_type_map.get(key_type.decode("utf-8"))
 		return None
 	@asyncio.coroutine
-	def delete_key(self,key_prefix):
+	def delete_key(self,key,key_prefix):
 		if not self.__connection:
 			yield from self.get_connection()
 		key=key_prefix+key
 		return (yield from self.__connection.hdel(self.__key_type_hash,key))			
+	@asyncio.coroutine
+	def delete(self,key,key_prefix):
+		key_type=yield from self.exists(key,key_prefix)
+		result=""
+		if key_type=="string":
+			result=yield from self.__connection.delete(key_prefix+key)
+		elif key_type=="hash":
+			result=yield from self.__connection.hdel(key,*self._connection.hkeys(key_prefix+key))
+		elif key_type=="list":
+			length=yield from self.__connection.llen(key_prefix+key)
+			if length:
+				result=yield from self.__connection.ltrim(key_prefix+key,length+1,length+1)
+		else:
+			result=None
+		yield from self.delete_key(key,key_prefix)
+		return result
+	
 class RedisCacheClient(object):
 	def __init__(self,host,port,db,*args,**kwargs):
 		assert isinstance(host,str)
