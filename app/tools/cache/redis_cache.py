@@ -2,6 +2,7 @@
 import logging
 logging.basicConfig(level=logging.ERROR)
 from cache_abstract import CacheAbstractDriver
+import asyncio
 try:
 	import redis
 except ImportError:
@@ -13,10 +14,10 @@ except ImportError:
 	logging.error("Can't import 'aioredis' module")
 	exit(-1)
 class AsyncRedisCacheClient(object):
-	def __init__(self,host,port,db,*args,*kwargs):
+	def __init__(self,host,port,db,*args,**kwargs):
 		assert isinstance(host,str)
 		assert isinstance(port,int)
-		assert isinstance(db,int) and 0<=self.__db<16
+		assert isinstance(db,int) and 0<=db<16
 		self.__host=host
 		self.__port=port
 		self.__db=db
@@ -32,7 +33,7 @@ class AsyncRedisCacheClient(object):
 		self.__connection=yield from aioredis.create_redis((self.__host,self.__port),db=self.__db,loop=loop)
 		return self.__connection
 	@asyncio.coroutine
-	def set(self,key,value=None,expires,key_prefix):
+	def set(self,key,value,expires,key_prefix):
 		if not self.__connection:
 			yield from self.get_connection()
 		if not value and isinstance(key,dict):
@@ -55,7 +56,8 @@ class AsyncRedisCacheClient(object):
 			elif isinstance(value,dict):
 				pipe=self.__connection.pipeline()
 				pipe.hset(self.__key_type_hash,key,2)
-				pipe.hmset(key,value)
+				for field,item_v in value.items():
+					pipe.hset(key,field,item_v)
 				if expires>0:
 					pipe.expire(key,expires)
 				return (yield from pipe.execute())
@@ -69,7 +71,7 @@ class AsyncRedisCacheClient(object):
 				return (yield from pipe.execute())
 	@asyncio.coroutine		
 	def get(self,key,key_prefix):
-		if not self.__connection
+		if not self.__connection:
 			yield from self.get_connection()
 		key_type=yield from self.exists(key,key_prefix)
 		key=key_prefix+key
@@ -86,7 +88,7 @@ class AsyncRedisCacheClient(object):
 		key=key_prefix+key
 		if not self.__connection:
 			yield from self.get_connection()	
-		key_type=self.__connection.hget(self.__key_type_hash,key)
+		key_type=yield from self.__connection.hget(self.__key_type_hash,key)
 		if key_type:
 			return self.__key_type_map.get(key_type.decode("utf-8"))
 		return None
@@ -105,7 +107,7 @@ class AsyncRedisCacheClient(object):
 		if key_type=="string":
 			result=yield from self.__connection.delete(key_prefix+key)
 		elif key_type=="hash":
-			result=yield from self.__connection.hdel(key,*self._connection.hkeys(key_prefix+key))
+			result=yield from self.__connection.hdel(key,*(yield from self.__connection.hkeys(key_prefix+key)))
 		elif key_type=="list":
 			length=yield from self.__connection.llen(key_prefix+key)
 			if length:
@@ -134,6 +136,11 @@ class AsyncRedisCacheClient(object):
 			return (yield from self.__connection.decrby(key,delta))
 		else:
 			raise TypeError("can't decrement '%s'"%key)
+	@asyncio.coroutine
+	def close(self):
+		if self.__connection:
+			self.__connection.close()
+			yield from self.__connection.wait_closed()
 	
 class RedisCacheClient(object):
 	def __init__(self,host,port,db,*args,**kwargs):
@@ -150,7 +157,7 @@ class RedisCacheClient(object):
 			"3":"list"
 		}
 		self.__key_type_hash="_key_type"
-	def set(self,key,value=None,expires,key_prefix):
+	def set(self,key,value,expires,key_prefix):
 		if not value and isinstance(key,dict):
 			pipe=self._connection.pipeline()
 			for k,item in key.items():
@@ -237,7 +244,7 @@ class RedisCache(CacheAbstractDriver):
 		return str(self.__client)
 	def __repr__(self):
 		return str(self.__client)
-	def put(self,key,value,expires=0,key_prefix=""):
+	def put(self,key,value=None,expires=0,key_prefix=""):
 		self.__client.set(key,value,expires,key_prefix)
 	def delete(self,key,key_prefix=""):
 		return self.__client.delete(key,key_prefix)
@@ -253,13 +260,54 @@ class RedisCache(CacheAbstractDriver):
 		return self.__client.inc(key,delta,key_prefix)
 	def decrement(self,key,delta=1,key_prefix=""):
 		return self.__client.dec(key,delta,key_prefix)
-	def update(self,key,value,expires=0,key_prefix=""):
+	def update(self,key,value=None,expires=0,key_prefix=""):
 		return self.__client.set(key,value,expires,key_prefix)
 	
-
-
-
+class AsyncRedisCache(CacheAbstractDriver):
+	def __init__(self,host,port,cache_db,*args,**kwargs):
+		self.__client=AsyncRedisCacheClient(host,port,cache_db,*args,**kwargs)
+	def __str__(self):
+		return str(self.__client)
+	def __repr__(self):
+		return str(self.__client)
+	@asyncio.coroutine
+	def put(self,key,value=None,expires=0,key_prefix=""):
+		yield from self.__client.set(key,value,expires,key_prefix)
+	@asyncio.coroutine
+	def get(self,key,key_prefix=""):
+		return (yield from self.__client.get(key,key_prefix))
+	@asyncio.coroutine
+	def get_delete(self,key,key_prefix=""):
+		result=yield from self.__client.get(key,key_prefix)
+		self.__client.delete(key,key_prefix)
+		return result
+	@asyncio.coroutine
+	def delete(self,key,key_prefix=""):
+		return (yield from self.__client.delete(key,key_prefix))
+	@asyncio.coroutine
+	def exists(self,key,key_prefix=""):
+		return (yield from self.__client.exists(key,key_prefix))
+	@asyncio.coroutine
+	def increment(self,key,delta=1,key_prefix=""):
+		return (yield from self.__client.inc(key,delta,key_prefix))
+	@asyncio.coroutine
+	def decrement(self,key,delta=1,key_prefix=""):
+		return (yield from self.__client.dec(key,delta,key_prefix))
+	@asyncio.coroutine
+	def update(self,key,value=None,expires=0,key_prefix=""):
+		return (yield from self.__client.set(key,value,expires,key_prefix))
+	@asyncio.coroutine
+	def close_client(self):
+		yield from self.__client.close()
 if __name__=='__main__':
+	r'''
+	loop=asyncio.get_event_loop()
+	arc=AsyncRedisCache('localhost',6379,1)
+	
+	loop.run_until_complete(arc.delete("name"))
+	loop.run_until_complete(arc.close_client())
+	loop.close()
+	'''
 	pass
 	r'''
 	#re=RedisCache('localhost',6379,1)
