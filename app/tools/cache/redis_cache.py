@@ -213,7 +213,7 @@ class RedisCacheClient(object):
 		key_type=self.exists(key,key_prefix)
 		key=key_prefix+key
 		if key_type=="string":
-			return self._connection.incrby(key,delta)
+			return self._connection.decrby(key,delta)
 		else:
 			raise TypeError("can't decrement '%s'"%key)
 	def exists(self,key,key_prefix):	
