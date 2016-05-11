@@ -97,7 +97,9 @@ class AsyncRedisCacheClient(object):
 		key=key_prefix+key
 		return (yield from self.__connection.hdel(self.__key_type_hash,key))			
 	@asyncio.coroutine
-	def delete(self,key,key_prefix):
+	def delete(self,key,key_prefix):	
+		if not self.__connection:
+			yield from self.get_connection()
 		key_type=yield from self.exists(key,key_prefix)
 		result=""
 		if key_type=="string":
@@ -114,6 +116,8 @@ class AsyncRedisCacheClient(object):
 		return result
 	@asyncio.coroutine
 	def inc(self,key,delta,key_prefix):
+		if not self.__connection:
+			yield from self.get_connection()
 		key_type=yield from self.exists(key,key_prefix)
 		key=key_prefix+key
 		if key_type=="string":
@@ -122,6 +126,8 @@ class AsyncRedisCacheClient(object):
 			raise TypeError("can't  increment  '%s'"%key)
 	@asyncio.coroutine
 	def dec(self,key,delta,key_prefix):
+		if not self.__connection:
+			yield from self.get_connection()
 		key_type=yield from self.exists(key,key_prefix)
 		key=key_prefix+key
 		if key_type=="string":
@@ -249,7 +255,6 @@ class RedisCache(CacheAbstractDriver):
 		return self.__client.dec(key,delta,key_prefix)
 	def update(self,key,value,expires=0,key_prefix=""):
 		return self.__client.set(key,value,expires,key_prefix)
-	
 	
 
 
