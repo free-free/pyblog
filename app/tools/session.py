@@ -429,7 +429,7 @@ class SessionManager(object):
 		if not driver:
 			self._default_driver=self.get_filesession_driver(config)
 		else:
-			self._default_driver=eval('self.get_%ssession_driver(%s)'%(driver,config))
+			self._default_driver=getattr(self,'get_%ssession_driver'%driver)(config)
 	def get_mongosession_driver(self,config=None):
 		type(self)._drivers['mongo']=MongoSession(self._session_id,config)
 		return type(self)._drivers['mongo']
@@ -443,7 +443,7 @@ class SessionManager(object):
 		if driver_name in self._drivers:		
 			self._specific_driver=self._drivers[driver_name]
 		else:
-			self._drivers[driver_name]= eval('self.get_%ssession_driver(%s)'%(driver_name,config))
+			self._drivers[driver_name]=getattr(self,'get_%ssession_driver'%driver_name)(config)
 			self._specific_driver=self._drivers[driver_name]
 		return self
 	def get(self,sname):
