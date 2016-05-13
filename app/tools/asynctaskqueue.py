@@ -231,7 +231,7 @@ class AsyncQueueReader(AsyncQueueOperator):
 		assert isinstance(config,dict)
 		assert isinstance(driver_name,str)
 		self._loop=loop
-		self._reader_instance=eval("self._get_%s_queue_driver(%s)"%(driver_name,config))
+		self._reader_instance=getattr(self,"_get_%s_queue_driver"%driver_name)(config)
 	@asyncio.coroutine
 	def read_from_queue(self,queue_name):
 		ret=yield from self._reader_instance.dequeue(queue_name)
