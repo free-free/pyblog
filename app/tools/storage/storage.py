@@ -17,8 +17,9 @@ class Storage(object):
 		self.__resovled_storage_instance={}
 		self.__current_disk=self._disk(self.__config.get('driver'),self.__config)
 		self.__resovled_storage_instance[self.__disk]=self
+		self.__factory=StorageDriverFactory
 	def _disk(self,driver,config):
-		return StorageDriverFactory(driver,config)
+		return self.__factory(driver,config)
 	def disk(self,disk_name,config=None):
 		if disk_name not in self.__resolved_storage_instance:
 			self.__resolved_storage_instance[disk_name]=Storage(disk_name,config)
