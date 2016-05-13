@@ -266,7 +266,7 @@ class QueueReader(QueueOperator):
 				self._current_reader=reader
 				break
 		if self._check_reader==False:	
-			instance=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),self._config))
+			instance=getattr(self,'_get_%s_queue_driver'%(driver_name.lower()))(self._config)
 			self._current_reader={'config':self._config,'instance':instance}
 			type(self)._used_queue_reader[self._driver_name].append(self._current_reader)
 	def read_from_queue(self,queue_name):
@@ -280,9 +280,9 @@ class QueueWriter(QueueOperator):
 		self._queue_writer_driver_instance=None
 		self._queue_writer=None
 		if config:
-			self._queue_write_driver_instance=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),config))
+			self._queue_write_driver_instance=getattr(self,'_get_%s_queue_driver'%driver_name.lower())(config)
 		else:
-			self._queue_write_driver_instance=eval('self._get_%s_queue_driver(%s)'%(driver_name.lower(),config))
+			self._queue_write_driver_instance=getattr(self,'_get_%s_queue_driver'%driver_name.lower())(config)
 		self._queue_writer=self._queue_write_driver_instance
 	def write_to_queue(self,queue_name,payload):
 		self._queue_writer.enqueue(queue_name,payload)
