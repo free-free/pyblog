@@ -244,7 +244,7 @@ class AsyncQueueWriter(AsyncQueueOperator):
 		assert isinstance(config,dict)
 		assert isinstance(driver_name,str)
 		self._loop=loop
-		self._writer_instance=eval("self._get_%s_queue_driver(%s)"%(driver_name,config))
+		self._writer_instance=getattr(self,"_get_%s_queue_driver"%driver_name)(config)
 	@asyncio.coroutine
 	def write_to_queue(self,queue_name,payload):
 		yield from self._writer_instance.enqueue(queue_name,payload)
