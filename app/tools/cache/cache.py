@@ -10,6 +10,7 @@ class Cache(object):
 		self.__default_cache_driver=self._driver(driver,config)
 		self.__current_cache_driver=self.__default_cache_driver
 		self.__resolved_drivers=dict()
+		self.__factory=CacheFactory
 	def driver(self,driver,config=None):
 		if driver  in self.__resolved_drivers:
 			print("first instance after")
@@ -20,7 +21,7 @@ class Cache(object):
 		print("first instance ")
 		return self.__resolved_drivers[driver]
 	def _driver(self,driver,config):
-		return CacheFactory(driver,config)
+		return self.__factory(driver,config)
 	def put(self,key,value,expires=0,key_prefix=""):
 		return self.__current_cache_driver.put(key,value,expires,key_prefix)
 	def get(self,key,key_prefix=""):
