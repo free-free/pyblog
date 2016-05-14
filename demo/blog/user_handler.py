@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
-from tools.httptools import Route
-from tools.helper import locale_translate
+from pyblog.httptools import Route
+from pyblog.helper import locale_translate
 from models import User
 import time
 import hashlib

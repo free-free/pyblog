@@ -1,8 +1,8 @@
 #!/usr/bin/env python3.5
 
-from   tools.orm.column  import Column
-from   tools.orm.field   import String,Int,Float,Text,Boolean
-from   tools.orm.model   import Model
+from   pyblog.orm.column  import Column
+from   pyblog.orm.field   import String,Int,Float,Text,Boolean
+from   pyblog.orm.model   import Model
 import time
 class User(Model):
 	__table__='users'
