@@ -220,7 +220,7 @@ class AppContainer(dict):
 			except jinja2.exceptions.TemplateNotFound:
 				error_page=(DEFAULT_HTTP_ERROR_PAGE%(code,"Pyblog 1.0",code,HTTP_ERROR_REASON_EN.get(code)))
 			self._app['status']={'code':code,'message':error_page}
-class BaseHandler(object):
+class RequestHandler(object):
 	r'''
 			basic handler process url paramter
 	
@@ -513,8 +513,8 @@ class Route(object):
 			if not asyncio.iscoroutinefunction(handler) and not inspect.isgeneratorfunction(handler):
 				handler=asyncio.coroutine(handler)
 			if len(_path)>1 and _path.endswith('/'):
-				app.router.add_route(_method,_path.rsplit('/',1)[0],BaseHandler(app,handler))
-				app.router.add_route(_method,_path,BaseHandler(app,handler))
+				app.router.add_route(_method,_path.rsplit('/',1)[0],RequestHandler(app,handler))
+				app.router.add_route(_method,_path,RequestHandler(app,handler))
 			elif not _path.endswith('/'):
 				app.router.add_route(_method,_path,BaseHandler(app,handler))
 				app.router.add_route(_method,_path+'/',BaseHandler(app,handler))
