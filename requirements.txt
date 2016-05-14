@@ -5,4 +5,4 @@ aiomysql
 pymongo
 mysqlclient
 aioredis
-
+memcache
