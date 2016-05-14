@@ -2,10 +2,10 @@
 
 import os
 
-from tools.log import *
-from tools.orm.field import *
-from tools.orm.column import *
-from tools.database import *
+from pyblog.log import *
+from pyblog.orm.field import *
+from pyblog.orm.column import *
+from pyblog.database import *
 from collections import OrderedDict
 import hashlib
 import re

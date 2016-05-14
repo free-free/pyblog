@@ -3,7 +3,7 @@ import os
 import json
 import re
 import time
-from tools.config import Config
+from pyblog.config import Config
 class LocaleProxyer(dict):
 	_locale_file_dir=None
 	_locale_files_content={}

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3.5
 
-from tools.config import Config
+from pyblog.config import Config
 import logging
 logging.basicConfig(level=logging.ERROR)
-from tools.model import Model
-from app.models import *
+from pyblog.orm.model import Model
+#from app.models import *
 try:
 	import MySQLdb
 except ImportError:

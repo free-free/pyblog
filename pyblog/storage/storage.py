@@ -1,7 +1,7 @@
 #-*- coding:utf-8 -*-
 
-from tools.config import Config
-from tools.storage.storage_factory import StorageDriverFactory
+from	pyblog.config import Config
+from pyblog.storage.storage_factory import StorageDriverFactory
 class Storage(object):
 	def __init__(self,disk=None,config=None):
 		if disk and not config:

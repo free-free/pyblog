@@ -2,8 +2,8 @@
 import datetime
 import subprocess
 import shlex
-from tools.localization import Locale
-from tools.taskqueue import Task
+from pyblog.localization import Locale
+from pyblog.taskqueue import Task
 def execute_shell_cmd(cmd,timeout=60,bufsize=4096):
 	assert isinstance(cmd,str)
 	cmd=shlex.split(cmd)

@@ -1,8 +1,8 @@
 #-*- coding:utf-8 -*-
 import logging
 logging.basicConfig(level=logging.ERROR)
-from tools.config import Config
-from tools.storage.storage_abstract import StorageAbstractAdapter
+from pyblog.config import Config
+from pyblog.storage.storage_abstract import StorageAbstractAdapter
 try:
 	from qiniu import Auth,put_file,etag,urlsafe_base64_encode,BucketManager
 	import qiniu.config

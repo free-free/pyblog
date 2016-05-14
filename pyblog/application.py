@@ -6,12 +6,12 @@ try:
 	from aiohttp import web
 except ImportError:
 	logging.error("Can't import module aiohttp")
-from tools.log import Log
-from tools.httptools import Middleware,Route
-from tools.template  import Template
-from tools.config import Config
-from tools.database import DB
-from tools.session import SessionManager
+from pyblog.log import Log
+from pyblog.httptools import Middleware,Route
+from pyblog.template  import Template
+from pyblog.config import Config
+from pyblog.database import DB
+from pyblog.session import SessionManager
 logging.basicConfig(level=logging.INFO)
 class Application(web.Application):
 	def __init__(self):

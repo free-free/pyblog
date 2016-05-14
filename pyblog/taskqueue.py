@@ -6,7 +6,7 @@ import json
 import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
-from tools.config import Config
+from pyblog.config import Config
 import socket
 import select
 from threading import Thread

@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
 from cache_factory import CacheFactory
-from tools.config import Config
+from pyblog.config import Config
 class Cache(object):
 	def __init__(self,driver=None,config=None):
 		driver=driver or Config.cache.driver_name

@@ -2,9 +2,9 @@
 # -*- coding:utf-8 -*-
 import argparse
 import sys
-from tools.taskqueue import TaskProcessionReceiver,QueuePayloadRouter,MailExecutor
-from tools.dbautocreate import DBBuilder
-from helper import shell_echo
+from  pyblog.taskqueue import TaskProcessionReceiver,QueuePayloadRouter,MailExecutor
+from  pyblog.dbautocreate import DBBuilder
+from  pyblog.helper import shell_echo
 def main():
 	if len(sys.argv)==1:
 		sys.argv.append('--help')

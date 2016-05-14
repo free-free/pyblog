@@ -2,7 +2,7 @@
 
 import os
 
-from tools.orm.field import *
+from	pyblog.orm.field import *
 class Column(object):
 	def __init__(self,c_type,**kw):
 		self.columnType=""

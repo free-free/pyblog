@@ -1,8 +1,8 @@
 #-*- coding:utf-8 -*-
 import logging
 logging.basicConfig(level=logging.ERROR)
-from tools.storage.qiniu_storage import QiniuStorageAdapter
-from tools.storage.storage_abstract import StorageAbstractAdapter
+from pyblog.storage.qiniu_storage import QiniuStorageAdapter
+from pyblog.storage.storage_abstract import StorageAbstractAdapter
 
 class StorageDriverFactory(object):
 	__drivers={'qiniu':QiniuStorageAdapter}

@@ -10,9 +10,9 @@ import logging
 import traceback
 import json
 logging.basicConfig(level=logging.INFO)
-from   tools.log import Log
-from   tools.session import SessionManager
-from   tools.config import Config
+from   pyblog.log import Log
+from   pyblog.session import SessionManager
+from   pyblog.config import Config
 import os
 try:
 	import asyncio

@@ -2,8 +2,8 @@
 import logging
 logging.basicConfig(level=logging.ERROR)
 import asyncio
-from tools.taskqueue import QueuePayloadJsonEncapsulator
-from tools.config import Config
+from pyblog.taskqueue import QueuePayloadJsonEncapsulator
+from pyblog.config import Config
 try:
 	import aiomysql
 except ImportError:

@@ -4,8 +4,8 @@ import os
 import sys
 import asyncio
 import logging;logging.basicConfig(level=logging.ERROR)
-from   tools.log import *
-from   tools.config import Config
+from   pyblog.log import *
+from   pyblog.config import Config
 import re
 import traceback
 import sys
