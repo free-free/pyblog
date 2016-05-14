@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+
+
 import os,time,asyncio,json
 import logging
 logging.basicConfig(level=logging.ERROR)
@@ -13,6 +15,10 @@ from pyblog.config import Config
 from pyblog.database import DB
 from pyblog.session import SessionManager
 logging.basicConfig(level=logging.INFO)
+
+
+__all__=("Application",)
+
 class Application(web.Application):
 	def __init__(self):
 		self._loop=asyncio.get_event_loop()

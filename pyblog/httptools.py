@@ -1,6 +1,8 @@
 #-*- coding:utf-8 -*-
 
 
+
+
 import functools
 import inspect
 import re
@@ -32,6 +34,8 @@ try:
 except ImportError:
 	logging.error("can't import 'jinja2' module")
 	exit()
+
+__all__=("Route",)
 
 HTTP_ERROR_REASON_EN={
 			400:"Bad Request",
