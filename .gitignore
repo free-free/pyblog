@@ -2,9 +2,5 @@
 *.pyc
 *.log
 __pycache__/
-/app/__pycache__/
-/app/tools/__pycache__/
-/app/conf/__pycache__/
-/app/conf/
 /log/
 
