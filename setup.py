@@ -5,7 +5,7 @@ from setuptools import find_packages,setup
 
 setup(
 	name="pyblog",
-	version="1.0",
+	version="1.1",
 	author="whoami",
 	author_email="19941222hb@gmail.com",
 	description="An asynchronous web framework that base on aiohttp",
