@@ -28,14 +28,13 @@ class MysqlDriver(AbstractDatabaseDriver):
 		self.__connection_yield=False
 		if not self.__pool:
 			self.__connection=aiomysql.connect(
-							self.__host,
-							self.__port,
-							self.__user,
-							self.__password,
-							self.__db,
+							host=self.__host,
+							port=self.__port,
+							user=self.__user,
+							password=self.__password,
+							db=self.__db,
 							loop=self.__loop
 							)
-			print(self.__connection)
 		else:
 			self.__connection=None
 	@asyncio.coroutine
@@ -72,9 +71,6 @@ class MysqlDriver(AbstractDatabaseDriver):
 		cursor=yield from self.__connection.cursor()
 		yield from cursor.execute(sql)
 		yield from self.__connection.commit()
-	@asyncio.coroutine
-	def resolve(self):
-		return (yield from self.__connection)
 		
 			
 if __name__=='__main__':
@@ -82,14 +78,11 @@ if __name__=='__main__':
 	r'''
 	@asyncio.coroutine
 	def go(loop):
-		m=MysqlDriver('127.0.0.1','3306','root','526114','test')
-		d=yield from m.resolve()
-		print(d)
-		#yield from m.delete("delete from users where id=7")
+		m=MysqlDriver('127.0.0.1','3306','root','526114','pyblog')
+		yield from m.delete("delete from users where id=6")
 	loop=asyncio.get_event_loop()
 	loop.run_until_complete(go(loop))
-	'''	
 						
-	
+	'''
 
 
