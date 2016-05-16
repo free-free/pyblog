@@ -71,7 +71,15 @@ class MysqlDriver(AbstractDatabaseDriver):
 		cursor=yield from self.__connection.cursor()
 		yield from cursor.execute(sql)
 		yield from self.__connection.commit()
-		
+	@asyncio.coroutine
+	def select_db(self,db):
+		yield from self.connection()
+		yield from self.__connection.select_db(db)
+	@asyncio.coroutine
+	def close(self):
+		yield from self.connection()
+		self.__connection.close()
+	
 			
 if __name__=='__main__':
 	pass
