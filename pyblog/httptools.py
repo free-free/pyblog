@@ -217,11 +217,6 @@ class RequestHandler(object):
 	def __init__(self,app,handlerfn):
 		self._app=app
 		self._handler=handlerfn
-	def _param_generator(self,l):
-		def _generator():
-			for k in l:
-				yield k
-		return _generator
 	@asyncio.coroutine
 	def __call__(self,request):
 		post=yield from request.post()
