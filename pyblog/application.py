@@ -43,10 +43,8 @@ class Application(web.Application):
 		self['__templating__']=Template()
 		Route.register_route(self)
 		self._db_pool=yield from DB.createpool(self._loop)
-		#pool=yield from create_pool(self._loop)
 		self._handler=self.make_handler()
 		server=yield from self._loop.create_server(self._handler,addr,port)
-		logging.info("server start at http://%s:%s"%(addr,port))
 		Log.info("server start at http://%s:%s"%(addr,port))
 		print("server start at http://%s:%s"%(addr,port))
 		return server
