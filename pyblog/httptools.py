@@ -1,8 +1,5 @@
 #-*- coding:utf-8 -*-
 
-
-
-
 import functools
 import inspect
 import re
@@ -16,24 +13,12 @@ from   pyblog.log import Log
 from   pyblog.session import SessionManager
 from   pyblog.config import Config
 import os
-try:
-	import asyncio
-except ImportError:
-	logging.error("Can't Found Module asyncio")
-	exit()
-try:
-	import aiohttp
-	import aiohttp.web
-	import aiohttp.errors
-	from aiohttp import web
-except ImportError:
-	logging.error("Can't Found Module aiohttp")
-	exit()
-try:
-	import jinja2
-except ImportError:
-	logging.error("can't import 'jinja2' module")
-	exit()
+import asyncio
+import aiohttp
+import aiohttp.web
+import aiohttp.errors
+from aiohttp import web
+import jinja2
 
 __all__=("Route",)
 
