@@ -4,10 +4,7 @@
 import os,time,asyncio,json
 import logging
 logging.basicConfig(level=logging.ERROR)
-try:
-	from aiohttp import web
-except ImportError:
-	logging.error("Can't import module aiohttp")
+from aiohttp import web
 from pyblog.log import Log
 from pyblog.httptools import Middleware,Route
 from pyblog.template  import Template
