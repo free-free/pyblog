@@ -57,4 +57,13 @@ class AppAbstractRegister(object):
 			logic code ,you want to use register
 		"""
 		pass
-				
+class _Application(dict):
+	def __init__(self,request,*args,**kw):
+		super(_Application,self).__init__(**kw)
+		self.__request=request
+	def get_cookie(self,name,default=None):
+		return self.__request.cookies.get(name,default)
+	def get_all_cookies(self):
+		return self.__request.cookies
+	def set_cookies(self,name,val,expires=None,domain=None,max_age=None,httponly=False,path='/'):
+		pass
