@@ -119,6 +119,10 @@ DEFAULT_ERROR_PRINT_PAGE="""
 			</body>
 			</html>
 			"""
+class ResponseContainer(dict):
+	def __init__(self,*args,**kw):
+		super(ResponseContainer,self).__init__(**kw)
+	
 class AppContainer(dict):
 	def __init__(self,app,**kw):
 		self._post=app['post']
@@ -209,6 +213,9 @@ class AppContainer(dict):
 			except jinja2.exceptions.TemplateNotFound:
 				error_page=(DEFAULT_HTTP_ERROR_PAGE%(code,"Pyblog 1.0",code,HTTP_ERROR_REASON_EN.get(code)))
 			self._app['status']={'code':code,'message':error_page}
+
+
+
 class RequestHandler(object):
 	r'''
 			basic handler process url paramter
