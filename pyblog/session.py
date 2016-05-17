@@ -7,23 +7,11 @@ import json
 import logging
 import asyncio
 logging.basicConfig(level=logging.ERROR)
-
-try:
-	import redis
-except ImportError:
-	logging.error("Can't import 'redis' module")
-	exit(-1)
-try:
-	import pymongo
-except ImportError:
-	logging.error("Can't import 'pymongo' module")
-	exit(-1)
-try:
-	import aioredis
-except ImportError:
-	logging.error("Can't import 'aioredis' module")
-	exit(-1)
+import redis
+import pymongo
+import aioredis
 from pymongo import MongoClient
+
 class AbstractSession(object):
 	def __init__(self,session_id,*args,**kw):
 		self._session_id=session_id
