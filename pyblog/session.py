@@ -28,16 +28,16 @@ class AbstractSession(object):
 		return self._session_id
 	def set(self,sname,svalue):
 		r''' set session item'''
-		pass
+		raise NotImplementedError
 	def get(self,sname):
 		r''' get session item'''
-		pass
+		raise NotImplementedError
 	def save(self,expire=None):
 		r''' save all session items to database or file'''
-		pass
+		raise NotImplementedError
 	def renew(self,session_id):
 		r''' refresh session id and reread session from database'''
-		pass
+		raise NotImplementedError
 	def all(self):
 		r''' get all session '''
 		return self._data[self._session_id]
@@ -64,16 +64,17 @@ class AsyncAbstractSession(dict):
 	@asyncio.coroutine
 	def save(self,expire=None):
 		r''' save session to database'''
+		raise NotImplementedError
 	@asyncio.coroutine
 	def session(self):
 		r''' get database connection and read session from database'''
-		pass
+		raise NotImplementedError
 	def get(self,sname):
-		pass	
+		raise NotImplementedError
 	def set(self,sname,value):
-		pass
+		raise NotImplementedError
 	def all(self):
-		pass
+		raise NotImplementedError
 	@property
 	def session_id(self):
 		return self._session_id
