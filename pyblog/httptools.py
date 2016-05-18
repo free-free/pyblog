@@ -118,10 +118,7 @@ DEFAULT_ERROR_PRINT_PAGE="""
 				</div>
 			</body>
 			</html>
-			"""
-class ResponseContainer(dict):
-	def __init__(self,*args,**kw):
-		super(ResponseContainer,self).__init__(**kw)	
+			"""	
 class AppContainer(dict):
 	def __init__(self,app,**kw):
 		self._post=app['post']
