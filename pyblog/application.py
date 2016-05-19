@@ -67,3 +67,15 @@ class _Application(dict):
 		return self.__request.cookies
 	def set_cookies(self,name,val,expires=None,domain=None,max_age=None,httponly=False,path='/'):
 		pass
+	def get_argument(self,name,default=None):
+		pass
+	def get_arguments(self,name,default=None):
+		pass
+	def set_status(self,status_code,reason):
+		pass
+	def render(self,template,**kw):
+		pass
+	def add_header(self,header_name,header_content):
+		pass
+	def get_header(self,header_name):
+		pass
