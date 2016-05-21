@@ -246,7 +246,10 @@ class RequestHandler(object):
 					raise NameError("Can't Found '%s'"%k)
 				param[k]=request.match_info[k]
 			param[self._handler.__args__[0]]=self._app_container
-			response=yield from self._handler(**param)
+			try:
+				response=yield from self._handler(**param)
+			except Finish:
+				response=""
 		return response
 
 class Middleware(object):
