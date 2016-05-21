@@ -513,10 +513,10 @@ class Route(object):
 				app.router.add_route(_method,_path.rsplit('/',1)[0],RequestHandler(app,handler))
 				app.router.add_route(_method,_path,RequestHandler(app,handler))
 			elif not _path.endswith('/'):
-				app.router.add_route(_method,_path,BaseHandler(app,handler))
-				app.router.add_route(_method,_path+'/',BaseHandler(app,handler))
+				app.router.add_route(_method,_path,RequestHandler(app,handler))
+				app.router.add_route(_method,_path+'/',RequestHandler(app,handler))
 			else:
-				app.router.add_route(_method,_path,BaseHandler(app,handler))
+				app.router.add_route(_method,_path,RequestHandler(app,handler))
 	@classmethod
 	def register_route(cls,app):
 		Route._none_variable_routes=cls.sort_none_variable_routes(Route._none_variable_routes)
