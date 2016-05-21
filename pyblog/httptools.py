@@ -118,7 +118,12 @@ DEFAULT_ERROR_PRINT_PAGE="""
 				</div>
 			</body>
 			</html>
-			"""	
+			"""
+class Finish(Exception):
+	"""
+		raise it to finish http request 
+	"""
+	pass	
 class AppContainer(dict):
 	def __init__(self,app,**kw):
 		self._post=app['post']
@@ -160,6 +165,7 @@ class AppContainer(dict):
 			self._app['response']={'__template__':content,'parameter':kw}
 		else:
 			self._app['response']=content
+		raise Finish()
 	@property
 	def session(self):
 		if not hasattr(self,'_session_instance'):
@@ -198,6 +204,7 @@ class AppContainer(dict):
 		return session_id
 	def redirect(self,url):
 		self._app['redirect']=url
+		raise Finish()
 	def set_status(self,code,*,message=None):
 		assert isinstance(code,int)
 		if message:
