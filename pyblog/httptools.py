@@ -525,7 +525,7 @@ class Route(object):
 		cls.process_routes(app,Route._incomplete_variable_routes)
 		Route._complete_variable_routes=cls.sort_variable_routes(Route._complete_variable_routes)
 		cls.process_routes(app,Route._complete_variable_routes)	
-		app.router.add_static(Config.app.static_prefix,os.path.join(os.path.dirname(os.path.dirname(__file__)),Config.app.static_path))
+		app.router.add_static(Config.app.static_prefix,Config.app.static_path)
 if __name__=='__main__':
 	pass
 
