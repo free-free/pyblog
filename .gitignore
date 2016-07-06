@@ -1,6 +1,6 @@
 # Byte-compiled / optimized / DLL files
 *.pyc
 *.log
-__pycache__/
+__pycache__
 /log/
 
