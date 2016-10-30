@@ -54,7 +54,7 @@ class Log(object):
         return os.path.join(cls._logPath, cls._logName)
 
     @classmethod
-    def set_logPath(cls, path):
+    def set_logpath(cls, path):
         cls._logPath = path
 
     @classmethod
@@ -71,7 +71,6 @@ class Log(object):
 
     @staticproperty
     def log_path(cls):
-        print("getter")
         return cls._logPath
 if __name__ == '__main__':
     r'''
