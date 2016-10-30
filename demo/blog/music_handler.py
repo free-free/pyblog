@@ -1,7 +1,7 @@
 #-*- coding:utf-8 -*-
 from pyblog.httptools import Route
 from models import Music
-from tools.config import Config
+from pyblog.config import Config
 import logging
 logging.basicConfig(level=logging.ERROR)
 import time
